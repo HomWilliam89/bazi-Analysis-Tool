@@ -16,7 +16,13 @@ node 核心\engine.mjs --birth "1990-05-20 14:30" --gender 男
 node 核心\selftest.mjs
 ```
 
-## 依赖与验证
-- **环境要求**：Node 18+ (ESM 原生模块)，无任何第三方 npm 依赖。
+## 来源与完整性验证
+- **来源项目**：`D:\Hom\AIGC\DsWorkSpace\bazi\build\`
+- **接入日期**：2026-10-05
+- **环境实测**：Node v26.10.0（Windows x64），原生 ESM，零第三方依赖。
+- **文件校验和 (SHA256)**：
+  - `engine.mjs`：`BA0162321894E305963D2E7810B79F67B64EB7D15180000E5E8499E5936475E8`
+  - `selftest.mjs`：`DF8598DB3772A54C195AB091BF5E808A660A9EEBA2306004EED8FD5939CA2265`
 - **验证结果**：通过全量 1149 项自检（四柱儒略日、节气时刻、藏干十神、长生纳音、大运流年等全部吻合）。
+
 
