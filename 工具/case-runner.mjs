@@ -5,7 +5,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { STEMS, BRANCHES, castChart } from '../核心/engine.mjs';
-import { tiyongRouteOf, canControlOf, canTransformOf, canBindOf } from '../核心/tiyong.mjs';
+import {
+  tiyongRouteOf, canControlOf, canTransformOf, canBindOf,
+  protectionChainOf, youJiuOf, fanwangOf, xiangzhanOf, siXiangOf,
+} from '../核心/tiyong.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const 案例目录 = path.join(ROOT, '案例');
@@ -283,6 +286,91 @@ for (const c of casesToRun) {
       failedAssertions += 1;
       console.log(`  ✗ [合绊定性] 期望: ${c.期望.合绊定性} != 实际: ${act}`);
       failureDetails.push({ id: c.id, item: '合绊定性', exp: c.期望.合绊定性, act, p: c.判据 });
+    }
+  }
+
+  // 断言 11: 护卫链结局
+  if (typeof c.期望.护卫链结局 !== 'undefined') {
+    totalAssertions += 1;
+    const chainRes = protectionChainOf(chart, c.期望.用神五行);
+    const act = chainRes.结局?.类 ?? '—';
+    const ok = act === c.期望.护卫链结局;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [护卫链结局] 期望: ${c.期望.护卫链结局} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [护卫链结局] 期望: ${c.期望.护卫链结局} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '护卫链结局', exp: c.期望.护卫链结局, act, p: c.判据 });
+    }
+  }
+
+  // 断言 12: 有救底线
+  if (typeof c.期望.有救底线 !== 'undefined') {
+    totalAssertions += 1;
+    const yjRes = youJiuOf(chart, c.期望.用神五行);
+    let act = '无救';
+    if (yjRes.档.startsWith('最强')) act = '有救且有力';
+    else if (yjRes.档.startsWith('次强')) act = '次强有救';
+    else if (yjRes.档.startsWith('中强')) act = '中强有救';
+    else if (yjRes.档.includes('虚露')) act = '救而无力';
+    const ok = act === c.期望.有救底线;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [有救底线] 期望: ${c.期望.有救底线} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [有救底线] 期望: ${c.期望.有救底线} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '有救底线', exp: c.期望.有救底线, act, p: c.判据 });
+    }
+  }
+
+  // 断言 13: 犯旺判定
+  if (typeof c.期望.犯旺判定 !== 'undefined') {
+    totalAssertions += 1;
+    const fwRes = fanwangOf(chart, { 岁运: c.期望.岁运 });
+    const act = fwRes.有 ? '犯旺' : '不犯旺';
+    const ok = act === c.期望.犯旺判定;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [犯旺判定] 期望: ${c.期望.犯旺判定} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [犯旺判定] 期望: ${c.期望.犯旺判定} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '犯旺判定', exp: c.期望.犯旺判定, act, p: c.判据 });
+    }
+  }
+
+  // 断言 14: 相战择优
+  if (typeof c.期望.相战择优 !== 'undefined') {
+    totalAssertions += 1;
+    const xzRes = xiangzhanOf(chart, { 用神五行: c.期望.用神五行 });
+    const raw = xzRes.相战[0]?.择优?.净判 ?? '无好用手段';
+    const act = raw.replace(/\*\*/g, '');
+    const ok = act === c.期望.相战择优;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [相战择优] 期望: ${c.期望.相战择优} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [相战择优] 期望: ${c.期望.相战择优} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '相战择优', exp: c.期望.相战择优, act, p: c.判据 });
+    }
+  }
+
+  // 断言 15: 月令四象
+  if (typeof c.期望.月令四象 !== 'undefined') {
+    totalAssertions += 1;
+    const sxRes = siXiangOf(chart.dayMaster.bornMonthBranch);
+    const act = sxRes.两法一致 ? '两法一致' : '两法不一致';
+    const ok = act === c.期望.月令四象;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [月令四象] 期望: ${c.期望.月令四象} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [月令四象] 期望: ${c.期望.月令四象} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '月令四象', exp: c.期望.月令四象, act, p: c.判据 });
     }
   }
 
