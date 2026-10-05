@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { STEMS, BRANCHES, castChart } from '../核心/engine.mjs';
-import { tiyongRouteOf } from '../核心/tiyong.mjs';
+import { tiyongRouteOf, canControlOf, canTransformOf, canBindOf } from '../核心/tiyong.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const 案例目录 = path.join(ROOT, '案例');
@@ -105,7 +105,14 @@ for (const c of casesToRun) {
     continue;
   }
 
-  const chart = c.盘.ganzhi ? { pillars: pillarsOf(c.盘.ganzhi) } : castChart(c.盘.birth);
+  const chart = c.盘.ganzhi ? {
+    pillars: pillarsOf(c.盘.ganzhi),
+    dayMaster: {
+      stem: c.盘.ganzhi[2][0],
+      element: ['木', '火', '土', '金', '水'][[0, 0, 1, 1, 2, 2, 3, 3, 4, 4][STEMS.indexOf(c.盘.ganzhi[2][0])]],
+      bornMonthBranch: c.盘.ganzhi[1][1],
+    },
+  } : castChart(c.盘.birth);
   const yongArg = c.期望.用神五行 ?? (Array.isArray(c.期望.用神) ? c.期望.用神[0] : null);
   const jiArg = Array.isArray(c.期望.忌神) ? c.期望.忌神[0] : null;
 
@@ -196,6 +203,86 @@ for (const c of casesToRun) {
       failedAssertions += 1;
       console.log(`  ✗ [用神五行] 期望: ${c.期望.用神五行} != 实际: ${act}`);
       failureDetails.push({ id: c.id, item: '用神五行', exp: c.期望.用神五行, act, p: c.判据 });
+    }
+  }
+
+  // 断言 6: 印比有情
+  if (typeof c.期望.印比有情 !== 'undefined') {
+    totalAssertions += 1;
+    const act = (res.第二_印比有情?.结论?.includes('印比无情') || res.第二_印比有情?.结论?.includes('无情') || res.第二_印比有情?.有情的印比?.length === 0) ? '无情' : '有情';
+    const ok = act === c.期望.印比有情;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [印比有情] 期望: ${c.期望.印比有情} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [印比有情] 期望: ${c.期望.印比有情} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '印比有情', exp: c.期望.印比有情, act, p: c.判据 });
+    }
+  }
+
+  // 断言 7: 结构稳定
+  if (typeof c.期望.结构稳定 !== 'undefined') {
+    totalAssertions += 1;
+    const act = (res.第四_结构稳定?.动摇计数?.合计 === 0) ? '稳固' : '动摇';
+    const ok = act === c.期望.结构稳定;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [结构稳定] 期望: ${c.期望.结构稳定} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [结构稳定] 期望: ${c.期望.结构稳定} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '结构稳定', exp: c.期望.结构稳定, act, p: c.判据 });
+    }
+  }
+
+  // 断言 8: 制神有效
+  if (typeof c.期望.制神有效 !== 'undefined') {
+    totalAssertions += 1;
+    const zhiRes = canControlOf(chart, c.期望.制神五行, c.期望.被制五行);
+    const act = zhiRes.结论.startsWith('**能制**') ? '能制' : '不能制';
+    const ok = act === c.期望.制神有效;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [制神有效] 期望: ${c.期望.制神有效} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [制神有效] 期望: ${c.期望.制神有效} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '制神有效', exp: c.期望.制神有效, act, p: c.判据 });
+    }
+  }
+
+  // 断言 9: 化神有效
+  if (typeof c.期望.化神有效 !== 'undefined') {
+    totalAssertions += 1;
+    const huaRes = canTransformOf(chart, c.期望.化神五行);
+    const act = (huaRes.化名 === '真化' || huaRes.结论.startsWith('**能化尽**')) ? '能化' : '不能化';
+    const ok = act === c.期望.化神有效;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [化神有效] 期望: ${c.期望.化神有效} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [化神有效] 期望: ${c.期望.化神有效} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '化神有效', exp: c.期望.化神有效, act, p: c.判据 });
+    }
+  }
+
+  // 断言 10: 合绊定性
+  if (typeof c.期望.合绊定性 !== 'undefined') {
+    totalAssertions += 1;
+    const bindRes = canBindOf(chart, c.期望.合神五行, { 有故: c.期望.合意图 === '有故' });
+    let act = '未合';
+    if (bindRes.结论.includes('合住且为我所用')) act = '合住且为我所用';
+    else if (bindRes.结论.includes('合住而不为我所用')) act = '合住而不为我所用';
+    const ok = act === c.期望.合绊定性;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [合绊定性] 期望: ${c.期望.合绊定性} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [合绊定性] 期望: ${c.期望.合绊定性} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '合绊定性', exp: c.期望.合绊定性, act, p: c.判据 });
     }
   }
 
