@@ -2698,7 +2698,19 @@ export function tiyongRouteOf(chart, opts = {}) {
     //   ⚠「杀多」本身**不是判据**——它只让"制"更难通过两关，不直接判其出局。
     const 官杀位c = occupantsOf(chart, 官杀五行c);
     const 同党c = (占比[D] ?? 0) + (占比[生我者(D)] ?? 0);
-    const 担力c = (得地.length > 0 || 得势.length > 0 || 同党c >= 40) ? '可任'
+    // P-002 官杀承载判定：检查日主通根是否被多重冲拔
+    const relsForDanli = gzRelations(chart.pillars, null);
+    const chongsForDanli = relsForDanli['地支六冲'] ?? [];
+    const 冲拔支c = new Set();
+    for (const c of chongsForDanli) {
+      for (const d of 得地) {
+        const bName = d.位 ? d.位.slice(-1) : '';
+        if (c.pair && c.pair.includes(bName)) 冲拔支c.add(d.位);
+      }
+    }
+    const 根被冲拔c = 得地.length > 0 && 得地.every((d) => 冲拔支c.has(d.位));
+    const 担力c = (根被冲拔c && 第一.官杀?.构成威胁) ? '不可任'
+      : (得地.length > 0 || 得势.length > 0 || 同党c >= 40) ? '可任'
       : (得地.length === 0 && 得势.length === 0 && 同党c < 25) ? '不可任' : '两可';
     const 官杀重 = 官杀位c.length > 0;
 
@@ -2811,7 +2823,16 @@ export function tiyongRouteOf(chart, opts = {}) {
     支中: 官杀位.filter((o) => o.层 !== '天干').map((o) => `${o.宫位}${o.字}(${o.藏})`),
   };
   const 同党占比0 = (占比[D] ?? 0) + (占比[生我者(D)] ?? 0);
-  const 担力 = (得地.length > 0 || 得势.length > 0 || 同党占比0 >= 40) ? '可任'
+  const 冲拔支 = new Set();
+  for (const c of (gzRelations(chart.pillars, null)['地支六冲'] ?? [])) {
+    for (const d of 得地) {
+      const bName = d.位 ? d.位.slice(-1) : '';
+      if (c.pair && c.pair.includes(bName)) 冲拔支.add(d.位);
+    }
+  }
+  const 根被冲拔 = 得地.length > 0 && 得地.every((d) => 冲拔支.has(d.位));
+  const 担力 = (根被冲拔 && 第一.官杀?.构成威胁) ? '不可任'
+    : (得地.length > 0 || 得势.length > 0 || 同党占比0 >= 40) ? '可任'
     : (得地.length === 0 && 得势.length === 0 && 同党占比0 < 25) ? '不可任' : '两可';
   // 时上一位贵：时干透一位官杀、日主健旺、不重见、不混杂（《神峰通考》2.9、《渊海子平》五言独步）
   const 时干 = chart.pillars[3].stem;
@@ -2826,7 +2847,7 @@ export function tiyongRouteOf(chart, opts = {}) {
     : {
       有官杀: true, 官杀五行, 落点: 官杀位.map((o) => `${o.宫位}${o.字}${o.藏 ? `(${o.藏})` : ''}`),
       透干: 官杀藏透.透干, 支中: 官杀藏透.支中, 力度档: 官杀力度.档,
-      日主担力: 担力, 担力据: `得地 ${得地.length}／得势 ${得势.length}／同党(日主＋印) ${同党占比0.toFixed(1)}%`,
+      日主担力: 担力, 担力据: `得地 ${得地.length}／得势 ${得势.length}／同党(日主＋印) ${同党占比0.toFixed(1)}%${根被冲拔 ? '（通根受冲拔）' : ''}`,
       可任: 担力 === '可任' && 官杀力度.档 !== '极',
       判: (担力 === '可任' && 官杀力度.档 !== '极')
         ? `官杀为**贵气**（日主能任）⇒ 须**供起来**：**不可伤**（忌制伏太过——《滴天髓》「与其制杀太过，不若官杀混杂之美」）、`
@@ -2925,6 +2946,46 @@ export function tiyongRouteOf(chart, opts = {}) {
   //     两说的实际数值由 `congGeOf` 运行时算出，并列于 `所从之势_两说`。
   const sg = specialGejuOf(chart);
   const 特殊成立 = (sg.成立者 ?? []).filter((x) => /从|专旺|化气|两神/.test(String(x)));
+
+  // P-003: 极弱顺从与从格闸门判定（五阴从势无情义，局无生扶，逆势之杂质受制）
+  const dObj = dayMasterOf(chart);
+  const isYinStem = STEM_YANG[STEMS.indexOf(dObj.stem)] === false;
+  let p003从势 = false;
+  if (isYinStem && !特殊成立.some((x) => x.includes('从'))) {
+    const 印 = 生我者(D);
+    const 印透干 = chart.pillars.some((p) => ELEMENTS[STEM_ELEMENT[p.stemIndex]] === 印);
+    const 印占 = 占比[印] ?? 0;
+    const 旺占 = 占比[旺序[0]] ?? 0;
+    const 当令 = ELEMENTS[BRANCH_ELEMENT[BRANCHES.indexOf(branchAt(chart.pillars[1]))]] === 旺序[0];
+    if (!印透干 && 印占 < 10 && (旺占 >= 40 || 当令)) {
+      // 检查微根是否合化或受制（含三合半合、六合、六冲、相刑、穿害）
+      const allBranches = chart.pillars.map(branchAt);
+      const isBanHe = (br) => [
+        ['申', '子', '辰'],
+        ['亥', '卯', '未'],
+        ['寅', '午', '戌'],
+        ['巳', '酉', '丑'],
+      ].some((grp) => grp.includes(br) && allBranches.some((ob) => grp.includes(ob) && ob !== br));
+
+      const 微根受制或合化 = 得地.length === 0 || 得地.every((d) => {
+        const b = d.位 ? d.位.slice(-1) : '';
+        const rels = gzRelations(chart.pillars, null);
+        const pairs = [
+          ...(rels['地支六冲'] ?? []),
+          ...(rels['地支三合'] ?? []),
+          ...(rels['地支六合'] ?? []),
+          ...(rels['地支相刑'] ?? []),
+          ...(rels['地支相害'] ?? []),
+        ];
+        return isBanHe(b) || pairs.some((p) => p.pair?.includes(b) || (p.positions && p.positions.includes(b)));
+      });
+      if (微根受制或合化) {
+        特殊成立.push('从势');
+        p003从势 = true;
+      }
+    }
+  }
+
   // ★（D）从格须验「杂质」（使用者 2026-09-28）：
   // 「从格必须要所从的五行气势旺盛，**不见杂质**（破坏这个五行的五行）；如果有杂质，
   //   杂质必须**无力**，待岁运祛除（假从变真从）。」
@@ -2938,8 +2999,12 @@ export function tiyongRouteOf(chart, opts = {}) {
       if (!神五行) return null;
       const 杂质 = 克我者(神五行);                       // 破坏所从之势者
       const 在局 = occupantsOf(chart, 杂质).length > 0;
+      const 杂质被重冲 = (gzRelations(chart.pillars, null)['地支六冲'] ?? []).filter((c) => {
+        const 杂质字 = occupantsOf(chart, 杂质).map((o) => o.字);
+        return 杂质字.some((z) => c.pair.includes(z));
+      }).length >= 1;
       const 档 = powerOf(chart, 杂质).档;
-      const 有力 = 在局 && 档 !== '弱';
+      const 有力 = 在局 && 档 !== '弱' && !杂质被重冲;
       // 使用者：「从格必须要所从的五行**气势旺盛**」——故先验所从之势自身够不够旺（阈值属引擎操作化）
       const 占比神 = 占比[神五行] ?? 0;
       const 当令 = ELEMENTS[BRANCH_ELEMENT[BRANCHES.indexOf(branchAt(chart.pillars[1]))]] === 神五行;
@@ -2964,7 +3029,7 @@ export function tiyongRouteOf(chart, opts = {}) {
         : (两说.every((x) => /成从/.test(x.判)) ? '无杂质 ⇒ 从格成立' : '有杂质但无力 ⇒ 假从，待岁运祛除'),
     };
   })();
-  const 从格成立 = !!(从格杂质检验 && 从格杂质检验.综合.includes('从格成立'));
+  const 从格成立 = !!(从格杂质检验 && (从格杂质检验.综合.includes('从格成立') || 从格杂质检验.综合.includes('假从')));
   const 适用前提 = 特殊成立.length
     ? (从格成立
       ? `⚠ **前提风险**：引擎判「${特殊成立.join('、')}」成立且过杂质检验，而体用四项是**非从格**判据——`
