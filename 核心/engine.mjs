@@ -208,7 +208,11 @@ const TIANDE = {
 /** 月德贵人（按月支三合局） */
 const YUEDE = { 寅: '丙', 午: '丙', 戌: '丙', 申: '壬', 子: '壬', 辰: '壬', 亥: '甲', 卯: '甲', 未: '甲', 巳: '庚', 酉: '庚', 丑: '庚' };
 /** 禄神（十干临官位） */
-const LUSHEN = { 甲: '寅', 乙: '卯', 丙: '巳', 丁: '午', 戊: '巳', 己: '午', 庚: '申', 辛: '酉', 壬: '亥', 癸: '子' };
+export const LUSHEN = { 甲: '寅', 乙: '卯', 丙: '巳', 丁: '午', 戊: '巳', 己: '午', 庚: '申', 辛: '酉', 壬: '亥', 癸: '子' };
+/** 暗禄（日干正禄之地支六合神：《三命通会》《渊海子平》） */
+export const ANLU = { 甲: '亥', 乙: '戌', 丙: '申', 丁: '未', 戊: '申', 己: '未', 庚: '巳', 辛: '辰', 壬: '寅', 癸: '丑' };
+/** 七大暗禄日（日干自坐暗禄：《三命通会》） */
+export const ANLU_DAY_GZ = ['乙戌', '丙申', '丁未', '戊申', '己未', '壬寅', '癸丑'];
 /** 羊刃（阳干帝旺位，阴干按通行取法） */
 const YANGREN = { 甲: '卯', 乙: '寅', 丙: '午', 丁: '巳', 戊: '午', 己: '巳', 庚: '酉', 辛: '申', 壬: '子', 癸: '亥' };
 /** 金舆 */
@@ -619,6 +623,8 @@ function computeShenSha(pillars, dayStemIndex, yearStemIndex, monthBranchIndex, 
   }
   /* --- 禄神 --- */
   add('禄神', posOfBranchEq(LUSHEN[dayStem]));
+  /* --- 暗禄（禄神之六合神，日干查四支） --- */
+  add('暗禄', posOfBranchEq(ANLU[dayStem]), `日干${dayStem}正禄${LUSHEN[dayStem]}之六合神「${ANLU[dayStem]}」，主暗中得阴庇贵人`);
   /* --- 羊刃 --- */
   add('羊刃', posOfBranchEq(YANGREN[dayStem]), '阳干取帝旺位，阴干传统有"阴干无刃"与"取帝旺前一位"两说');
   /* --- 金舆 --- */
@@ -696,13 +702,21 @@ function computeShenSha(pillars, dayStemIndex, yearStemIndex, monthBranchIndex, 
     if ((tianshe[mb] ?? []).includes(dayGz)) result.push({ name: '天赦日', positions: ['日柱'], note: dayGz });
   }
 
+  /* --- 暗禄日（自坐暗禄） --- */
+  {
+    const dayGz = STEMS[dayStemIndex] + BRANCHES[dayBranchIndex];
+    if (ANLU_DAY_GZ.includes(dayGz)) {
+      result.push({ name: '暗禄日', positions: ['日柱'], note: `${dayGz}（自坐暗禄）` });
+    }
+  }
+
   return result;
 }
 
 /** 神煞中"吉""凶"属性粗分类，供参考（非绝对） */
-const AUSPICIOUS = ['天乙贵人', '文昌贵人', '太极贵人', '天德贵人', '月德贵人', '禄神', '金舆', '天赦日', '将星'];
+const AUSPICIOUS = ['天乙贵人', '文昌贵人', '太极贵人', '天德贵人', '月德贵人', '禄神', '暗禄', '金舆', '天赦日', '将星'];
 const INAUSPICIOUS = ['羊刃', '红艳煞', '流霞', '劫煞', '亡神', '灾煞', '天煞', '地煞', '孤辰', '寡宿', '十恶大败日', '阴差阳错日', '魁罡', '小儿关煞'];
-function shenshaNature(name) {
+export function shenshaNature(name) {
   if (AUSPICIOUS.some((a) => name.startsWith(a))) return '吉';
   if (INAUSPICIOUS.some((a) => name.startsWith(a))) return '凶';
   return '中';

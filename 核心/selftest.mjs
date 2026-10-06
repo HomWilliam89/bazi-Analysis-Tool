@@ -19,6 +19,7 @@ import {
   SI_XIANG_WUXING, SI_XIANG_YUAN, SI_XIANG_MONTH_SYSTEMS, siXiangOf, genWeightOf, youJiuOf,
   STEM_BRANCH_SELF_COMBINE, BRANCH_HIDDEN_COMBINE, gzRelations, selfHiddenCombineOf,
   BRANCH_HALF_COMBINE, BRANCH_EXTINCTION, JIELU_KONGWANG,
+  ANLU, ANLU_DAY_GZ, LUSHEN, shenshaNature,
 } from './engine.mjs';
 
 /** 由 "辛巳" 之类的干支串造出 engine 各原语所需的柱对象数组 */
@@ -2375,6 +2376,64 @@ console.log('=== 30. 干支自合与地支暗合识别（P-015 · D-029 裁定�
   eq('甲日截路空亡包含申与酉', JIELU_KONGWANG['甲'].includes('申') && JIELU_KONGWANG['甲'].includes('酉'), true);
   eq('己日截路空亡包含申与酉', JIELU_KONGWANG['己'].includes('申') && JIELU_KONGWANG['己'].includes('酉'), true);
   eq('戊日截路空亡包含子与丑', JIELU_KONGWANG['戊'].includes('子') && JIELU_KONGWANG['戊'].includes('丑'), true);
+}
+
+console.log('=== 32. 暗禄与暗禄日神煞入库（D-033 裁定）===');
+{
+  // ── 32.1 十干暗禄全矩阵核验 ──
+  eq('甲暗禄为亥', ANLU['甲'], '亥');
+  eq('乙暗禄为戌', ANLU['乙'], '戌');
+  eq('丙暗禄为申', ANLU['丙'], '申');
+  eq('丁暗禄为未', ANLU['丁'], '未');
+  eq('戊暗禄为申', ANLU['戊'], '申');
+  eq('己暗禄为未', ANLU['己'], '未');
+  eq('庚暗禄为巳', ANLU['庚'], '巳');
+  eq('辛暗禄为辰', ANLU['辛'], '辰');
+  eq('壬暗禄为寅', ANLU['壬'], '寅');
+  eq('癸暗禄为丑', ANLU['癸'], '丑');
+
+  // ── 32.2 七大暗禄日自坐核验 ──
+  eq('暗禄日总数恰为7柱', ANLU_DAY_GZ.length, 7);
+  for (const gz of ANLU_DAY_GZ) {
+    const stem = gz[0];
+    const branch = gz[1];
+    eq(`${gz} 自坐暗禄无误`, ANLU[stem], branch);
+  }
+
+  // 验证六十甲子中其它53柱均不自坐暗禄
+  let otherSelfAnluCount = 0;
+  for (let s = 0; s < 10; s++) {
+    for (let b = 0; b < 12; b++) {
+      if ((s % 2) === (b % 2)) {
+        const gz = STEMS[s] + BRANCHES[b];
+        if (ANLU[STEMS[s]] === BRANCHES[b] && !ANLU_DAY_GZ.includes(gz)) {
+          otherSelfAnluCount++;
+        }
+      }
+    }
+  }
+  eq('除七大暗禄日外无其他自坐暗禄柱', otherSelfAnluCount, 0);
+
+  // ── 32.3 命盘神煞实测：丙申日自坐暗禄兼暗禄日 ──
+  const c1 = castChart({ year: 2000, month: 2, day: 8, hour: 12 }); // 庚辰 戊寅 丙申 甲午
+  const shensha1 = c1.shensha;
+  const anluItem1 = shensha1.find((s) => s.name === '暗禄');
+  const anluDayItem1 = shensha1.find((s) => s.name === '暗禄日');
+  ok('丙申日检出暗禄神煞', !!anluItem1, '');
+  ok('丙申日检出暗禄日神煞', !!anluDayItem1, '');
+  ok('暗禄神煞落宫包含日', anluItem1?.positions.includes('日'), '');
+  ok('暗禄日落宫为日柱', anluDayItem1?.positions.includes('日柱'), '');
+  eq('暗禄吉凶定性为吉', anluItem1?.nature, '吉');
+  eq('暗禄日吉凶定性为吉', anluDayItem1?.nature, '吉');
+  eq('shenshaNature暗禄为吉', shenshaNature('暗禄'), '吉');
+  eq('shenshaNature暗禄日为吉', shenshaNature('暗禄日'), '吉');
+
+  // 丁未暗禄日命造验证
+  const c2 = castChart({ year: 2000, month: 2, day: 19, hour: 12 }); // 庚辰 戊寅 丁未 丙午
+  const anlu2 = c2.shensha.find((s) => s.name === '暗禄');
+  const anluDay2 = c2.shensha.find((s) => s.name === '暗禄日');
+  ok('丁未日检出暗禄', !!anlu2, '');
+  ok('丁未日检出暗禄日', !!anluDay2, '');
 }
 
 console.log('');

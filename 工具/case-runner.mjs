@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { STEMS, BRANCHES, castChart, gzRelations } from '../核心/engine.mjs';
+import { STEMS, BRANCHES, castChart, gzRelations, shenshaOf } from '../核心/engine.mjs';
 import {
   tiyongRouteOf, canControlOf, canTransformOf, canBindOf,
   protectionChainOf, youJiuOf, fanwangOf, xiangzhanOf, siXiangOf,
@@ -118,6 +118,11 @@ for (const c of casesToRun) {
     },
   } : castChart(c.盘.birth);
   if (!chart.relations) chart.relations = gzRelations(chart.pillars, null);
+  if (!chart.shensha) {
+    const dayStemIdx = STEMS.indexOf(chart.pillars[2].stem);
+    const yearStemIdx = STEMS.indexOf(chart.pillars[0].stem);
+    chart.shensha = shenshaOf(chart.pillars, dayStemIdx, yearStemIdx, '男');
+  }
   const yongArg = c.期望.用神五行 ?? (Array.isArray(c.期望.用神) ? c.期望.用神[0] : null);
   const jiArg = Array.isArray(c.期望.忌神) ? c.期望.忌神[0] : null;
 
@@ -434,6 +439,27 @@ for (const c of casesToRun) {
       failedAssertions += 1;
       console.log(`  ✗ [反吟判定] 期望: ${c.期望.反吟判定} != 实际: ${act}`);
       failureDetails.push({ id: c.id, item: '反吟判定', exp: c.期望.反吟判定, act, p: c.判据 });
+    }
+  }
+
+  // 断言 19: 暗禄判定 (D-033 裁定)
+  if (typeof c.期望.暗禄 !== 'undefined') {
+    totalAssertions += 1;
+    const hasAnlu = chart.shensha?.some((s) => s.name === '暗禄');
+    const hasAnluDay = chart.shensha?.some((s) => s.name === '暗禄日');
+    let act = '无暗禄';
+    if (hasAnlu && hasAnluDay) act = '暗禄兼暗禄日';
+    else if (hasAnluDay) act = '暗禄日';
+    else if (hasAnlu) act = '有暗禄';
+
+    const ok = act === c.期望.暗禄;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [暗禄] 期望: ${c.期望.暗禄} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [暗禄] 期望: ${c.期望.暗禄} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '暗禄', exp: c.期望.暗禄, act, p: c.判据 });
     }
   }
 
