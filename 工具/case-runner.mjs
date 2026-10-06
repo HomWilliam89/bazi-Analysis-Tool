@@ -179,6 +179,22 @@ for (const c of casesToRun) {
     }
   }
 
+  // 断言 3b: 所从之势 (D-015 裁定)
+  if (typeof c.期望.所从之势 !== 'undefined') {
+    totalAssertions += 1;
+    const act = res.从格改判?.所从之势 ?? '—';
+    const ok = act === c.期望.所从之势;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [所从之势] 期望: ${c.期望.所从之势} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [所从之势] 期望: ${c.期望.所从之势} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '所从之势', exp: c.期望.所从之势, act, p: c.判据 });
+    }
+  }
+
+
   // 断言 4: 护卫状态
   if (typeof c.期望.护卫状态 !== 'undefined') {
     totalAssertions += 1;
