@@ -18,6 +18,7 @@ import {
   powerOf, canControlOf, canTransformOf, canBindOf,
   SI_XIANG_WUXING, SI_XIANG_YUAN, SI_XIANG_MONTH_SYSTEMS, siXiangOf, genWeightOf, youJiuOf,
   STEM_BRANCH_SELF_COMBINE, BRANCH_HIDDEN_COMBINE, gzRelations, selfHiddenCombineOf,
+  BRANCH_HALF_COMBINE, BRANCH_EXTINCTION, JIELU_KONGWANG,
 } from './engine.mjs';
 
 /** 由 "辛巳" 之类的干支串造出 engine 各原语所需的柱对象数组 */
@@ -2312,6 +2313,68 @@ console.log('=== 30. 干支自合与地支暗合识别（P-015 · D-029 裁定�
   const c5 = { pillars: pillarsOf('甲子', '丙寅', '戊辰', '庚申') };
   const r5 = selfHiddenCombineOf(c5);
   eq('纯正盘判为无暗合', r5.判定, '无暗合');
+}
+
+{
+  console.log('=== 31. 核心干支关系与空亡细分（鸳鸯合 · 反吟伏吟 · 半合 · 相绝 · 虚拱 · 空亡细分 · D-035 裁定）===');
+
+  // ── 31.1 鸳鸯合（天地德合） ──
+  const relYy = gzRelations(pillarsOf('甲子', '己丑', '丙寅', '丁卯'), null);
+  ok('检出鸳鸯合字段存在', Array.isArray(relYy['鸳鸯合']), '');
+  eq('甲子见己丑检出 1 组鸳鸯合', relYy['鸳鸯合'].length, 1);
+  eq('鸳鸯合对', relYy['鸳鸯合'][0].pair, '年甲子 — 月己丑');
+  eq('天合内容', relYy['鸳鸯合'][0].天合, '甲己合化土');
+  eq('地合内容', relYy['鸳鸯合'][0].地合, '子丑合化土');
+
+  // ── 31.2 反吟（天冲地冲 / 天克地冲）与伏吟 ──
+  // 天冲地冲：甲子见庚午
+  const relFy1 = gzRelations(pillarsOf('甲子', '庚午', '丙寅', '丁卯'), null);
+  ok('检出反吟字段存在', Array.isArray(relFy1['反吟']), '');
+  eq('甲子见庚午反吟数', relFy1['反吟'].length, 1);
+  eq('甲子见庚午类型为天冲地冲', relFy1['反吟'][0].type, '天冲地冲');
+  // 天克地冲：甲子见戊午（戊甲克，子午冲）
+  const relFy2 = gzRelations(pillarsOf('甲子', '戊午', '丙寅', '丁卯'), null);
+  eq('甲子见戊午反吟数', relFy2['反吟'].length, 1);
+  eq('甲子见戊午类型为天克地冲', relFy2['反吟'][0].type, '天克地冲');
+  // 伏吟：甲子见甲子
+  const relVy = gzRelations(pillarsOf('甲子', '甲子', '丙寅', '丁卯'), null);
+  ok('检出伏吟字段存在', Array.isArray(relVy['伏吟']), '');
+  eq('甲子见甲子检出 1 组伏吟', relVy['伏吟'].length, 1);
+  eq('伏吟干支', relVy['伏吟'][0].gz, '甲子');
+
+  // ── 31.3 地支半合（生地半合、墓地半合、拱合局） ──
+  const relHalf = gzRelations(pillarsOf('壬申', '壬子', '丙辰', '戊戌'), null);
+  ok('检出地支半合字段存在', Array.isArray(relHalf['地支半合']), '');
+  ok('包含申子生地半合水局', relHalf['地支半合'].some((x) => x.pair === '年申 — 月子' && x.type === '生地半合' && x.局 === '水局'), '');
+  ok('包含子辰墓地半合水局', relHalf['地支半合'].some((x) => x.pair === '月子 — 日辰' && x.type === '墓地半合' && x.局 === '水局'), '');
+  ok('包含申辰拱合水局（拱子）', relHalf['地支半合'].some((x) => x.pair === '年申 — 日辰' && x.type === '拱合局' && x.拱 === '子'), '');
+  eq('半合常量库总条目数', Object.keys(BRANCH_HALF_COMBINE).length, 24);
+
+  // ── 31.4 地支相绝（四绝：寅酉、卯申、午亥、子巳） ──
+  const relExt = gzRelations(pillarsOf('甲寅', '乙酉', '丙子', '丁巳'), null);
+  ok('检出地支相绝字段存在', Array.isArray(relExt['地支相绝']), '');
+  ok('检出寅酉绝', relExt['地支相绝'].some((x) => x.绝 === '寅酉绝'), '');
+  ok('检出子巳绝', relExt['地支相绝'].some((x) => x.绝 === '子巳绝'), '');
+  eq('相绝常量库总条目数', Object.keys(BRANCH_EXTINCTION).length, 8);
+
+  // ── 31.5 虚邀暗夹（拱禄、拱贵、地支暗夹） ──
+  // 癸丑见癸亥（日柱癸丑、时柱癸亥相邻拱子禄）
+  const relGongLu = gzRelations(pillarsOf('甲寅', '丙寅', '癸亥', '癸丑'), null);
+  ok('检出虚邀暗夹字段存在', Array.isArray(relGongLu['虚邀暗夹']), '');
+  ok('检出相邻虚拱子禄（拱禄）', relGongLu['虚邀暗夹'].some((x) => x.夹 === '子' && x.格局.includes('拱禄')), '');
+
+  // 甲寅见甲子（日柱甲寅、时柱甲子相邻拱丑天乙贵人）
+  const relGongGui = gzRelations(pillarsOf('丙申', '戊戌', '甲寅', '甲子'), null);
+  ok('检出相邻虚拱丑贵（拱贵）', relGongGui['虚邀暗夹'].some((x) => x.夹 === '丑' && x.格局.includes('拱贵')), '');
+
+  // ── 31.6 空亡细分结构（互换空亡、截路空亡、四大空亡） ──
+  const chartDemo = castChart({ year: 1984, month: 10, day: 5, hour: 10 });
+  ok('chart.void 包含互换空亡对象', typeof chartDemo.void.mutual === 'object', '');
+  ok('chart.void 包含截路空亡对象', typeof chartDemo.void.jielu === 'object', '');
+  ok('chart.void 包含四大空亡对象', typeof chartDemo.void.fourMajor === 'object', '');
+  eq('甲日截路空亡包含申与酉', JIELU_KONGWANG['甲'].includes('申') && JIELU_KONGWANG['甲'].includes('酉'), true);
+  eq('己日截路空亡包含申与酉', JIELU_KONGWANG['己'].includes('申') && JIELU_KONGWANG['己'].includes('酉'), true);
+  eq('戊日截路空亡包含子与丑', JIELU_KONGWANG['戊'].includes('子') && JIELU_KONGWANG['戊'].includes('丑'), true);
 }
 
 console.log('');

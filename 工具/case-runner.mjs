@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { STEMS, BRANCHES, castChart } from '../核心/engine.mjs';
+import { STEMS, BRANCHES, castChart, gzRelations } from '../核心/engine.mjs';
 import {
   tiyongRouteOf, canControlOf, canTransformOf, canBindOf,
   protectionChainOf, youJiuOf, fanwangOf, xiangzhanOf, siXiangOf,
@@ -117,6 +117,7 @@ for (const c of casesToRun) {
       bornMonthBranch: c.盘.ganzhi[1][1],
     },
   } : castChart(c.盘.birth);
+  if (!chart.relations) chart.relations = gzRelations(chart.pillars, null);
   const yongArg = c.期望.用神五行 ?? (Array.isArray(c.期望.用神) ? c.期望.用神[0] : null);
   const jiArg = Array.isArray(c.期望.忌神) ? c.期望.忌神[0] : null;
 
@@ -403,6 +404,36 @@ for (const c of casesToRun) {
       failedAssertions += 1;
       console.log(`  ✗ [暗合判定] 期望: ${c.期望.暗合判定} != 实际: ${act}`);
       failureDetails.push({ id: c.id, item: '暗合判定', exp: c.期望.暗合判定, act, p: c.判据 });
+    }
+  }
+
+  // 断言 17: 鸳鸯合判定 (D-035 裁定)
+  if (typeof c.期望.鸳鸯合 !== 'undefined') {
+    totalAssertions += 1;
+    const act = (chart.relations?.鸳鸯合?.length > 0) ? '有鸳鸯合' : '无鸳鸯合';
+    const ok = act === c.期望.鸳鸯合;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [鸳鸯合] 期望: ${c.期望.鸳鸯合} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [鸳鸯合] 期望: ${c.期望.鸳鸯合} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '鸳鸯合', exp: c.期望.鸳鸯合, act, p: c.判据 });
+    }
+  }
+
+  // 断言 18: 反吟判定 (D-035 裁定)
+  if (typeof c.期望.反吟判定 !== 'undefined') {
+    totalAssertions += 1;
+    const act = (chart.relations?.反吟?.length > 0) ? '有反吟' : '无反吟';
+    const ok = act === c.期望.反吟判定;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [反吟判定] 期望: ${c.期望.反吟判定} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [反吟判定] 期望: ${c.期望.反吟判定} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '反吟判定', exp: c.期望.反吟判定, act, p: c.判据 });
     }
   }
 

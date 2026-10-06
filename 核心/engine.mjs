@@ -300,6 +300,64 @@ export const BRANCH_HIDDEN_COMBINE = {
   亥午: { 合: '丁壬/甲己暗合', note: '午亥暗合，水火既济，君臣暗会通情' },
 };
 
+/** 地支半三合（生旺半合、墓旺半合）与拱合局（D-035 裁定） */
+export const BRANCH_HALF_COMBINE = {
+  // 水局（申子辰）
+  申子: { type: '生地半合', 局: '水局', 化: '水', note: '生旺半合，水势汇聚，向心力强' },
+  子申: { type: '生地半合', 局: '水局', 化: '水', note: '生旺半合，水势汇聚，向心力强' },
+  子辰: { type: '墓地半合', 局: '水局', 化: '水', note: '墓旺半合，水聚库门，归宿有力' },
+  辰子: { type: '墓地半合', 局: '水局', 化: '水', note: '墓旺半合，水聚库门，归宿有力' },
+  申辰: { type: '拱合局', 局: '水局', 拱: '子', 化: '水', note: '长生与墓库虚拱中神子水' },
+  辰申: { type: '拱合局', 局: '水局', 拱: '子', 化: '水', note: '长生与墓库虚拱中神子水' },
+  // 火局（寅午戌）
+  寅午: { type: '生地半合', 局: '火局', 化: '火', note: '生旺半合，木火通明，炎上之势' },
+  午寅: { type: '生地半合', 局: '火局', 化: '火', note: '生旺半合，木火通明，炎上之势' },
+  午戌: { type: '墓地半合', 局: '火局', 化: '火', note: '墓旺半合，火土相合，敛聚成库' },
+  戌午: { type: '墓地半合', 局: '火局', 化: '火', note: '墓旺半合，火土相合，敛聚成库' },
+  寅戌: { type: '拱合局', 局: '火局', 拱: '午', 化: '火', note: '长生与墓库虚拱中神午火' },
+  戌寅: { type: '拱合局', 局: '火局', 拱: '午', 化: '火', note: '长生与墓库虚拱中神午火' },
+  // 金局（巳酉丑）
+  巳酉: { type: '生地半合', 局: '金局', 化: '金', note: '生旺半合，火金淬砺，成器之象' },
+  酉巳: { type: '生地半合', 局: '金局', 化: '金', note: '生旺半合，火金淬砺，成器之象' },
+  酉丑: { type: '墓地半合', 局: '金局', 化: '金', note: '墓旺半合，湿土生金，坚刚沉敛' },
+  丑酉: { type: '墓地半合', 局: '金局', 化: '金', note: '墓旺半合，湿土生金，坚刚沉敛' },
+  巳丑: { type: '拱合局', 局: '金局', 拱: '酉', 化: '金', note: '长生与墓库虚拱中神酉金' },
+  丑巳: { type: '拱合局', 局: '金局', 拱: '酉', 化: '金', note: '长生与墓库虚拱中神酉金' },
+  // 木局（亥卯未）
+  亥卯: { type: '生地半合', 局: '木局', 化: '木', note: '生旺半合，水生木旺，春气勃发' },
+  卯亥: { type: '生地半合', 局: '木局', 化: '木', note: '生旺半合，水生木旺，春气勃发' },
+  卯未: { type: '墓地半合', 局: '木局', 化: '木', note: '墓旺半合，木入库藏，意向聚合' },
+  未卯: { type: '墓地半合', 局: '木局', 化: '木', note: '墓旺半合，木入库藏，意向聚合' },
+  亥未: { type: '拱合局', 局: '木局', 拱: '卯', 化: '木', note: '长生与墓库虚拱中神卯木' },
+  未亥: { type: '拱合局', 局: '木局', 拱: '卯', 化: '木', note: '长生与墓库虚拱中神卯木' },
+};
+
+/** 地支相绝（四大六绝：寅酉、卯申、午亥、子巳，D-035 裁定） */
+export const BRANCH_EXTINCTION = {
+  寅酉: { 绝: '寅酉绝', note: '金绝于寅，木绝于酉，上下交绝，情义反背' },
+  酉寅: { 绝: '寅酉绝', note: '金绝于寅，木绝于酉，上下交绝，情义反背' },
+  卯申: { 绝: '卯申绝', note: '金绝于卯，木绝于申，暗带乙庚合，明绝暗煎' },
+  申卯: { 绝: '卯申绝', note: '金绝于卯，木绝于申，暗带乙庚合，明绝暗煎' },
+  午亥: { 绝: '午亥绝', note: '水绝于午，火绝于亥，暗带丁壬/甲己合，明绝暗会' },
+  亥午: { 绝: '午亥绝', note: '水绝于午，火绝于亥，暗带丁壬/甲己合，明绝暗会' },
+  子巳: { 绝: '子巳绝', note: '火绝于子，水绝于巳，上下交灭，水火死绝' },
+  巳子: { 绝: '子巳绝', note: '火绝于子，水绝于巳，上下交灭，水火死绝' },
+};
+
+/** 截路空亡（以日干查时支，D-035 裁定） */
+export const JIELU_KONGWANG = {
+  甲: ['申', '酉'],
+  己: ['申', '酉'],
+  乙: ['午', '未'],
+  庚: ['午', '未'],
+  丙: ['辰', '巳'],
+  辛: ['辰', '巳'],
+  丁: ['寅', '卯'],
+  壬: ['寅', '卯'],
+  戊: ['子', '丑'],
+  癸: ['子', '丑'],
+};
+
 /** 地支三会方 */
 const BRANCH_DIRECTION = [
   { members: ['寅', '卯', '辰'], element: '木', name: '东方木' },
@@ -909,7 +967,11 @@ export function gzRelations(pillars, luckPillar) {
   const branches = pillars.map((p) => BRANCHES[p.branchIndex]);
   if (luckPillar) { stems.push(STEMS[luckPillar.stemIndex]); branches.push(BRANCHES[luckPillar.branchIndex]); names.push('大运'); }
 
-  const out = { 天干五合: [], 天干相冲: [], 天干相克: [], 地支六合: [], 地支三合: [], 地支三会: [], 地支六冲: [], 地支相刑: [], 地支相害: [], 地支相破: [], 干支自合: [], 地支暗合: [], 天干地支同柱: [] };
+  const out = {
+    天干五合: [], 天干相冲: [], 天干相克: [],
+    地支六合: [], 地支半合: [], 地支三合: [], 地支三会: [], 地支六冲: [], 地支相刑: [], 地支相害: [], 地支相破: [], 地支相绝: [],
+    干支自合: [], 地支暗合: [], 鸳鸯合: [], 反吟: [], 伏吟: [], 虚邀暗夹: [], 天干地支同柱: []
+  };
 
   // 天干
   for (let i = 0; i < stems.length; i++) {
@@ -941,8 +1003,115 @@ export function gzRelations(pillars, luckPillar) {
           note: BRANCH_HIDDEN_COMBINE[key].note,
         });
       }
+      // D-035: 地支半合（生地半合、墓地半合、拱合局）
+      if (BRANCH_HALF_COMBINE[key]) {
+        const bh = BRANCH_HALF_COMBINE[key];
+        out.地支半合.push({
+          pair: `${names[i]}${a} — ${names[j]}${b}`,
+          type: bh.type,
+          局: bh.局,
+          化: bh.化,
+          ...(bh.拱 ? { 拱: bh.拱 } : {}),
+          note: bh.note,
+        });
+      }
+      // D-035: 地支相绝（四绝）
+      if (BRANCH_EXTINCTION[key]) {
+        const ext = BRANCH_EXTINCTION[key];
+        out.地支相绝.push({
+          pair: `${names[i]}${a} — ${names[j]}${b}`,
+          绝: ext.绝,
+          note: ext.note,
+        });
+      }
     }
   }
+
+  // 整柱关系：鸳鸯合（天合地合）、反吟（天克地冲）、伏吟（干支相同）（D-035 裁定）
+  for (let i = 0; i < stems.length; i++) {
+    for (let j = i + 1; j < stems.length; j++) {
+      const aS = stems[i], bS = stems[j];
+      const aB = branches[i], bB = branches[j];
+      const aGz = aS + aB, bGz = bS + bB;
+
+      // 鸳鸯合（天地德合）
+      const sKey = STEM_COMBINE[aS + bS] ? aS + bS : STEM_COMBINE[bS + aS] ? bS + aS : null;
+      const bKey = BRANCH_COMBINE[aB + bB] ? aB + bB : BRANCH_COMBINE[bB + aB] ? bB + aB : null;
+      if (sKey && bKey) {
+        out.鸳鸯合.push({
+          pair: `${names[i]}${aGz} — ${names[j]}${bGz}`,
+          天合: `${aS}${bS}合化${STEM_COMBINE[sKey]}`,
+          地合: `${aB}${bB}合化${BRANCH_COMBINE[bKey]}`,
+          note: '天合地合（鸳鸯合），天地德合，情深意笃，两柱气势紧密交融',
+        });
+      }
+
+      // 反吟（天克地冲 / 天冲地冲）
+      const bClash = BRANCH_CLASH.includes(aB + bB) || BRANCH_CLASH.includes(bB + aB);
+      if (bClash) {
+        const sClash = STEM_CLASH.includes(aS + bS) || STEM_CLASH.includes(bS + aS);
+        const ea = STEM_ELEMENT[STEMS.indexOf(aS)], eb = STEM_ELEMENT[STEMS.indexOf(bS)];
+        const sKe = (KE[ea] === eb) || (KE[eb] === ea);
+        if (sClash) {
+          out.反吟.push({
+            pair: `${names[i]}${aGz} — ${names[j]}${bGz}`,
+            type: '天冲地冲',
+            干: `${aS}${bS}冲`,
+            支: `${aB}${bB}冲`,
+            note: '天冲地冲（反吟），激荡剧烈，根基拔摇',
+          });
+        } else if (sKe) {
+          out.反吟.push({
+            pair: `${names[i]}${aGz} — ${names[j]}${bGz}`,
+            type: '天克地冲',
+            干: KE[ea] === eb ? `${aS}克${bS}` : `${bS}克${aS}`,
+            支: `${aB}${bB}冲`,
+            note: '天克地冲（反吟），上下交伐，动荡不宁',
+          });
+        }
+      }
+
+      // 伏吟（干支相同）
+      if (aS === bS && aB === bB) {
+        out.伏吟.push({
+          pair: `${names[i]}${aGz} — ${names[j]}${bGz}`,
+          gz: aGz,
+          note: '干支并临伏吟，内外重叠，事多滞涩反复',
+        });
+      }
+    }
+  }
+
+  // 虚邀暗夹（相邻柱地支隔位虚拱，含拱禄、拱贵、暗夹刃，D-035 裁定）
+  const dayStem = pillars.length > 2 ? STEMS[pillars[2].stemIndex] : stems[0];
+  const yearStem = stems[0];
+  for (let i = 0; i < branches.length - 1; i++) {
+    const b1 = branches[i], b2 = branches[i + 1];
+    const idx1 = BRANCHES.indexOf(b1), idx2 = BRANCHES.indexOf(b2);
+    let clamped = null;
+    if ((idx1 + 2) % 12 === idx2) {
+      clamped = BRANCHES[(idx1 + 1) % 12];
+    } else if ((idx2 + 2) % 12 === idx1) {
+      clamped = BRANCHES[(idx2 + 1) % 12];
+    }
+    if (clamped) {
+      const tags = [];
+      if (LUSHEN[dayStem] === clamped) tags.push('拱禄');
+      if (TIANYI[dayStem]?.includes(clamped) || TIANYI[yearStem]?.includes(clamped)) tags.push('拱贵');
+      if (YANGREN[dayStem] === clamped) tags.push('夹刃');
+      out.虚邀暗夹.push({
+        pair: `${names[i]}${b1} — ${names[i + 1]}${b2}`,
+        夹: clamped,
+        格局: tags.length ? tags.join('、') : '地支虚夹',
+        note: tags.includes('拱禄')
+          ? `相邻虚拱「${clamped}」禄（拱禄格）`
+          : tags.includes('拱贵')
+          ? `相邻虚拱「${clamped}」天乙贵人（拱贵格）`
+          : `相邻两支隔位虚拱「${clamped}」`,
+      });
+    }
+  }
+
   // 干支自合（七大柱：戊子、壬午、丁亥、辛巳、己亥、癸巳、甲午，D-029 裁定）
   for (let i = 0; i < stems.length; i++) {
     const gz = stems[i] + branches[i];
@@ -1191,6 +1360,69 @@ export function castChart(input) {
     inYearVoid: yearVoid.includes(BRANCHES[p.branchIndex]),
   }));
 
+  // D-035: 互换空亡（年日互入空亡、日时互入空亡）
+  const yearBranchStr = BRANCHES[pillars[0].branchIndex];
+  const dayBranchStr = BRANCHES[pillars[2].branchIndex];
+  const hourBranchStr = BRANCHES[pillars[3].branchIndex];
+  const hourVoid = xun[3].voidBranches;
+
+  const yearDayMutual = dayVoid.includes(yearBranchStr) && yearVoid.includes(dayBranchStr);
+  const dayHourMutual = hourVoid.includes(dayBranchStr) && dayVoid.includes(hourBranchStr);
+
+  // D-035: 截路空亡（日干查时支）
+  const jieluBranches = JIELU_KONGWANG[STEMS[dayStemIndex]] ?? [];
+  const hitJielu = jieluBranches.includes(hourBranchStr);
+
+  // D-035: 四大空亡（纳音空亡：甲子/甲午旬无水，甲寅/甲申旬无金）
+  const dayXunHead = xun[2].xunHead;
+  let fourMajorMissing = null;
+  if (dayXunHead === 0 || dayXunHead === 30) {
+    fourMajorMissing = '水';
+  } else if (dayXunHead === 20 || dayXunHead === 50) {
+    fourMajorMissing = '金';
+  }
+  const hitFourMajorPillars = [];
+  if (fourMajorMissing) {
+    for (let i = 0; i < 4; i++) {
+      if (nayin[i].element === fourMajorMissing) {
+        hitFourMajorPillars.push(`${names[i]}（${nayin[i].name}）`);
+      }
+    }
+  }
+
+  const voidDetails = {
+    dayVoid,
+    yearVoid,
+    hits: voidHits,
+    mutual: {
+      yearDay: yearDayMutual,
+      dayHour: dayHourMutual,
+      note: yearDayMutual && dayHourMutual
+        ? '年日互换空亡兼日时互换空亡'
+        : yearDayMutual
+        ? '年日互换空亡（年入日空，日入年空）'
+        : dayHourMutual
+        ? '日时互换空亡（日入时空，时入日空）'
+        : '无互换空亡',
+    },
+    jielu: {
+      hit: hitJielu,
+      pillar: '时柱',
+      gz: gzName(pillars[3].index),
+      note: hitJielu ? `时支「${hourBranchStr}」落入${STEMS[dayStemIndex]}日截路空亡` : '无截路空亡',
+    },
+    fourMajor: {
+      hit: hitFourMajorPillars.length > 0,
+      missingElement: fourMajorMissing,
+      hitPillars: hitFourMajorPillars,
+      note: hitFourMajorPillars.length > 0
+        ? `日柱落${xun[2].xun}旬，四大空亡为「${fourMajorMissing}空」；命中 ${hitFourMajorPillars.join('、')} 犯四大空亡`
+        : fourMajorMissing
+        ? `日柱落${xun[2].xun}旬，四大空亡为「${fourMajorMissing}空」；局中纳音未犯`
+        : '日柱所在旬纳音五行俱全，不犯四大空亡',
+    },
+  };
+
   const shensha = computeShenSha(pillars, dayStemIndex, yearStemIndex, monthBranchIndex, dayBranchIndex, yearBranchIndex, gender)
     .map((s) => ({ ...s, nature: shenshaNature(s.name) }));
 
@@ -1309,7 +1541,7 @@ export function castChart(input) {
     当令五行: 司令.司令五行,
     当令据: '司令（人元司事）',
     },
-    void: { dayVoid, yearVoid, hits: voidHits },
+    void: voidDetails,
     shensha,
     strength,
     relations,
@@ -1369,6 +1601,18 @@ export function formatChart(chart) {
   L.push(`**旬空**：日柱旬空 ${chart.void.dayVoid.join('')}；年柱旬空 ${chart.void.yearVoid.join('')}`);
   const vh = chart.void.hits.filter((h) => h.inDayVoid).map((h) => `${h.pillar}${h.branch}`);
   L.push(`**落空之支**：${vh.length ? vh.join('、') : '无'}`);
+  if (chart.void.mutual?.yearDay || chart.void.mutual?.dayHour) {
+    const mNotes = [];
+    if (chart.void.mutual.yearDay) mNotes.push('年日互换空亡');
+    if (chart.void.mutual.dayHour) mNotes.push('日时互换空亡');
+    L.push(`**互换空亡**：${mNotes.join('、')}`);
+  }
+  if (chart.void.jielu?.hit) {
+    L.push(`**截路空亡**：${chart.void.jielu.pillar} ${chart.void.jielu.gz} 临截路空亡`);
+  }
+  if (chart.void.fourMajor?.hit) {
+    L.push(`**四大空亡**：纳音犯${chart.void.fourMajor.missingElement}空（${chart.void.fourMajor.hitPillars.join('、')}）`);
+  }
   L.push('');
 
   L.push('## 二、五行力量');
@@ -1401,16 +1645,22 @@ export function formatChart(chart) {
     for (const x of arr) L.push(`- ${fmt(x)}`);
     L.push('');
   };
+  showRel('整柱天地鸳鸯合', r.鸳鸯合, (x) => `${x.pair}（${x.天合}，${x.地合}）：${x.note}`);
+  showRel('整柱反吟（天克地冲）', r.反吟, (x) => `${x.pair}（${x.type}·${x.干}·${x.支}）：${x.note}`);
+  showRel('整柱伏吟（干支相同）', r.伏吟, (x) => `${x.pair}（${x.gz}伏吟）：${x.note}`);
   showRel('天干五合', r.天干五合, (x) => `${x.pair}（化${x.化}）`);
   showRel('天干相冲', r.天干相冲, (x) => x.pair);
   showRel('天干相克', r.天干相克, (x) => x.pair);
   showRel('地支六合', r.地支六合, (x) => `${x.pair}（化${x.化}）`);
+  showRel('地支半合 / 拱合', r.地支半合, (x) => `${x.pair}（${x.type}·${x.局}·化${x.化}${x.拱 ? `·拱${x.拱}` : ''}）：${x.note}`);
   showRel('地支三合', r.地支三合, (x) => `${x.局}：${x.positions}`);
   showRel('地支三会', r.地支三会, (x) => `${x.方}：${x.positions}`);
   showRel('地支六冲', r.地支六冲, (x) => x.pair);
   showRel('地支相刑', r.地支相刑, (x) => `${x.刑}：${x.members}（${x.positions}）${x.争议 ? `　⚠口径有争议（${x.口径}）：${x.note}` : ''}`);
   showRel('地支相害（穿）', r.地支相害, (x) => x.pair);
   showRel('地支相破', r.地支相破, (x) => x.pair);
+  showRel('地支相绝', r.地支相绝, (x) => `${x.pair}（${x.绝}）：${x.note}`);
+  showRel('虚邀暗夹', r.虚邀暗夹, (x) => `${x.pair} 虚夹「${x.夹}」（${x.格局}）：${x.note}`);
   showRel('干支自合', r.干支自合, (x) => `${x.pillar}柱 ${x.gz}（${x.合}，暗藏${x.藏干}）：${x.note}`);
   showRel('地支暗合', r.地支暗合, (x) => `${x.pair}（${x.合}）：${x.note}`);
   L.push('**同柱干支关系**');
