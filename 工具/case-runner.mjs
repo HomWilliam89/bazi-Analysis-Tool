@@ -8,7 +8,7 @@ import { STEMS, BRANCHES, castChart, gzRelations, shenshaOf } from '../核心/en
 import {
   tiyongRouteOf, canControlOf, canTransformOf, canBindOf,
   protectionChainOf, youJiuOf, fanwangOf, xiangzhanOf, siXiangOf,
-  selfHiddenCombineOf,
+  selfHiddenCombineOf, chengzaiReassess,
 } from '../核心/tiyong.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -547,6 +547,22 @@ for (const c of casesToRun) {
       failedAssertions += 1;
       console.log(`  ✗ [从儿比劫] 期望: ${c.期望.从儿比劫} != 实际: ${act}`);
       failureDetails.push({ id: c.id, item: '从儿比劫', exp: c.期望.从儿比劫, act, p: c.判据 });
+    }
+  }
+
+  // 断言 24: 夺根降级判定 (D-040 裁定 · 判据 P-019)
+  if (typeof c.期望.夺根降级 !== 'undefined') {
+    totalAssertions += 1;
+    const czRes = chengzaiReassess(chart, { 岁运: c.期望.岁运 });
+    const act = czRes.指定岁运?.夺根?.降级定性 ?? '无';
+    const ok = act === c.期望.夺根降级;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [夺根降级] 期望: ${c.期望.夺根降级} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [夺根降级] 期望: ${c.期望.夺根降级} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '夺根降级', exp: c.期望.夺根降级, act, p: c.判据 });
     }
   }
 

@@ -22,6 +22,7 @@ import {
   ANLU, ANLU_DAY_GZ, LUSHEN, shenshaNature,
   DUAL_IMAGE_LIBRARY, dualImageMatrixOf,
   arbitrateGanzhiForces, coverageOf, congErAnalysisOf,
+  chengzaiReassess,
 } from './engine.mjs';
 
 /** 由 "辛巳" 之类的干支串造出 engine 各原语所需的柱对象数组 */
@@ -2573,6 +2574,40 @@ console.log('=== 35. D-032 / P-016：从儿格见比劫判定与流通归宿法�
   ok('tiyongRouteOf 返回从儿分析对象', !!routeRes.从儿分析, '');
   eq('tiyongRouteOf 挂接从儿分析属于从儿', routeRes.从儿分析.属于从儿, true);
   eq('tiyongRouteOf 挂接比劫判定角色', routeRes.从儿分析.比劫判定.角色, '顺生为喜');
+}
+
+console.log('=== 36. D-040 / P-019：岁运逆向夺根降级动态重估 ===');
+{
+  // ── 36.1 岁运冲拔禄神夺根尽失实测（《千里命稿》秋乙坐卯遇辛酉运名造） ──
+  // 癸酉 辛酉 乙卯 丙戌（乙木坐卯专恃禄根抗杀，辛酉大运两酉冲卯拔根）
+  const cDuoGen = {
+    pillars: pillarsOf('癸酉', '辛酉', '乙卯', '丙戌'),
+    dayMaster: { stem: '乙', element: '木', bornMonthBranch: '酉' },
+  };
+  const cz1 = chengzaiReassess(cDuoGen, { 岁运: '辛酉' });
+  eq('原局判定为可任', cz1.原局判, '可任');
+  eq('辛酉运检测出夺根', cz1.指定岁运.夺根.有夺根, true);
+  eq('辛酉运判定为夺根降级', cz1.指定岁运.夺根.降级定性, '夺根降级');
+  ok('被冲根包含日支卯', cz1.指定岁运.夺根.被冲根.some((x) => x.includes('日支卯')), '');
+  ok('结论点明夺根降级或凶煞攻身', cz1.指定岁运.判.includes('夺根降级'), '');
+
+  // ── 36.2 岁运冲拔阳刃夺根尽失实测（《滴天髓阐微》冬丙坐午遇壬子运名造） ──
+  // 壬申 壬子 丙午 己丑（冬丙坐午专恃阳刃抗杀，壬子运两子冲午拔刃）
+  const cDuoRen = {
+    pillars: pillarsOf('壬申', '壬子', '丙午', '己丑'),
+    dayMaster: { stem: '丙', element: '火', bornMonthBranch: '子' },
+  };
+  const cz2 = chengzaiReassess(cDuoRen, { 岁运: '壬子' });
+  eq('原局判定为可任', cz2.原局判, '可任');
+  eq('壬子运检测出夺根', cz2.指定岁运.夺根.有夺根, true);
+  eq('壬子运判定为夺根降级', cz2.指定岁运.夺根.降级定性, '夺根降级');
+  ok('被冲根包含日支午', cz2.指定岁运.夺根.被冲根.some((x) => x.includes('日支午')), '');
+
+  // ── 36.3 未冲根大运维持原局前提实测 ──
+  const cz3 = chengzaiReassess(cDuoGen, { 岁运: '丙寅' });
+  eq('丙寅运未见冲拔通根', cz3.指定岁运.夺根.有夺根, false);
+  eq('丙寅运降级定性为无', cz3.指定岁运.夺根.降级定性, '无');
+  ok('丙寅运判词维持原局可任前提', cz3.指定岁运.判.includes('运不改前提'), '');
 }
 
 console.log('');
