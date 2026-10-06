@@ -5,13 +5,21 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  STEMS, BRANCHES, STEM_ELEMENT, BRANCH_ELEMENT,
+  STEMS, BRANCHES, STEM_ELEMENT, BRANCH_ELEMENT, ELEMENTS,
   castChart, hiddenStemsOf, tenGod, nayinOf, shenshaOf,
   gzRelations, elementStrength,
 } from './engine.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const 流派目录 = path.join(ROOT, '流派');
+
+// 天干地支汉字至五行汉字之快速映射字典
+export const STEM_TO_ELEMENT = Object.fromEntries(
+  STEMS.map((s, i) => [s, ELEMENTS[STEM_ELEMENT[i]]])
+);
+export const BRANCH_TO_ELEMENT = Object.fromEntries(
+  BRANCHES.map((b, i) => [b, ELEMENTS[BRANCH_ELEMENT[i]]])
+);
 
 const SCHOOL_FILES = [
   { key: 'geju', file: '格局.md', name: '格局派' },
@@ -77,7 +85,7 @@ export function extractChartFeatures(chartInput) {
       })),
       dayMaster: {
         stem: chartInput[2][0],
-        element: STEM_ELEMENT[chartInput[2][0]],
+        element: STEM_TO_ELEMENT[chartInput[2][0]] || '',
         bornMonthBranch: chartInput[1][1],
       },
     };
@@ -90,7 +98,7 @@ export function extractChartFeatures(chartInput) {
   const hourGz = p[3]?.gz || '';
 
   const dayStem = p[2]?.stem || chart.dayMaster?.stem || '';
-  const dayElement = STEM_ELEMENT[dayStem] || '';
+  const dayElement = STEM_TO_ELEMENT[dayStem] || '';
   const monthBranch = p[1]?.branch || chart.dayMaster?.bornMonthBranch || '';
 
   const stems = p.map((x) => x.stem);
@@ -243,7 +251,7 @@ const MATCH_PREDICATES = {
   'S-GJ-007': (f) => (f.exposedTenGods.includes('正印') || f.exposedTenGods.includes('偏印')) && (f.exposedTenGods.includes('正财') || f.exposedTenGods.includes('偏财')),
   'S-GJ-008': (f) => f.exposedTenGods.includes('伤官') && (f.exposedTenGods.includes('正财') || f.exposedTenGods.includes('偏财')),
   'S-GJ-009': (f) => (f.branches[1] === f.luBranch || f.branches[1] === f.renBranch) && (f.exposedTenGods.includes('正官') || f.exposedTenGods.includes('七杀') || f.exposedTenGods.includes('正财')),
-  'S-GJ-011': (f) => f.branches.filter((b) => BRANCH_ELEMENT[b] === f.dayElement).length >= 3,
+  'S-GJ-011': (f) => f.branches.filter((b) => BRANCH_TO_ELEMENT[b] === f.dayElement).length >= 3,
   'S-GJ-013': (f) => f.hasYangRen && (f.exposedTenGods.includes('七杀') || f.exposedTenGods.includes('正官')),
   'S-GJ-014': (f) => ['辰', '戌', '丑', '未'].includes(f.monthBranch),
   'S-GJ-016': (f) => (f.exposedTenGods.includes('正印') || f.exposedTenGods.includes('偏印')) && f.exposedTenGods.includes('正官'),
@@ -298,14 +306,14 @@ const MATCH_PREDICATES = {
   'S-WS-006': (f) => f.exposedTenGods.filter((t) => t.includes('印')).length >= 2,
   'S-WS-009': (f) => (f.exposedTenGods.includes('食神') || f.exposedTenGods.includes('伤官')) && (f.exposedTenGods.includes('正财') || f.exposedTenGods.includes('偏财')),
   'S-WS-010': (f) => (f.exposedTenGods.includes('比肩') || f.exposedTenGods.includes('劫财')) && (f.exposedTenGods.includes('正财') || f.exposedTenGods.includes('偏财')),
-  'S-WS-011': (f) => ['庚', '辛'].includes(f.dayStem) && f.branches.filter((b) => BRANCH_ELEMENT[b] === '土').length >= 2,
+  'S-WS-011': (f) => ['庚', '辛'].includes(f.dayStem) && f.branches.filter((b) => BRANCH_TO_ELEMENT[b] === '土').length >= 2,
   'S-WS-012': (f) => f.exposedTenGods.includes('七杀') && (f.exposedTenGods.includes('食神') || f.exposedTenGods.includes('伤官')),
   'S-WS-014': (f) => ['甲', '乙'].includes(f.dayStem) && f.exposedTenGods.some((t) => t.includes('官') || t.includes('杀')),
   'S-WS-015': (f) => true,
   'S-WS-016': (f) => true,
-  'S-WS-017': (f) => ['丙', '丁'].includes(f.dayStem) && f.branches.filter((b) => BRANCH_ELEMENT[b] === '木').length >= 2,
-  'S-WS-018': (f) => ['戊', '己'].includes(f.dayStem) && f.branches.filter((b) => BRANCH_ELEMENT[b] === '水').length >= 2,
-  'S-WS-019': (f) => ['丙', '丁'].includes(f.dayStem) && f.branches.filter((b) => BRANCH_ELEMENT[b] === '金').length >= 2,
+  'S-WS-017': (f) => ['丙', '丁'].includes(f.dayStem) && f.branches.filter((b) => BRANCH_TO_ELEMENT[b] === '木').length >= 2,
+  'S-WS-018': (f) => ['戊', '己'].includes(f.dayStem) && f.branches.filter((b) => BRANCH_TO_ELEMENT[b] === '水').length >= 2,
+  'S-WS-019': (f) => ['丙', '丁'].includes(f.dayStem) && f.branches.filter((b) => BRANCH_TO_ELEMENT[b] === '金').length >= 2,
   'S-WS-020': (f) => true,
   'S-WS-027': (f) => f.exposedTenGods.includes('正官') && f.exposedTenGods.includes('七杀'),
   'S-WS-028': (f) => f.exposedTenGods.some((t) => t.includes('印')) && f.exposedTenGods.some((t) => t.includes('财')),
