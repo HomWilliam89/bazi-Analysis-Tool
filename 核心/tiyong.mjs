@@ -36,6 +36,7 @@ import {
   五行字,
   parseBirth,
   parseArgs,
+  LUSHEN,
 } from './engine.mjs';
 
 /** 体用路线法四项的可读输出（CLI `--tiyong`） */
@@ -191,6 +192,15 @@ export function formatTiyong(t) {
     L.push('【干支自合与暗合做功】（P-015 · D-029 裁定）');
     L.push(`　判定：**${t.自合暗合.判定}**`);
     L.push(`　说明：${t.自合暗合.说明}`);
+    L.push('');
+  }
+  if (t.双轨意象 && t.双轨意象.条目数 > 0) {
+    L.push('【全干支作用关系 · 双轨意象分析】（D-031 裁定）');
+    L.push(`　总评：${t.双轨意象.总评}`);
+    for (const r of t.双轨意象.关系条目.slice(0, 8)) {
+      L.push(`　· 【${r.类别}】${r.pair} ⇒ **${r.定性}**（${r.依据}）`);
+      L.push(`　　应象：${r.动态应象}`);
+    }
     L.push('');
   }
   L.push('【禁令】');
@@ -2717,6 +2727,253 @@ export function selfHiddenCombineOf(chart, opts = {}) {
 }
 
 /**
+ * 全天干地支作用关系《双轨意象矩阵库》（D-031 裁定）
+ * 拒绝单向褒贬裹挟，每类物理关系均设立【为喜（成全用神/制化忌神）】与【为忌（损伤用神/动摇根基）】双轨应象。
+ */
+export const DUAL_IMAGE_LIBRARY = {
+  地支六冲: {
+    喜象: '除旧布新、破土开局、冲去忌煞、战胜凶顽、破而后立、建功异地',
+    忌象: '拔根倾摇、动荡波折、奔波劳碌、破败损伤、根基溃决、事多反复',
+    出处: '《滴天髓》「旺者冲衰衰者拔，衰神冲旺旺神发」；冲去忌神反为奇',
+  },
+  地支六合: {
+    喜象: '天地交泰、暗掌乾坤、合作共赢、情义和顺、锁住凶煞、积聚资粮',
+    忌象: '贪合忘贵、因私废公、羁绊拖累、合化助忌、泥足深陷、动弹不得',
+    出处: '《渊海子平》「合得官星荣显，合去七杀威权」；若合绊用神则减福',
+  },
+  地支半合: {
+    喜象: '结党聚气、众志成城、虚拱引贵、顺水推舟、聚沙成塔',
+    忌象: '党羽暗聚、暗引凶神、助长忌党、私门结党、牵连拖沓',
+    出处: '《子平真诠》「生旺相聚，墓库归宿，暗助局势」',
+  },
+  地支相刑: {
+    喜象: '煞刃相刑逢制执掌刑柄、权威显赫、出奇制胜、执法立威、军旅功名',
+    忌象: '刑伤破耗、骨肉反目、官非纠葛、暗生摩擦、病痛手术、情义相残',
+    出处: '《三命通会》「君子不刑定不发，若居仕路多腾达」；小人刑则多凶咎',
+  },
+  地支相害: {
+    喜象: '穿倒凶神、破坏忌党、出奇制胜、偏门取贵、快刀斩乱麻',
+    忌象: '暗地掣肘、小人反噬、暗疾潜伏、骨肉离心、背信弃义、恩义尽失',
+    出处: '《盲派与象法》「穿倒禄身寿不长」；穿去凶煞反显偏才之能',
+  },
+  地支相破: {
+    喜象: '打破僵局、破旧立新、除敝改弦、改换门庭、化解胶着',
+    忌象: '暗中损耗、事多缺憾、摩擦内耗、美玉微瑕、晚景破损',
+    出处: '《渊海子平》论破：事有参差，吉神破则减福，凶神破则消灾',
+  },
+  地支相绝: {
+    喜象: '绝处逢生、截断凶党、斩断乱麻、脱离泥潭、向死而生',
+    忌象: '气机断绝、情义反背、根气断灭、因病损折、进退维谷',
+    出处: '《古法三命》「绝处逢生，天地相纽」；绝于凶位则殃害息',
+  },
+  天干五合: {
+    喜象: '羁绊为用、合化生辉、化敌为友、暗通声气、情深意重',
+    忌象: '贪合忘生、用神被绊、志气消沉、因私损公、依附羁留',
+    出处: '《滴天髓》「合去官星留杀清，合去七杀官星纯」；用神逢合失自由',
+  },
+  天干相克: {
+    喜象: '克制凶顽、裁抑过胜、修剪成材、攻伐建威、扫清障碍',
+    忌象: '摧折身主、重压摧残、用神伤损、进退失据、动辄得咎',
+    出处: '《子平真诠》「身旺得官克，如金得火炼」；身弱受克则夭折',
+  },
+  干支自合: {
+    喜象: '自力更生、专心致志、暗得其禄、情向专一、天地归心',
+    忌象: '固步自封、闭门内耗、因私废业、自我纠缠、暗度私情',
+    出处: '《滴天髓》自坐暗合做功；同柱相吸，吉凶视全局主要矛盾为转移',
+  },
+  天地鸳鸯合: {
+    喜象: '同心同德、德行深厚、贵人提携、福庆连绵、天地垂象',
+    忌象: '上下胶着、双重合绊、深陷局中、难以自拔、尾大不掉',
+    出处: '《三命通会》「天地德合，大贵大福」；若合绊真神则终身羁留',
+  },
+  反吟: {
+    喜象: '拨乱反正、剧烈突破、打破死局、雷霆万钧、扭转乾坤',
+    忌象: '天地翻覆、大动倾危、剧震损身、门户倾颓、风波骤起',
+    出处: '《滴天髓》「反吟伏吟泪淋淋」；若天克地冲破除大凶党，反见奇勋',
+  },
+};
+
+/**
+ * **全天干地支作用关系《双轨意象矩阵与动态输出系统》**（D-031 裁定）
+ *
+ * 根据命盘的主要矛盾与用忌统率，对全局检出的物理关系动态定性为【为喜】、【为忌】或【中性】，
+ * 并分别映射建设性喜象与破坏性忌象。
+ *
+ * @param {object} chart
+ * @param {{主要矛盾?: object, 用神五行?: string, 岁运?: string}} [opts]
+ */
+export function dualImageMatrixOf(chart, opts = {}) {
+  const { 主要矛盾 = null, 用神五行 = null, 岁运 = null } = opts;
+  const D = dayMasterOf(chart).element;
+  const dayStem = dayMasterOf(chart).stem;
+  const luBranch = LUSHEN ? LUSHEN[dayStem] : null;
+
+  // 1. 确定全局用神五行
+  let yongEl = 用神五行 ? 五行字(用神五行) : null;
+  if (!yongEl && 主要矛盾?.四之二_取用定案?.改判用神) {
+    yongEl = 五行字(主要矛盾.四之二_取用定案.改判用神);
+  }
+  if (!yongEl) {
+    yongEl = 五行字(tiaohouAssessment(chart)?.用神);
+  }
+
+  // 2. 确定局中忌神/凶党五行
+  let jiElList = [];
+  if (yongEl) {
+    jiElList.push(克我者(yongEl));
+  }
+  if (主要矛盾?.官杀吉凶?.日主担力 === '不可任') {
+    jiElList.push(克我者(D));
+  }
+  const 占比 = elementStrength(chart.pillars, branchAt(chart.pillars[1]), kingOf(chart)).percent;
+  const 旺序 = [...ELEMENTS].sort((a, b) => 占比[b] - 占比[a]);
+  if (旺序[0] && 占比[旺序[0]] >= 35 && 旺序[0] !== yongEl && 旺序[0] !== D) {
+    jiElList.push(旺序[0]);
+  }
+  jiElList = [...new Set(jiElList.filter(Boolean))];
+
+  // 3. 提取原局关系
+  let luckP = null;
+  if (岁运 && 岁运.length >= 2) {
+    const s = 岁运[0], b = 岁运[1];
+    const si = STEMS.indexOf(s), bi = BRANCHES.indexOf(b);
+    if (si >= 0 && bi >= 0) luckP = { stemIndex: si, branchIndex: bi };
+  }
+  const rels = gzRelations(chart.pillars, luckP);
+
+  const 关系条目 = [];
+
+  const extractChars = (pairStr) => {
+    const m = String(pairStr).match(/[甲乙丙丁戊己庚辛壬癸子丑寅卯辰巳午未申酉戌亥]/g);
+    return m ? [...new Set(m)] : [];
+  };
+
+  const judgeRelation = (类别, pair, note, extra = {}) => {
+    const chars = extractChars(pair);
+    const lib = DUAL_IMAGE_LIBRARY[类别] ?? {
+      喜象: '成全顺遂、转化生辉',
+      忌象: '相战损伤、阻滞内耗',
+      出处: '体用路线法干支双轨意象法则',
+    };
+
+    let 定性 = '中性';
+    let 依据 = '吉凶参半，随岁运引化而定';
+    let 动态应象 = `${lib.喜象}（喜）／${lib.忌象}（忌）`;
+
+    const els = chars.map((ch) => 此字五行(ch)).filter(Boolean);
+    const hasYong = els.includes(yongEl);
+    const hasJi = els.some((el) => jiElList.includes(el));
+    const hasLu = luBranch && chars.includes(luBranch);
+
+    const isDestructive = /冲|克|穿|刑|破|绝|反吟/.test(类别);
+    const isCohesive = /合|自合|鸳鸯/.test(类别);
+
+    if (isDestructive) {
+      if (hasJi && !hasYong && !hasLu) {
+        定性 = '为喜';
+        依据 = `破坏方制裁削弱局中忌神（${jiElList.join('、')}），去浊扬清`;
+        动态应象 = lib.喜象;
+      } else if (hasYong || hasLu) {
+        定性 = '为忌';
+        依据 = `破坏方直接损伤全局用神【${hasYong ? yongEl : ''}】或日主禄根【${hasLu ? luBranch : ''}】，破基伤用`;
+        动态应象 = lib.忌象;
+      } else {
+        定性 = '中性';
+        依据 = '两相对峙，未直犯要穴，喜忌双轨并陈';
+        动态应象 = `${lib.喜象}（喜）／${lib.忌象}（忌）`;
+      }
+    } else if (isCohesive) {
+      if (hasJi && !hasYong) {
+        定性 = '为喜';
+        依据 = `合绊局中忌党（${jiElList.join('、')}），使凶煞失威为我所用`;
+        动态应象 = lib.喜象;
+      } else if (hasYong && !hasJi) {
+        定性 = '为忌';
+        依据 = `用神【${yongEl}】逢合受绊，失去施展自由，贪合忘做功`;
+        动态应象 = lib.忌象;
+      } else {
+        定性 = '为喜';
+        依据 = '干支天地相纽，聚气有情，相安为利';
+        动态应象 = lib.喜象;
+      }
+    }
+
+    关系条目.push({
+      类别,
+      pair,
+      定性,
+      字: chars.join(''),
+      动态应象,
+      喜象: lib.喜象,
+      忌象: lib.忌象,
+      依据,
+      出处: lib.出处,
+      note: note || '',
+      ...extra,
+    });
+  };
+
+  for (const item of (rels['天干五合'] ?? [])) {
+    judgeRelation('天干五合', item.pair, item.化 ? `合化${item.化}` : '');
+  }
+  for (const item of (rels['天干相克'] ?? [])) {
+    judgeRelation('天干相克', item.pair, item.type || '');
+  }
+  for (const item of (rels['地支六合'] ?? [])) {
+    judgeRelation('地支六合', item.pair, item.化 ? `合化${item.化}` : '');
+  }
+  for (const item of (rels['地支半合'] ?? [])) {
+    judgeRelation('地支半合', item.pair, `${item.type}（${item.拱 ? '拱' + item.拱 : ''}化${item.化}）`);
+  }
+  for (const item of (rels['地支六冲'] ?? [])) {
+    judgeRelation('地支六冲', item.pair, item.note || '');
+  }
+  for (const item of (rels['地支相刑'] ?? [])) {
+    judgeRelation('地支相刑', item.pair, `${item.kind}（${item.type}）`);
+  }
+  for (const item of (rels['地支相害'] ?? [])) {
+    judgeRelation('地支相害', item.pair, item.note || '');
+  }
+  for (const item of (rels['地支相破'] ?? [])) {
+    judgeRelation('地支相破', item.pair, item.note || '');
+  }
+  for (const item of (rels['地支相绝'] ?? [])) {
+    judgeRelation('地支相绝', item.pair, item.绝 || '');
+  }
+  for (const item of (rels['干支自合'] ?? [])) {
+    judgeRelation('干支自合', `${item.pillar}柱${item.gz}`, item.合 || '');
+  }
+  for (const item of (rels['鸳鸯合'] ?? [])) {
+    judgeRelation('天地鸳鸯合', item.pair, `${item.天合}且${item.地合}`);
+  }
+  for (const item of (rels['反吟'] ?? [])) {
+    judgeRelation('反吟', item.pair, `${item.天干}且${item.地支}`);
+  }
+
+  const 喜项统计 = 关系条目.filter((r) => r.定性 === '为喜').length;
+  const 忌项统计 = 关系条目.filter((r) => r.定性 === '为忌').length;
+  const 中性统计 = 关系条目.filter((r) => r.定性 === '中性').length;
+
+  const 总评 = `全局检出 ${关系条目.length} 组干支作用力：`
+    + `成全用神/制化忌神为喜 ${喜项统计} 项；`
+    + `损伤用神/动摇根气为忌 ${忌项统计} 项；`
+    + `吉凶参半双轨中性 ${中性统计} 项。`
+    + `任何关系绝非单向定吉凶，一切以命局主要矛盾与用忌统率为归宿。`;
+
+  return {
+    总评,
+    条目数: 关系条目.length,
+    关系条目,
+    喜项统计,
+    忌项统计,
+    中性统计,
+    用神参考: yongEl,
+    忌神参考: jiElList,
+    法理说明: 'D-031 全天干地支作用关系双轨意象法则：拒绝单向低俗定吉凶，喜忌双轨输出。',
+  };
+}
+
+/**
  * **体用路线四条的汇总入口** —— 一次算齐，供工具侧调用。
  *
  * @param {object} chart
@@ -3281,6 +3538,7 @@ export function tiyongRouteOf(chart, opts = {}) {
     相战择优: xiangzhanOf(chart, { 用神五行: 采用用神 }),
     犯旺: fanwangOf(chart, { 岁运 }),
     自合暗合: selfHiddenCombineOf(chart, { 岁运 }),
+    双轨意象: dualImageMatrixOf(chart, { 主要矛盾, 用神五行: 采用用神, 岁运 }),
     交叉裁决: 交叉,
     // 三者须并看，缺一即不闭环：用神本身有没有救（youJiuOf）、有没有护卫（第三）、
     // 结构稳不稳（第四）。引擎只报，不合并成单一结论。

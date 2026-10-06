@@ -463,6 +463,34 @@ for (const c of casesToRun) {
     }
   }
 
+  // 断言 20: 双轨意象研判 (D-031 裁定)
+  if (typeof c.期望.双轨意象 !== 'undefined') {
+    totalAssertions += 1;
+    const target = c.期望.双轨意象;
+    let act = '未命中';
+    const entries = res.双轨意象?.关系条目 ?? [];
+    if (Array.isArray(entries)) {
+      const match = entries.find((item) => {
+        if (target.类别 && item.类别 !== target.类别) return false;
+        if (target.字 && !item.字.includes(target.字[0]) && !item.字.includes(target.字[1])) return false;
+        return true;
+      });
+      if (match) {
+        act = match.定性;
+      }
+    }
+    const exp = target.定性;
+    const ok = act === exp;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [双轨意象] 期望: ${target.类别 ?? ''}${target.字 ?? ''}${exp} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [双轨意象] 期望: ${target.类别 ?? ''}${target.字 ?? ''}${exp} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '双轨意象', exp, act, p: c.判据 });
+    }
+  }
+
   console.log('');
 }
 

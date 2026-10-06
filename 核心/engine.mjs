@@ -7791,5 +7791,6 @@ export {
   canControlOf, canTransformOf, canBindOf,
   threatOf, qingOf, protectionOf, protectionChainOf, structureOf,
   chengzaiReassess, xiangzhanOf, fanwangOf, selfHiddenCombineOf, tiyongRouteOf,
+  DUAL_IMAGE_LIBRARY, dualImageMatrixOf,
   formatTiyong
 } from './tiyong.mjs';

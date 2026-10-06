@@ -20,6 +20,7 @@ import {
   STEM_BRANCH_SELF_COMBINE, BRANCH_HIDDEN_COMBINE, gzRelations, selfHiddenCombineOf,
   BRANCH_HALF_COMBINE, BRANCH_EXTINCTION, JIELU_KONGWANG,
   ANLU, ANLU_DAY_GZ, LUSHEN, shenshaNature,
+  DUAL_IMAGE_LIBRARY, dualImageMatrixOf,
 } from './engine.mjs';
 
 /** 由 "辛巳" 之类的干支串造出 engine 各原语所需的柱对象数组 */
@@ -2434,6 +2435,50 @@ console.log('=== 32. 暗禄与暗禄日神煞入库（D-033 裁定）===');
   const anluDay2 = c2.shensha.find((s) => s.name === '暗禄日');
   ok('丁未日检出暗禄', !!anlu2, '');
   ok('丁未日检出暗禄日', !!anluDay2, '');
+}
+
+// ==================================================================
+// 33. 全干支双轨意象矩阵与动态研判系统（D-031 裁定）
+// ==================================================================
+console.log('=== 33. 全干支双轨意象矩阵与动态研判系统（D-031 裁定）===');
+{
+  // ── 33.1 词库完整度校验 ──
+  const requiredCategories = [
+    '地支六冲', '地支六合', '地支半合', '地支相刑',
+    '地支相害', '地支相破', '地支相绝', '天干五合',
+    '天干相克', '干支自合', '天地鸳鸯合', '反吟',
+  ];
+  for (const cat of requiredCategories) {
+    const item = DUAL_IMAGE_LIBRARY[cat];
+    ok(`双轨意象词库包含类别: ${cat}`, !!item, '');
+    ok(`${cat} 具有非空喜象`, typeof item?.喜象 === 'string' && item.喜象.length > 0, '');
+    ok(`${cat} 具有非空忌象`, typeof item?.忌象 === 'string' && item.忌象.length > 0, '');
+    ok(`${cat} 具有权威出处`, typeof item?.出处 === 'string' && item.出处.length > 0, '');
+  }
+
+  // ── 33.2 动态研判自检 ──
+  // 造 1: 甲木日主，地支卯酉冲（酉金冲卯木禄身/用神，破基伤用） -> 六冲定性为忌
+  const cPaoLu = {
+    pillars: pillarsOf('甲子', '癸酉', '甲卯', '乙丑'),
+    dayMaster: { stem: '甲', element: '木', bornMonthBranch: '酉' },
+  };
+  const res1 = dualImageMatrixOf(cPaoLu, { 用神五行: '木' });
+  ok('卯酉冲命盘输出双轨意象对象', typeof res1 === 'object' && Array.isArray(res1.关系条目), '');
+  const chongItem1 = res1.关系条目.find((r) => r.类别 === '地支六冲' && (r.字.includes('卯') && r.字.includes('酉')));
+  ok('检出卯酉六冲', !!chongItem1, '');
+  eq('冲破禄身/用神定性为忌', chongItem1?.定性, '为忌');
+  ok('应忌象包含拔根倾摇', chongItem1?.动态应象?.includes('拔根') || chongItem1?.动态应象?.includes('动荡'), '');
+
+  // 造 2: 庚金日主（禄在申），用神取土，以克土之木为忌，局见年酉冲月卯去忌神 -> 冲去忌神定性为喜
+  const cQuJi = {
+    pillars: pillarsOf('辛酉', '乙卯', '庚子', '丙戌'),
+    dayMaster: { stem: '庚', element: '金', bornMonthBranch: '卯' },
+  };
+  const res2 = dualImageMatrixOf(cQuJi, { 用神五行: '土' });
+  const chongItem2 = res2.关系条目.find((r) => r.类别 === '地支六冲' && (r.字.includes('卯') && r.字.includes('酉')));
+  ok('检出卯酉六冲', !!chongItem2, '');
+  eq('冲去忌神定性为喜', chongItem2?.定性, '为喜');
+  ok('应喜象包含除旧布新或破而后立', chongItem2?.动态应象?.includes('除旧布新') || chongItem2?.动态应象?.includes('建功'), '');
 }
 
 console.log('');
