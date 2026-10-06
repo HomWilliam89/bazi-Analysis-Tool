@@ -21,6 +21,7 @@ import {
   BRANCH_HALF_COMBINE, BRANCH_EXTINCTION, JIELU_KONGWANG,
   ANLU, ANLU_DAY_GZ, LUSHEN, shenshaNature,
   DUAL_IMAGE_LIBRARY, dualImageMatrixOf,
+  arbitrateGanzhiForces, coverageOf,
 } from './engine.mjs';
 
 /** 由 "辛巳" 之类的干支串造出 engine 各原语所需的柱对象数组 */
@@ -2479,6 +2480,66 @@ console.log('=== 33. 全干支双轨意象矩阵与动态研判系统（D-031 �
   ok('检出卯酉六冲', !!chongItem2, '');
   eq('冲去忌神定性为喜', chongItem2?.定性, '为喜');
   ok('应喜象包含除旧布新或破而后立', chongItem2?.动态应象?.includes('除旧布新') || chongItem2?.动态应象?.includes('建功'), '');
+}
+
+// ==================================================================
+// 34. 干支多重并发作用力四维仲裁与认怂出口（D-030 · D-037 裁定）
+// ==================================================================
+console.log('=== 34. 干支多重并发作用力四维仲裁与认怂出口（D-030 · D-037 裁定）===');
+{
+  // ── 34.1 贴身合解隔位冲（贪合免冲）实测 ──
+  // 年支辰与日支戌相冲（柱差2，隔位冲）；月支卯与日支戌六合（柱差1，贴身合）
+  const cTanHe = {
+    pillars: pillarsOf('甲辰', '丁卯', '戊戌', '癸亥'),
+    dayMaster: { stem: '戊', element: '土', bornMonthBranch: '卯' },
+  };
+  const arb1 = arbitrateGanzhiForces(cTanHe);
+  ok('输出逐支受力数组', Array.isArray(arb1.逐支受力), '');
+  const riXu = arb1.逐支受力.find((z) => z.宫位 === '日柱' && z.字 === '戌');
+  ok('检出日柱戌土受力项', !!riXu, '');
+  eq('贴身合解隔位冲判定为贪合免冲', riXu?.最终受力, '贪合免冲');
+  eq('贪合免冲动摇否为false', riXu?.动摇否, false);
+  ok('汇总包含贪合免冲计数', arb1.汇总.贪合免冲数 >= 1, '');
+
+  // ── 34.2 近冲破远合（冲散破合）实测 ──
+  // 年支酉与日支辰六合（柱差2，隔位合）；年支酉与月支卯贴身冲（柱差1，贴身强冲破坏隔位合）
+  const cJinChong = {
+    pillars: pillarsOf('辛酉', '辛卯', '庚辰', '丙子'),
+    dayMaster: { stem: '庚', element: '金', bornMonthBranch: '卯' },
+  };
+  const arb2 = arbitrateGanzhiForces(cJinChong);
+  const nianYou = arb2.逐支受力.find((z) => z.宫位 === '年柱' && z.字 === '酉');
+  eq('近冲破远合判定为冲散破合', nianYou?.最终受力, '冲散破合');
+  eq('冲散破合动摇否为true', nianYou?.动摇否, true);
+
+  // ── 34.3 structureOf 整合验证 ──
+  const stRes = structureOf(cTanHe, { 用神五行: '土' });
+  ok('structureOf 返回多重仲裁对象', !!stRes.多重仲裁, '');
+  ok('structureOf 返回受力汇总', !!stRes.受力汇总, '');
+  const xuRoot = stRes.日主之根.根.find((g) => g.字 === '戌');
+  eq('戌土根之受力状态为贪合免冲', xuRoot?.受力状态, '贪合免冲');
+
+  // ── 34.4 coverageOf 认怂出口实测（D-037 裁定） ──
+  // 显式标记未覆盖
+  const covExplicit = coverageOf(cTanHe, { 未覆盖: true, 原因: '外格相搏未决' });
+  eq('显式未覆盖标志触发认怂', covExplicit.covered, false);
+  eq('未覆盖判定文案严格匹配宪法誓言', covExplicit.判定, '本体系未覆盖，暂不判断');
+  eq('未覆盖结论文案严格匹配宪法誓言', covExplicit.结论, '本体系未覆盖，暂不判断');
+
+  // 正常覆盖命局
+  const covNormal = coverageOf(cTanHe);
+  eq('常规普通格局判定为已覆盖', covNormal.covered, true);
+  eq('已覆盖判定文案', covNormal.判定, '本体系已覆盖');
+
+  // 极端两神极战无通关神死结命局
+  // 乙卯 乙酉 乙卯 辛酉（金木各半极战无水通关）
+  const cSiJie = {
+    pillars: pillarsOf('乙卯', '乙酉', '乙卯', '辛酉'),
+    dayMaster: { stem: '乙', element: '木', bornMonthBranch: '酉' },
+  };
+  const covSiJie = coverageOf(cSiJie);
+  eq('极端两神交战死结触发认怂出口', covSiJie.covered, false);
+  eq('死结命局判定为本体系未覆盖暂不判断', covSiJie.判定, '本体系未覆盖，暂不判断');
 }
 
 console.log('');

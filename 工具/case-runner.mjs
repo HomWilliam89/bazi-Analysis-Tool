@@ -491,6 +491,49 @@ for (const c of casesToRun) {
     }
   }
 
+  // 断言 21: 受力仲裁判定 (D-030 裁定)
+  if (typeof c.期望.受力仲裁 !== 'undefined') {
+    totalAssertions += 1;
+    const target = c.期望.受力仲裁;
+    let act = '未命中';
+    const zhicheng = res.第四_结构稳定?.多重仲裁?.逐支受力 ?? [];
+    if (Array.isArray(zhicheng)) {
+      const match = zhicheng.find((z) => {
+        if (target.宫位 && !z.宫位.startsWith(target.宫位[0])) return false;
+        if (target.字 && z.字 !== target.字) return false;
+        return true;
+      });
+      if (match) {
+        act = match.最终受力;
+      }
+    }
+    const exp = target.受力;
+    const ok = act === exp;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [受力仲裁] 期望: ${target.宫位 ?? ''}${target.字 ?? ''}${exp} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [受力仲裁] 期望: ${target.宫位 ?? ''}${target.字 ?? ''}${exp} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '受力仲裁', exp, act, p: c.判据 });
+    }
+  }
+
+  // 断言 22: 体系覆盖判定 (D-037 裁定 · 认怂出口)
+  if (typeof c.期望.体系覆盖 !== 'undefined') {
+    totalAssertions += 1;
+    const act = res.覆盖?.covered ? '已覆盖' : '未覆盖';
+    const ok = act === c.期望.体系覆盖;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [体系覆盖] 期望: ${c.期望.体系覆盖} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [体系覆盖] 期望: ${c.期望.体系覆盖} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '体系覆盖', exp: c.期望.体系覆盖, act, p: c.判据 });
+    }
+  }
+
   console.log('');
 }
 

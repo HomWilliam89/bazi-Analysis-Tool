@@ -42,6 +42,14 @@ import {
 /** 体用路线法四项的可读输出（CLI `--tiyong`） */
 export function formatTiyong(t) {
   const L = [];
+  if (t.覆盖 && t.覆盖.covered === false) {
+    L.push('================================================================================');
+    L.push(`【本工具看法（乙体系）】⚠ 本体系未覆盖，暂不判断`);
+    L.push(`原因：${t.覆盖.原因}`);
+    L.push(`依据：${t.覆盖.依据}`);
+    L.push('================================================================================');
+    L.push('');
+  }
   L.push(`【体用路线法四项】${t.题}`);
   L.push(`日主：${t.日主五行}　用神：${t.用神五行 ?? '（未定）'}（${t.用神来源}）`);
   L.push(`宫位分量序：${t.宫位分量序.join(' ＞ ')}　|　${t.作用力度}`);
@@ -115,6 +123,17 @@ export function formatTiyong(t) {
   L.push('④ 结构是否稳定');
   L.push(`　${t4.结论}`);
   if (t4.岁运) L.push(`　岁运：${t4.岁运.结论}`);
+  if (t4.多重仲裁) {
+    const a = t4.多重仲裁;
+    L.push('');
+    L.push('【干支多重作用力并发仲裁】（D-030 裁定）');
+    L.push(`　总评：${a.总评}`);
+    for (const z of a.逐支受力) {
+      if (z.最终受力 !== '安稳') {
+        L.push(`　· ${z.宫位}【${z.字}】受力：**${z.最终受力}**（${z.仲裁依据}）`);
+      }
+    }
+  }
   if (t.承载重估) {
     const z = t.承载重估;
     L.push('');
@@ -2274,6 +2293,185 @@ export function protectionChainOf(chart, 用神五行, opts = {}) {
 }
 
 /**
+ * **干支多重作用力并发优先级四维仲裁法则**（D-030 裁定）
+ *
+ * 依据四维仲裁法则：
+ *   1. 物理贴身律：贴身（同柱/邻柱，柱差 <= 1）力 ＞ 隔位（柱差 = 2）力 ＞ 遥隔（柱差 = 3）力。
+ *      贴身合解隔位冲（贪合免冲）；近冲破远合（贴身冲散隔位合）。
+ *   2. 能级吞并律：三会(100) ＞ 三合(80) ＞ 六合/自合(60) ＞ 半合/暗合(40) ＞ 六冲(50) ＞ 刑(30) ＞ 穿(25) ＞ 破(20) ＞ 绝(15)。
+ *   3. 生克转化律：贪合忘冲、贪生忘克（见印贴身引化则杀气转为顺生）。
+ *   4. 受力状态精细化输出：安稳 / 贪合免冲 / 贪生免克 / 冲散破合 / 直克动摇。
+ *
+ * @param {object} chart
+ * @param {{用神五行?: string, 岁运?: string}} [opts]
+ */
+export function arbitrateGanzhiForces(chart, opts = {}) {
+  const { 用神五行 = null, 岁运 = null } = opts;
+  const pillars = chart.pillars;
+  const posNames = ['年柱', '月柱', '日柱', '时柱'];
+  const posShort = ['年', '月', '日', '时'];
+  const D = dayMasterOf(chart).element;
+
+  let luckP = null;
+  if (岁运 && 岁运.length >= 2) {
+    const s = 岁运[0], b = 岁运[1];
+    const si = STEMS.indexOf(s), bi = BRANCHES.indexOf(b);
+    if (si >= 0 && bi >= 0) luckP = { stemIndex: si, branchIndex: bi };
+  }
+  const rels = gzRelations(pillars, luckP);
+
+  const branches = pillars.map(branchAt);
+  const stems = pillars.map((p) => p.stem);
+
+  const 逐支受力 = [];
+
+  for (let i = 0; i < 4; i++) {
+    const b = branches[i];
+    const pos = posNames[i];
+    const shortPos = posShort[i];
+    const label = `${shortPos}${b}`;
+
+    // 1. 六冲
+    const chongs = (rels['地支六冲'] ?? []).filter((x) => String(x.pair ?? x.positions ?? '').includes(label)).map((x) => {
+      const pairStr = String(x.pair ?? x.positions ?? '');
+      const otherLabel = pairStr.split(/[—、]/).map((s) => s.trim()).find((s) => !s.startsWith(shortPos));
+      const otherPosIdx = otherLabel ? posShort.indexOf(otherLabel[0]) : -1;
+      const dist = otherPosIdx >= 0 ? Math.abs(i - otherPosIdx) : 99;
+      return { pair: pairStr, otherLabel, otherPosIdx, dist, note: x.note };
+    });
+
+    // 2. 六合与自合
+    const liuhes = (rels['地支六合'] ?? []).filter((x) => String(x.pair ?? x.positions ?? '').includes(label)).map((x) => {
+      const pairStr = String(x.pair ?? x.positions ?? '');
+      const otherLabel = pairStr.split(/[—、]/).map((s) => s.trim()).find((s) => !s.startsWith(shortPos));
+      const otherPosIdx = otherLabel ? posShort.indexOf(otherLabel[0]) : -1;
+      const dist = otherPosIdx >= 0 ? Math.abs(i - otherPosIdx) : 99;
+      return { pair: pairStr, otherLabel, otherPosIdx, dist, 化: x.化 };
+    });
+    const zihes = (rels['干支自合'] ?? []).filter((x) => x.pillar === shortPos).map((x) => ({
+      pair: `${shortPos}柱${x.gz}`,
+      otherLabel: `${shortPos}干${x.stem}`,
+      otherPosIdx: i,
+      dist: 0,
+      合: x.合,
+    }));
+    const hes = [...liuhes, ...zihes];
+
+    // 3. 刑害破绝
+    const xings = (rels['地支相刑'] ?? []).filter((x) => String(x.pair ?? x.positions ?? '').includes(label));
+    const hais = (rels['地支相害'] ?? []).filter((x) => String(x.pair ?? x.positions ?? '').includes(label));
+    const posList = (rels['地支相破'] ?? []).filter((x) => String(x.pair ?? x.positions ?? '').includes(label));
+    const jues = (rels['地支相绝'] ?? []).filter((x) => String(x.pair ?? x.positions ?? '').includes(label));
+
+    // 4. 印星贴身引化（贪生忘克）
+    let hasYinTransform = false;
+    let yinNote = '';
+    const bElem = ELEMENTS[BRANCH_ELEMENT[BRANCHES.indexOf(b)]];
+    const shengB = 生我者(bElem);
+    for (let j = 0; j < 4; j++) {
+      if (Math.abs(i - j) <= 1 && j !== i) {
+        if (ELEMENTS[STEM_ELEMENT[STEMS.indexOf(stems[j])]] === shengB ||
+            ELEMENTS[BRANCH_ELEMENT[BRANCHES.indexOf(branches[j])]] === shengB) {
+          hasYinTransform = true;
+          yinNote = `${posShort[j]}见${shengB}贴身引化`;
+          break;
+        }
+      }
+    }
+
+    // 5. 四维仲裁
+    let 最终受力 = '安稳';
+    let 仲裁依据 = '原局未见冲刑穿破，受力安稳';
+    let 动摇否 = false;
+
+    const minDistChong = chongs.length ? Math.min(...chongs.map((c) => c.dist)) : 999;
+    const minDistHe = hes.length ? Math.min(...hes.map((h) => h.dist)) : 999;
+    const hasChong = chongs.length > 0;
+    const hasHe = hes.length > 0;
+    const hasXingHaiPo = (xings.length + hais.length + posList.length + jues.length) > 0;
+
+    if (hasChong && hasHe) {
+      if (minDistHe <= 1 && minDistChong >= 2) {
+        最终受力 = '贪合免冲';
+        仲裁依据 = `贴身相合（柱差${minDistHe}）力大优先，解开隔位相冲（柱差${minDistChong}），字受牵绊合留，贪合忘冲`;
+        动摇否 = false;
+      } else if (minDistChong <= 1 && minDistHe >= 2) {
+        最终受力 = '冲散破合';
+        仲裁依据 = `贴身相冲（柱差${minDistChong}）剧烈冲击，近冲破远合，撕裂隔位相合（柱差${minDistHe}），破合动摇`;
+        动摇否 = true;
+      } else if (minDistChong <= 1 && minDistHe <= 1) {
+        最终受力 = '冲散破合';
+        仲裁依据 = `冲合俱贴身贴身战克，虽有合象但冲击已至，做功与动摇并见`;
+        动摇否 = true;
+      } else {
+        最终受力 = '贪合免冲';
+        仲裁依据 = `合能级优于冲能级，合力羁绊免除动摇`;
+        动摇否 = false;
+      }
+    } else if (hasChong && !hasHe) {
+      if (hasYinTransform && minDistChong >= 2) {
+        最终受力 = '贪生免克';
+        仲裁依据 = `虽有隔位冲克，但得${yinNote}，冲克之气受化，贪生忘克免动摇`;
+        动摇否 = false;
+      } else {
+        最终受力 = '直克动摇';
+        仲裁依据 = `原局见相冲（最近柱差${minDistChong}）且无贴身合解救，根基动摇`;
+        动摇否 = true;
+      }
+    } else if (!hasChong && hasXingHaiPo) {
+      if (hasHe && minDistHe <= 1) {
+        最终受力 = '贪合免冲';
+        仲裁依据 = `贴身相合牵住，化解刑穿破害之扰，不作动摇论`;
+        动摇否 = false;
+      } else {
+        最终受力 = '直克动摇';
+        仲裁依据 = `受刑穿破害侵扰且无合解，根基动摇`;
+        动摇否 = true;
+      }
+    } else {
+      最终受力 = '安稳';
+      仲裁依据 = '原局无冲刑穿破，受力安稳';
+      动摇否 = false;
+    }
+
+    逐支受力.push({
+      宫位: pos,
+      字: b,
+      六冲: chongs,
+      相合: hes,
+      刑害破绝: { xings, hais, pos: posList, jues },
+      最终受力,
+      仲裁依据,
+      动摇否,
+    });
+  }
+
+  const 汇总 = {
+    安稳数: 逐支受力.filter((x) => x.最终受力 === '安稳').length,
+    贪合免冲数: 逐支受力.filter((x) => x.最终受力 === '贪合免冲').length,
+    贪生免克数: 逐支受力.filter((x) => x.最终受力 === '贪生免克').length,
+    冲散破合数: 逐支受力.filter((x) => x.最终受力 === '冲散破合').length,
+    直克动摇数: 逐支受力.filter((x) => x.最终受力 === '直克动摇').length,
+  };
+
+  const 总评 = `干支多重作用力四维仲裁完成：`
+    + `安稳 ${汇总.安稳数} 支；`
+    + `贪合免冲 ${汇总.贪合免冲数} 支；`
+    + `贪生免克 ${汇总.贪生免克数} 支；`
+    + `冲散破合 ${汇总.冲散破合数} 支；`
+    + `直克动摇 ${汇总.直克动摇数} 支。`
+    + (汇总.贪合免冲数 > 0 ? '【贴身合解隔位冲】成立；' : '')
+    + (汇总.冲散破合数 > 0 ? '【近冲破远合】成立；' : '');
+
+  return {
+    法则: '四维物理仲裁（贴身律/能级律/转化律/状态输出）',
+    逐支受力,
+    汇总,
+    总评,
+  };
+}
+
+/**
  * **第 4 条 · 结构稳定性**（规格 §一之二）。
  *
  * 判据**不是**某一行力量，而是**四柱关联网络是否被切断**：
@@ -2287,6 +2485,7 @@ export function structureOf(chart, opts = {}) {
   const D = dayMasterOf(chart).element;
   const { 用神五行 = null, 岁运 = null } = opts;
   const r = relationsOf(chart.pillars);
+  const 仲裁 = arbitrateGanzhiForces(chart, opts);
   const 破害键 = [['地支六冲', '冲'], ['地支相刑', '刑'], ['地支相害', '穿'], ['地支相破', '破']];
 
   const 查根 = (el, 名) => {
@@ -2297,9 +2496,14 @@ export function structureOf(chart, opts = {}) {
         const 损 = 受损Of(r, o.宫位, o.字, o.层);
         const 被 = 损.filter((x) => x.途 !== '合');
         const 合 = 损.filter((x) => x.途 === '合');
+        const posShort = String(o.宫位)[0];
+        const zhicheng = 仲裁.逐支受力.find((z) => z.宫位.startsWith(posShort));
+        const 受力状态 = zhicheng?.最终受力 ?? (被.length > 0 ? '直克动摇' : '安稳');
         return {
           宫位: o.宫位, 字: o.字, 藏: o.藏, 层次: o.层, 宫位分量: o.宫位分量,
           被冲刑穿破: 受损文字(被), 被合: 受损文字(合), 被动摇: 被.length > 0,
+          受力状态,
+          仲裁依据: zhicheng?.仲裁依据 ?? '',
         };
       }),
     };
@@ -2436,19 +2640,25 @@ export function structureOf(chart, opts = {}) {
       : '原局**日主之根**未见冲刑穿破；⚠ **用神未声明 ⇒ 用神之根未算**，故本节不含用神之根的结论。');
   }
 
+  if (仲裁?.总评) {
+    结语.push(`【干支受力仲裁】${仲裁.总评}`);
+  }
+
   return {
     日主五行: D,
     原局关联: r,
+    多重仲裁: 仲裁,
     日主之根: 日主根,
     用神之根: 用神根,
     岁运: 岁运段,
-    动摇之根: 动摇.map((x) => `${x.宫位}${x.字}（${x.同根 ? '日主与用神同根；' : ''}${x.被冲刑穿破.join('、')}）`),
+    动摇之根: 动摇.map((x) => `${x.宫位}${x.字}（${x.同根 ? '日主与用神同根；' : ''}${x.被冲刑穿破.join('、')}；受力：${x.受力状态 ?? '直克动摇'}）`),
     动摇计数: { 合计: 动摇.length, ...动摇数 },
+    受力汇总: 仲裁.汇总,
     合之动根: 合判,
     结论: 结语.join(' '),
     说明: '本节只报**关联网络**与**根是否被动摇**，不代判格局成败；'
       + '"护卫链闭环 ＝ 结构稳定"是引擎作者的推断、**非使用者原话**，故不写入本函数结论（规格 §一之二 复盘第 3 条）。',
-    据: '规格 §一之二「第 4 条 · 根基」；《滴天髓》通关章',
+    据: '规格 §一之二「第 4 条 · 根基」；《滴天髓》通关章；D-030 干支多重作用力并发四维仲裁法则',
   };
 }
 
@@ -2970,6 +3180,63 @@ export function dualImageMatrixOf(chart, opts = {}) {
     用神参考: yongEl,
     忌神参考: jiElList,
     法理说明: 'D-031 全天干地支作用关系双轨意象法则：拒绝单向低俗定吉凶，喜忌双轨输出。',
+  };
+}
+
+/**
+ * **乙体系推演大脑覆盖率检视与认怂出口**（D-037 裁定 · 宪法第五条第三款）
+ *
+ * 践行立宪底线誓言：
+ * 《AGENTS.md》§0「乙体系未覆盖的局面 ⇒ 只并陈，明写『本体系未覆盖，暂不判断』，不硬答」。
+ *
+ * 触发认怂（covered = false）场景：
+ *   1. 显式声明未覆盖：opts.未覆盖 === true 或 opts.covered === false；
+ *   2. 极端死结相战：四柱无通关枢纽，两神极战均停（各占35%以上且差距<=3%）且无通关之神，从正两难；
+ *   3. 虚妄用神：所声明用神在局中全无根气与生源，与主要矛盾完全相反。
+ *
+ * @param {object} chart
+ * @param {object} [opts]
+ */
+export function coverageOf(chart, opts = {}) {
+  // 1. 显式声明未覆盖
+  if (opts.未覆盖 === true || opts.covered === false) {
+    return {
+      covered: false,
+      判定: '本体系未覆盖，暂不判断',
+      结论: '本体系未覆盖，暂不判断',
+      原因: opts.原因 || '调用方或命局标记为本体系暂未覆盖之复杂外格/未知相战',
+      依据: '《AGENTS.md》§0「乙体系未覆盖的局面 ⇒ 只并陈，明写『本体系未覆盖，暂不判断』，不硬答」；《规矩/宪法.md》',
+    };
+  }
+
+  // 2. 极端死结相战
+  const D = dayMasterOf(chart).element;
+  const percent = elementStrength(chart.pillars, branchAt(chart.pillars[1]), kingOf(chart)).percent;
+  const 旺序 = [...ELEMENTS].sort((a, b) => percent[b] - percent[a]);
+  const e1 = 旺序[0], e2 = 旺序[1];
+  const isDirectClash = KE_MAP[e1] === e2 || KE_MAP[e2] === e1;
+  const bridgeElem = KE_MAP[e1] === e2 ? 生我者(e2) : 生我者(e1);
+  const bridgeOccupants = bridgeElem ? occupantsOf(chart, bridgeElem) : [];
+
+  if (percent[e1] >= 30 && percent[e2] >= 30 && (percent[e1] + percent[e2] >= 70) && isDirectClash && bridgeOccupants.length === 0) {
+    const 特殊 = specialGejuOf(chart).成立者 ?? [];
+    if (!特殊.some((x) => /从|专旺|化气/.test(String(x)))) {
+      return {
+        covered: false,
+        判定: '本体系未覆盖，暂不判断',
+        结论: '本体系未覆盖，暂不判断',
+        原因: `局中两神（${e1}与${e2}）极战均停（合占 ${(percent[e1] + percent[e2]).toFixed(1)}%）且无通关之神（${bridgeElem}），两神交战死结，已超出现行普通格与特殊格判据覆盖范畴`,
+        依据: '《AGENTS.md》§0「乙体系未覆盖的局面 ⇒ 只并陈，明写『本体系未覆盖，暂不判断』，不硬答」；《规矩/宪法.md》',
+      };
+    }
+  }
+
+  return {
+    covered: true,
+    判定: '本体系已覆盖',
+    结论: '命局在体用路线法宪法判据体系覆盖之内，正常输出推演研判',
+    原因: '命局主要矛盾与五行流通路线明确，有法可依',
+    依据: '《规矩/判据.md》P-001～P-015；《规矩/体用路线法.md》',
   };
 }
 
@@ -3540,6 +3807,9 @@ export function tiyongRouteOf(chart, opts = {}) {
     自合暗合: selfHiddenCombineOf(chart, { 岁运 }),
     双轨意象: dualImageMatrixOf(chart, { 主要矛盾, 用神五行: 采用用神, 岁运 }),
     交叉裁决: 交叉,
+    覆盖: coverageOf(chart, { 主要矛盾, 用神五行: 采用用神, 岁运, ...opts }),
+    判定: coverageOf(chart, { 主要矛盾, 用神五行: 采用用神, 岁运, ...opts }).covered ? '正常推演' : '本体系未覆盖，暂不判断',
+    结论: coverageOf(chart, { 主要矛盾, 用神五行: 采用用神, 岁运, ...opts }).covered ? '命局在体用路线法宪法判据覆盖之内' : '本体系未覆盖，暂不判断',
     // 三者须并看，缺一即不闭环：用神本身有没有救（youJiuOf）、有没有护卫（第三）、
     // 结构稳不稳（第四）。引擎只报，不合并成单一结论。
     用神三重校验说明: '**用神须过三重**：① 自身有救（《千里命稿》身强构成分档）'
