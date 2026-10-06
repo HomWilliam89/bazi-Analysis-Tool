@@ -280,6 +280,26 @@ const BRANCH_PUNISH = [
   { members: ['子', '卯'], kind: '无礼之刑' },
 ];
 const SELF_PUNISH = ['辰', '午', '酉', '亥'];
+/** 干支自合（七大柱：戊子、壬午、丁亥、辛巳、己亥、癸巳、甲午，D-029 裁定） */
+export const STEM_BRANCH_SELF_COMBINE = {
+  戊子: { 合: '戊癸合', 藏干: '癸水正财', note: '自坐正财暗合，财来就我，情向归财' },
+  壬午: { 合: '丁壬合', 藏干: '丁火正财', note: '自坐正财暗合，天地交泰，富贵自求' },
+  丁亥: { 合: '丁壬合', 藏干: '壬水正官', note: '自坐正官暗合，官印相生，日官相引' },
+  辛巳: { 合: '丙辛合', 藏干: '丙火正官', note: '自坐正官暗合，官来就我，情向归官' },
+  己亥: { 合: '甲己合', 藏干: '甲木正官', note: '自坐正官暗合，亥中藏甲，明暗相引' },
+  癸巳: { 合: '戊癸合', 藏干: '戊土正官', note: '自坐正官暗合，巳中藏戊，阴水附阳' },
+  甲午: { 合: '甲己合', 藏干: '己土正财', note: '自坐正财暗合，木火通明，伤官生财暗合' },
+};
+/** 地支暗合（三大核心通合：寅丑、卯申、午亥，D-029 裁定） */
+export const BRANCH_HIDDEN_COMBINE = {
+  寅丑: { 合: '甲己/丙辛/戊癸全合', note: '寅丑通合，天地之藏干三合全聚，暗合力极强' },
+  丑寅: { 合: '甲己/丙辛/戊癸全合', note: '寅丑通合，天地之藏干三合全聚，暗合力极强' },
+  卯申: { 合: '乙庚暗合', note: '卯申暗合，车骑交结，金木交战转暗合做功' },
+  申卯: { 合: '乙庚暗合', note: '卯申暗合，车骑交结，金木交战转暗合做功' },
+  午亥: { 合: '丁壬/甲己暗合', note: '午亥暗合，水火既济，君臣暗会通情' },
+  亥午: { 合: '丁壬/甲己暗合', note: '午亥暗合，水火既济，君臣暗会通情' },
+};
+
 /** 地支三会方 */
 const BRANCH_DIRECTION = [
   { members: ['寅', '卯', '辰'], element: '木', name: '东方木' },
@@ -889,7 +909,7 @@ export function gzRelations(pillars, luckPillar) {
   const branches = pillars.map((p) => BRANCHES[p.branchIndex]);
   if (luckPillar) { stems.push(STEMS[luckPillar.stemIndex]); branches.push(BRANCHES[luckPillar.branchIndex]); names.push('大运'); }
 
-  const out = { 天干五合: [], 天干相冲: [], 天干相克: [], 地支六合: [], 地支三合: [], 地支三会: [], 地支六冲: [], 地支相刑: [], 地支相害: [], 地支相破: [], 天干地支同柱: [] };
+  const out = { 天干五合: [], 天干相冲: [], 天干相克: [], 地支六合: [], 地支三合: [], 地支三会: [], 地支六冲: [], 地支相刑: [], 地支相害: [], 地支相破: [], 干支自合: [], 地支暗合: [], 天干地支同柱: [] };
 
   // 天干
   for (let i = 0; i < stems.length; i++) {
@@ -914,6 +934,26 @@ export function gzRelations(pillars, luckPillar) {
       if (BRANCH_CLASH.includes(key) || BRANCH_CLASH.includes(key2)) out.地支六冲.push({ pair: `${names[i]}${a} — ${names[j]}${b}` });
       if (BRANCH_HARM.includes(key) || BRANCH_HARM.includes(key2)) out.地支相害.push({ pair: `${names[i]}${a} — ${names[j]}${b}`, note: '害即"穿"，盲派重其破坏作用' });
       if (BRANCH_DESTROY.includes(key) || BRANCH_DESTROY.includes(key2)) out.地支相破.push({ pair: `${names[i]}${a} — ${names[j]}${b}` });
+      if (BRANCH_HIDDEN_COMBINE[key]) {
+        out.地支暗合.push({
+          pair: `${names[i]}${a} — ${names[j]}${b}`,
+          合: BRANCH_HIDDEN_COMBINE[key].合,
+          note: BRANCH_HIDDEN_COMBINE[key].note,
+        });
+      }
+    }
+  }
+  // 干支自合（七大柱：戊子、壬午、丁亥、辛巳、己亥、癸巳、甲午，D-029 裁定）
+  for (let i = 0; i < stems.length; i++) {
+    const gz = stems[i] + branches[i];
+    if (STEM_BRANCH_SELF_COMBINE[gz]) {
+      out.干支自合.push({
+        pillar: names[i],
+        gz,
+        合: STEM_BRANCH_SELF_COMBINE[gz].合,
+        藏干: STEM_BRANCH_SELF_COMBINE[gz].藏干,
+        note: STEM_BRANCH_SELF_COMBINE[gz].note,
+      });
     }
   }
   // 三合 / 三会 / 三刑（要求三支齐现）
@@ -1371,6 +1411,8 @@ export function formatChart(chart) {
   showRel('地支相刑', r.地支相刑, (x) => `${x.刑}：${x.members}（${x.positions}）${x.争议 ? `　⚠口径有争议（${x.口径}）：${x.note}` : ''}`);
   showRel('地支相害（穿）', r.地支相害, (x) => x.pair);
   showRel('地支相破', r.地支相破, (x) => x.pair);
+  showRel('干支自合', r.干支自合, (x) => `${x.pillar}柱 ${x.gz}（${x.合}，暗藏${x.藏干}）：${x.note}`);
+  showRel('地支暗合', r.地支暗合, (x) => `${x.pair}（${x.合}）：${x.note}`);
   L.push('**同柱干支关系**');
   for (const x of r.天干地支同柱) L.push(`- ${x.pillar} ${x.gz}：${x.relation}`);
   L.push('');
@@ -7234,6 +7276,8 @@ export function formatFacts(chart) {
   line('地支相刑', r.地支相刑, (x) => `${x.刑}(${x.positions})${x.争议 ? '⚠两派口径有争议' : ''}`);
   line('地支相害', r.地支相害, (x) => x.pair);
   line('地支相破', r.地支相破, (x) => x.pair);
+  line('干支自合', r.干支自合, (x) => `${x.pillar}${x.gz}(${x.合})`);
+  line('地支暗合', r.地支暗合, (x) => `${x.pair}(${x.合})`);
   L.push('　同柱：' + r.天干地支同柱.map((x) => `${x.pillar}${x.gz}${x.relation}`).join('；'));
   L.push('');
   L.push(`大运：${chart.luck.direction}（${chart.luck.source}）` + (chart.luck.source === '按节气自动推演' ? `，${chart.luck.start.startAgeText}起运（交运公历 ${chart.luck.start.startDate}）` : ''));
@@ -7482,6 +7526,6 @@ export {
   SI_XIANG_WUXING, SI_XIANG_YUAN, SI_XIANG_MONTH_SYSTEMS, siXiangOf, genWeightOf, youJiuOf,
   canControlOf, canTransformOf, canBindOf,
   threatOf, qingOf, protectionOf, protectionChainOf, structureOf,
-  chengzaiReassess, xiangzhanOf, fanwangOf, tiyongRouteOf,
+  chengzaiReassess, xiangzhanOf, fanwangOf, selfHiddenCombineOf, tiyongRouteOf,
   formatTiyong
 } from './tiyong.mjs';

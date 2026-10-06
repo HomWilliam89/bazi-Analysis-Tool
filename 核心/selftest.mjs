@@ -17,6 +17,7 @@ import {
   threatOf, qingOf, protectionOf, protectionChainOf, structureOf, fanwangOf, tiyongRouteOf, routeOf,
   powerOf, canControlOf, canTransformOf, canBindOf,
   SI_XIANG_WUXING, SI_XIANG_YUAN, SI_XIANG_MONTH_SYSTEMS, siXiangOf, genWeightOf, youJiuOf,
+  STEM_BRANCH_SELF_COMBINE, BRANCH_HIDDEN_COMBINE, gzRelations, selfHiddenCombineOf,
 } from './engine.mjs';
 
 /** 由 "辛巳" 之类的干支串造出 engine 各原语所需的柱对象数组 */
@@ -2245,6 +2246,72 @@ console.log('=== 29. 古籍检索落实：从格前提 · 三书对账 · 四象
   ok('只透无根 ⇒ 虚露、救而无力', /虚露/.test(y3.档) && /效力几等于无/.test(y3.结论), y3.结论);
   eq('有救阈值须附三处反对说', y3.反对说.length, 3);
   ok('须声明"只给序与档、不给数字"', /只给序与档，不给数字/.test(y3.说明), '');
+}
+
+console.log('=== 30. 干支自合与地支暗合识别（P-015 · D-029 裁定）===');
+{
+  // ── 30.1 常量结构校验 ──
+  const selfPillars = Object.keys(STEM_BRANCH_SELF_COMBINE);
+  eq('自合柱数恰为 7 柱', selfPillars.length, 7);
+  ok('包含戊子', selfPillars.includes('戊子'), '');
+  ok('包含壬午', selfPillars.includes('壬午'), '');
+  ok('包含丁亥', selfPillars.includes('丁亥'), '');
+  ok('包含辛巳', selfPillars.includes('辛巳'), '');
+  ok('包含己亥', selfPillars.includes('己亥'), '');
+  ok('包含癸巳', selfPillars.includes('癸巳'), '');
+  ok('包含甲午', selfPillars.includes('甲午'), '');
+  eq('戊子合', STEM_BRANCH_SELF_COMBINE['戊子'].合, '戊癸合');
+  eq('丁亥合', STEM_BRANCH_SELF_COMBINE['丁亥'].合, '丁壬合');
+
+  const hiddenPairs = Object.keys(BRANCH_HIDDEN_COMBINE);
+  eq('暗合对总数（双向对称）为 6', hiddenPairs.length, 6);
+  ok('包含寅丑', hiddenPairs.includes('寅丑'), '');
+  ok('包含卯申', hiddenPairs.includes('卯申'), '');
+  ok('包含午亥', hiddenPairs.includes('午亥'), '');
+  eq('寅丑暗合五行', BRANCH_HIDDEN_COMBINE['寅丑'].合, '甲己/丙辛/戊癸全合');
+  eq('卯申暗合五行', BRANCH_HIDDEN_COMBINE['卯申'].合, '乙庚暗合');
+  eq('午亥暗合五行', BRANCH_HIDDEN_COMBINE['午亥'].合, '丁壬/甲己暗合');
+
+  // ── 30.2 gzRelations 结构化字段输出 ──
+  const rels = gzRelations(pillarsOf('戊子', '癸亥', '戊子', '丁巳'), null);
+  ok('gzRelations 须包含干支自合字段', Array.isArray(rels['干支自合']), '');
+  ok('gzRelations 须包含地支暗合字段', Array.isArray(rels['地支暗合']), '');
+  eq('该盘自合柱数（年柱戊子、日柱戊子）', rels['干支自合'].length, 2);
+  eq('年柱自合', rels['干支自合'][0].pillar, '年');
+  eq('日柱自合', rels['干支自合'][1].pillar, '日');
+
+  // ── 30.3 selfHiddenCombineOf 体用判定枚举 ──
+  // ① 日柱自合盘（无暗合）
+  const c1 = { pillars: pillarsOf('戊子', '癸亥', '戊子', '丁巳') };
+  const r1 = selfHiddenCombineOf(c1);
+  eq('戊子造判为日柱自合', r1.判定, '日柱自合');
+  ok('日柱自合对象非空', !!r1.日柱自合, '');
+  eq('日柱干支', r1.日柱自合.gz, '戊子');
+
+  // ② 自合兼暗合盘（丁亥日柱自合 + 寅丑地支暗合）
+  const c2 = { pillars: pillarsOf('丙寅', '己丑', '丁亥', '癸卯') };
+  const r2 = selfHiddenCombineOf(c2);
+  eq('丁亥造兼寅丑判为自合兼暗合', r2.判定, '自合兼暗合');
+  eq('检出地支暗合 1 组', r2.地支暗合.length, 1);
+  eq('暗合对为年寅—月丑', r2.地支暗合[0].pair, '年寅 — 月丑');
+
+  // ③ 地支暗合盘（仅有卯申暗合，无自合柱）
+  const c3 = { pillars: pillarsOf('乙卯', '甲申', '戊辰', '丙辰') };
+  const r3 = selfHiddenCombineOf(c3);
+  eq('仅有卯申判为地支暗合', r3.判定, '地支暗合');
+  eq('自合明细为空', r3.自合明细.length, 0);
+
+  // ④ 他柱自合盘（年柱辛巳自合，日柱戊辰非自合，无暗合）
+  const c4 = { pillars: pillarsOf('辛巳', '丙申', '戊辰', '甲子') };
+  const r4 = selfHiddenCombineOf(c4);
+  eq('年柱辛巳自合判为他柱自合', r4.判定, '他柱自合');
+  eq('他柱自合数', r4.他柱自合.length, 1);
+  eq('日柱自合为空', r4.日柱自合, null);
+
+  // ⑤ 无暗合盘
+  const c5 = { pillars: pillarsOf('甲子', '丙寅', '戊辰', '庚申') };
+  const r5 = selfHiddenCombineOf(c5);
+  eq('纯正盘判为无暗合', r5.判定, '无暗合');
 }
 
 console.log('');

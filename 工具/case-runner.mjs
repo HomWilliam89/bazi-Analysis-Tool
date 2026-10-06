@@ -8,6 +8,7 @@ import { STEMS, BRANCHES, castChart } from '../核心/engine.mjs';
 import {
   tiyongRouteOf, canControlOf, canTransformOf, canBindOf,
   protectionChainOf, youJiuOf, fanwangOf, xiangzhanOf, siXiangOf,
+  selfHiddenCombineOf,
 } from '../核心/tiyong.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -387,6 +388,21 @@ for (const c of casesToRun) {
       failedAssertions += 1;
       console.log(`  ✗ [月令四象] 期望: ${c.期望.月令四象} != 实际: ${act}`);
       failureDetails.push({ id: c.id, item: '月令四象', exp: c.期望.月令四象, act, p: c.判据 });
+    }
+  }
+
+  // 断言 16: 暗合判定 (P-015 · D-029 裁定)
+  if (typeof c.期望.暗合判定 !== 'undefined') {
+    totalAssertions += 1;
+    const act = res.自合暗合?.判定 ?? selfHiddenCombineOf(chart).判定;
+    const ok = act === c.期望.暗合判定;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [暗合判定] 期望: ${c.期望.暗合判定} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [暗合判定] 期望: ${c.期望.暗合判定} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '暗合判定', exp: c.期望.暗合判定, act, p: c.判据 });
     }
   }
 

@@ -187,6 +187,12 @@ export function formatTiyong(t) {
     L.push(`　※ 据：${t.犯旺.据}`);
     L.push('');
   }
+  if (t.自合暗合 && t.自合暗合.判定 !== '无暗合') {
+    L.push('【干支自合与暗合做功】（P-015 · D-029 裁定）');
+    L.push(`　判定：**${t.自合暗合.判定}**`);
+    L.push(`　说明：${t.自合暗合.说明}`);
+    L.push('');
+  }
   L.push('【禁令】');
   for (const x of t.禁令) L.push(`　· ${x}`);
   L.push('');
@@ -2652,6 +2658,65 @@ export function fanwangOf(chart, opts = {}) {
 }
 
 /**
+ * **干支自合与地支暗合判定**（P-015 · D-029 裁定）
+ *
+ * 识别七大干支自合柱与三大地支通合，输出结构化判定枚举与做功解读。
+ *
+ * @param {object} chart
+ * @param {{岁运?: string}} [opts]
+ */
+export function selfHiddenCombineOf(chart, opts = {}) {
+  let luckP = null;
+  if (opts.岁运 && opts.岁运.length >= 2) {
+    const s = opts.岁运[0], b = opts.岁运[1];
+    const si = STEMS.indexOf(s), bi = BRANCHES.indexOf(b);
+    if (si >= 0 && bi >= 0) luckP = { stemIndex: si, branchIndex: bi };
+  }
+  const rels = gzRelations(chart.pillars, luckP);
+  const zfs = rels['干支自合'] ?? [];
+  const ahs = rels['地支暗合'] ?? [];
+  const riZihe = zfs.find((x) => x.pillar === '日') ?? null;
+  const taZihe = zfs.filter((x) => x.pillar !== '日');
+
+  let 判定 = '无暗合';
+  if (riZihe && ahs.length > 0) {
+    判定 = '自合兼暗合';
+  } else if (riZihe && ahs.length === 0) {
+    判定 = '日柱自合';
+  } else if (!riZihe && taZihe.length > 0 && ahs.length > 0) {
+    判定 = '自合兼暗合';
+  } else if (!riZihe && taZihe.length > 0 && ahs.length === 0) {
+    判定 = '他柱自合';
+  } else if (zfs.length === 0 && ahs.length > 0) {
+    判定 = '地支暗合';
+  }
+
+  const 说明条 = [];
+  if (riZihe) {
+    说明条.push(`日柱【${riZihe.gz}】自坐暗合（${riZihe.合}，暗藏${riZihe.藏干}）：日主意志专一，情向直归坐下配偶宫与财官，暗度陈仓做功效率极高`);
+  }
+  for (const tz of taZihe) {
+    说明条.push(`${tz.pillar}柱【${tz.gz}】自合（${tz.合}，暗藏${tz.藏干}）：天地交泰，暗通款曲`);
+  }
+  for (const ah of ahs) {
+    说明条.push(`地支【${ah.pair}】暗合（${ah.合}）：${ah.note}`);
+  }
+  if (说明条.length === 0) {
+    说明条.push('局中无干支自合柱，亦无地支暗合，纯以正五行明见刑冲生克论做功');
+  }
+
+  return {
+    判定,
+    日柱自合: riZihe,
+    他柱自合: taZihe,
+    地支暗合: ahs,
+    自合明细: zfs,
+    说明: 说明条.join('；'),
+    据: 'P-015 判据 / D-029 裁定：干支自合七柱与地支暗合三组识别法则',
+  };
+}
+
+/**
  * **体用路线四条的汇总入口** —— 一次算齐，供工具侧调用。
  *
  * @param {object} chart
@@ -3215,6 +3280,7 @@ export function tiyongRouteOf(chart, opts = {}) {
     承载重估: chengzaiReassess(chart, { 岁运 }),
     相战择优: xiangzhanOf(chart, { 用神五行: 采用用神 }),
     犯旺: fanwangOf(chart, { 岁运 }),
+    自合暗合: selfHiddenCombineOf(chart, { 岁运 }),
     交叉裁决: 交叉,
     // 三者须并看，缺一即不闭环：用神本身有没有救（youJiuOf）、有没有护卫（第三）、
     // 结构稳不稳（第四）。引擎只报，不合并成单一结论。
