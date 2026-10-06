@@ -2693,10 +2693,10 @@ export function selfHiddenCombineOf(chart, opts = {}) {
 
   const 说明条 = [];
   if (riZihe) {
-    说明条.push(`日柱【${riZihe.gz}】自坐暗合（${riZihe.合}，暗藏${riZihe.藏干}）：日主意志专一，情向直归坐下配偶宫与财官，暗度陈仓做功效率极高`);
+    说明条.push(`日柱【${riZihe.gz}】自坐暗合（${riZihe.合}，暗藏${riZihe.藏干}）：同柱干支自合自绊，情向内敛，吉凶受全局主要矛盾与用忌统率`);
   }
   for (const tz of taZihe) {
-    说明条.push(`${tz.pillar}柱【${tz.gz}】自合（${tz.合}，暗藏${tz.藏干}）：天地交泰，暗通款曲`);
+    说明条.push(`${tz.pillar}柱【${tz.gz}】自合（${tz.合}，暗藏${tz.藏干}）：同柱干支相引自合，情向内敛`);
   }
   for (const ah of ahs) {
     说明条.push(`地支【${ah.pair}】暗合（${ah.合}）：${ah.note}`);
