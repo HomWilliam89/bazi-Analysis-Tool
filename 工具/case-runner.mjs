@@ -523,14 +523,30 @@ for (const c of casesToRun) {
   if (typeof c.期望.体系覆盖 !== 'undefined') {
     totalAssertions += 1;
     const act = res.覆盖?.covered ? '已覆盖' : '未覆盖';
-    const ok = act === c.期望.体系覆盖;
+    const exp = c.期望.体系覆盖;
+    const ok = act === exp;
     if (ok) {
       passedAssertions += 1;
-      console.log(`  ✓ [体系覆盖] 期望: ${c.期望.体系覆盖} == 实际: ${act}`);
+      console.log(`  ✓ [体系覆盖] 期望: ${exp} == 实际: ${act}`);
     } else {
       failedAssertions += 1;
-      console.log(`  ✗ [体系覆盖] 期望: ${c.期望.体系覆盖} != 实际: ${act}`);
-      failureDetails.push({ id: c.id, item: '体系覆盖', exp: c.期望.体系覆盖, act, p: c.判据 });
+      console.log(`  ✗ [体系覆盖] 期望: ${exp} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '体系覆盖', exp, act, p: c.判据 });
+    }
+  }
+
+  // 断言 23: 从儿比劫判定 (D-032 裁定 · 判据 P-016)
+  if (typeof c.期望.从儿比劫 !== 'undefined') {
+    totalAssertions += 1;
+    const act = res.从儿分析?.比劫判定?.角色 ?? '非从儿';
+    const ok = act === c.期望.从儿比劫;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [从儿比劫] 期望: ${c.期望.从儿比劫} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [从儿比劫] 期望: ${c.期望.从儿比劫} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '从儿比劫', exp: c.期望.从儿比劫, act, p: c.判据 });
     }
   }
 

@@ -87,6 +87,14 @@ export function formatTiyong(t) {
     L.push(`　日主特性：${g.日主特性}`);
     L.push(`　⚠ ${g.待核定}`);
   }
+  if (t.从儿分析?.属于从儿) {
+    L.push('');
+    L.push('【从儿格流通与比劫研判】（P-016 判据）');
+    L.push(`　结论：${t.从儿分析.综合结论}`);
+    L.push(`　比劫判定：【${t.从儿分析.比劫判定.角色}】${t.从儿分析.比劫判定.说明}`);
+    L.push(`　流通归宿：${t.从儿分析.流通归宿}`);
+    L.push(`　破格检验：印绶【${t.从儿分析.印绶判定.角色}】；官杀【${t.从儿分析.官杀判定.角色}】`);
+  }
   const t1 = t.第一_财官威胁;
   const t2 = t.第二_印比有情;
   const t3 = t.第三_用神护卫;
@@ -3241,6 +3249,157 @@ export function coverageOf(chart, opts = {}) {
 }
 
 /**
+ * **从儿格见比劫判定与流通归宿研判**（D-032 / 判据 P-016）。
+ *
+ * 典籍法理（《滴天髓》《千里命稿》）：
+ *   ① 「从儿不管身强弱，只要我儿又见儿」：以食伤为用，顺生流通；
+ *   ② 比劫顺生食伤通常为喜（比劫生食伤，秀气有源，不悖从儿之势）；
+ *   ③ 印绶破格（枭神夺食）为第一大忌；
+ *   ④ 官杀相战（伤官见官）为忌；
+ *   ⑤ 若局中比劫与财星贴身直克（柱差 <= 1）且无食伤在两者之间通关，
+ *      判定为「越位夺财为忌」（虽从儿亦有争财破耗之害）。
+ *
+ * @param {object} chart
+ * @param {object} [opts]
+ * @returns {object}
+ */
+export function congErAnalysisOf(chart, opts = {}) {
+  const pillars = chart.pillars;
+  const D = dayMasterOf(chart).element;
+  const monthBranch = branchAt(pillars[1]);
+  const s = elementStrength(pillars, monthBranch, kingOf(chart));
+  const 占比 = s.percent;
+  const tgs = tenGodStrength(chart);
+  const byGod = Object.fromEntries((tgs.各十神 ?? []).map((x) => [x.十神, x]));
+  const sg = specialGejuOf(chart);
+  const 特殊成立 = sg.成立者 ?? [];
+
+  const 食伤五行 = SHENG_MAP[D];
+  const 财星五行 = KE_MAP[D];
+  const 官杀五行 = 克我者(D);
+  const 印星五行 = 生我者(D);
+  const 比劫五行 = D;
+
+  const 食伤占比 = 占比[食伤五行] ?? 0;
+  const 印星占比 = 占比[印星五行] ?? 0;
+  const 月令五行 = ELEMENTS[BRANCH_ELEMENT[BRANCHES.indexOf(monthBranch)]];
+  const 月令食伤 = 月令五行 === 食伤五行;
+
+  const R = ['极', '强', '中', '弱'];
+  const 食伤力 = Math.min(R.indexOf(byGod['食神']?.级别 ?? '弱'), R.indexOf(byGod['伤官']?.级别 ?? '弱'));
+  const 印星力 = Math.min(R.indexOf(byGod['正印']?.级别 ?? '弱'), R.indexOf(byGod['偏印']?.级别 ?? '弱'));
+
+  const 标记从儿 = 特殊成立.includes('从儿');
+  const 属于从儿 = 标记从儿 || (月令食伤 && 食伤占比 >= 30 && 印星力 >= 2 && 印星占比 < 12);
+
+  if (!属于从儿) {
+    return {
+      属于从儿: false,
+      说明: '局中食伤未达从儿独旺标准，或印星有力破格，不入从儿格',
+    };
+  }
+
+  // 1. 印绶检验
+  const 印落点 = occupantsOf(chart, 印星五行).filter((o) => o.层 === '天干' || o.层 === '地支本气');
+  const 印破格 = 印落点.length > 0 && 印星占比 >= 10;
+  const 印绶判定 = {
+    角色: 印破格 ? '枭印破格' : '无破格之虞',
+    说明: 印破格
+      ? `局中见${印星五行}（印绶）有力透藏，枭神夺食犯旺逆势，破从儿之格`
+      : `局中无印绶破格，或印星衰绝无力，从儿气势得以保全`,
+  };
+
+  // 2. 官杀检验
+  const 官杀落点 = occupantsOf(chart, 官杀五行).filter((o) => o.层 === '天干' || o.层 === '地支本气');
+  const 财落点 = occupantsOf(chart, 财星五行).filter((o) => o.层 === '天干' || o.层 === '地支本气');
+  const 有官杀 = 官杀落点.length > 0;
+  const 官杀相战 = 有官杀 && (占比[官杀五行] ?? 0) >= 10 && 财落点.length === 0;
+  const 官杀判定 = {
+    角色: 官杀相战 ? '相战为忌（伤官见官）' : '无相战之害',
+    说明: 官杀相战
+      ? `局中见${官杀五行}（官杀）透藏，与食伤直接相战，伤官见官局势动荡`
+      : (有官杀 ? `官杀有财星通关转化，不直接冲犯食伤` : `局无官杀相犯，气势专一`),
+  };
+
+  // 3. 比劫角色判定（P-016 核心重点）
+  const 比劫落点 = occupantsOf(chart, 比劫五行).filter((o) => o.性质 !== '日主自身');
+  let 比劫判定;
+  if (比劫落点.length === 0) {
+    比劫判定 = {
+      角色: '无透藏',
+      说明: '局中无比劫透藏，日主全神贯注于食伤',
+    };
+  } else {
+    const 食伤落点 = occupantsOf(chart, 食伤五行);
+    let 存在越位夺财 = false;
+    let 夺财细节 = '';
+
+    for (const b of 比劫落点) {
+      for (const c of 财落点) {
+        const prox = proximityOf(b.宫位, c.宫位);
+        if (prox.柱差 <= 1) {
+          let hasTongGuan = false;
+          if (prox.柱差 === 0) {
+            // 同柱直克（盖头截脚）：通关之神必须在同柱（同柱藏有或透出食伤）
+            hasTongGuan = 食伤落点.some((s) => s.宫位[0] === b.宫位[0]);
+          } else {
+            // 邻柱直克（柱差1）：若同为天干直克，须天干透出食伤或同柱引化
+            hasTongGuan = 食伤落点.some((s) => {
+              const p1 = proximityOf(s.宫位, b.宫位);
+              const p2 = proximityOf(s.宫位, c.宫位);
+              if (p1.柱差 > 1 || p2.柱差 > 1) return false;
+              if (b.层 === '天干' && c.层 === '天干') {
+                return s.层 === '天干' || s.宫位[0] === b.宫位[0] || s.宫位[0] === c.宫位[0];
+              }
+              return true;
+            });
+          }
+          if (!hasTongGuan) {
+            存在越位夺财 = true;
+            夺财细节 = `${b.宫位}${b.字}与${c.宫位}${c.字}贴身直克（柱差${prox.柱差}），中间无食伤通关`;
+            break;
+          }
+        }
+      }
+      if (存在越位夺财) break;
+    }
+
+    if (存在越位夺财) {
+      比劫判定 = {
+        角色: '越位夺财为忌',
+        说明: `比劫与财星贴身直克（${夺财细节}），比劫越位夺财，虽从儿亦有争财破耗之害`,
+      };
+    } else {
+      比劫判定 = {
+        角色: '顺生为喜',
+        说明: '比劫顺生食伤，秀气有源，不悖从儿之势（《滴天髓》「不论身强弱，四柱虽有比劫仍去生助食伤也」）',
+      };
+    }
+  }
+
+  // 4. 流通归宿
+  const 见儿 = 财落点.length > 0 && (占比[财星五行] ?? 0) >= 10;
+  const 流通归宿 = 见儿
+    ? `食伤生财，秀气流行，以食伤为用、财星为归宿（我儿又见儿）`
+    : `食伤独旺泄秀，以食伤为用（局中财弱，纯粹泄秀）`;
+  const 所从之势 = 见儿 ? 财星五行 : 食伤五行;
+
+  const 综合结论 = `从儿格成立，以【${食伤五行}】为用；比劫【${比劫判定.角色}】；${流通归宿}`;
+
+  return {
+    属于从儿: true,
+    用神: 食伤五行,
+    所从之势,
+    流通归宿,
+    比劫判定,
+    印绶判定,
+    官杀判定,
+    综合结论,
+    依据: '《规矩/判据.md》P-016；《滴天髓》从儿章；《千里命稿》从儿格',
+  };
+}
+
+/**
  * **体用路线四条的汇总入口** —— 一次算齐，供工具侧调用。
  *
  * @param {object} chart
@@ -3757,6 +3916,12 @@ export function tiyongRouteOf(chart, opts = {}) {
         : '阴干相对易从（《滴天髓》「五阴从势无情义」）'),
   } : null;
 
+  const 从儿分析 = congErAnalysisOf(chart, opts);
+  if (从格改判 && 从儿分析.属于从儿) {
+    从格改判.从儿分析 = 从儿分析;
+    从格改判.流通路线 += `；从儿比劫【${从儿分析.比劫判定.角色}】（${从儿分析.比劫判定.说明}）`;
+  }
+
   const 交叉 = [];
   if (第二?.交叉裁决) 交叉.push(第二.交叉裁决);
   if (第三?.岁运引克) 交叉.push(第三.岁运引克.结论);
@@ -3796,6 +3961,7 @@ export function tiyongRouteOf(chart, opts = {}) {
     从格杂质检验,
     主要矛盾,
     从格改判,
+    从儿分析,
     第一_财官威胁: 第一,
     第二_印比有情: 第二,
     第三_用神护卫: 第三,

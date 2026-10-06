@@ -7792,6 +7792,6 @@ export {
   threatOf, qingOf, protectionOf, protectionChainOf, structureOf,
   chengzaiReassess, xiangzhanOf, fanwangOf, selfHiddenCombineOf, tiyongRouteOf,
   DUAL_IMAGE_LIBRARY, dualImageMatrixOf,
-  arbitrateGanzhiForces, coverageOf,
+  arbitrateGanzhiForces, coverageOf, congErAnalysisOf,
   formatTiyong
 } from './tiyong.mjs';

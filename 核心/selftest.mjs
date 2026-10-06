@@ -21,7 +21,7 @@ import {
   BRANCH_HALF_COMBINE, BRANCH_EXTINCTION, JIELU_KONGWANG,
   ANLU, ANLU_DAY_GZ, LUSHEN, shenshaNature,
   DUAL_IMAGE_LIBRARY, dualImageMatrixOf,
-  arbitrateGanzhiForces, coverageOf,
+  arbitrateGanzhiForces, coverageOf, congErAnalysisOf,
 } from './engine.mjs';
 
 /** 由 "辛巳" 之类的干支串造出 engine 各原语所需的柱对象数组 */
@@ -2540,6 +2540,39 @@ console.log('=== 34. 干支多重并发作用力四维仲裁与认怂出口（D-
   const covSiJie = coverageOf(cSiJie);
   eq('极端两神交战死结触发认怂出口', covSiJie.covered, false);
   eq('死结命局判定为本体系未覆盖暂不判断', covSiJie.判定, '本体系未覆盖，暂不判断');
+}
+
+console.log('=== 35. D-032 / P-016：从儿格见比劫判定与流通归宿法则 ===');
+{
+  // ── 35.1 从儿格比劫顺生为喜实测（《滴天髓阐微》名造） ──
+  // 丁卯 丙午 甲午 丙寅（甲木生午月，满盘食伤，地支木火顺生，秀气有源）
+  const cShunSheng = {
+    pillars: pillarsOf('丁卯', '丙午', '甲午', '丙寅'),
+    dayMaster: { stem: '甲', element: '木', bornMonthBranch: '午' },
+  };
+  const an1 = congErAnalysisOf(cShunSheng);
+  eq('从儿格判定为属于从儿', an1.属于从儿, true);
+  eq('从儿格用神为火（食伤）', an1.用神, '火');
+  eq('比劫顺生食伤判定为顺生为喜', an1.比劫判定.角色, '顺生为喜');
+  eq('印绶判定无破格之虞', an1.印绶判定.角色, '无破格之虞');
+  ok('流通归宿包含食伤', an1.流通归宿.includes('食伤'), '');
+
+  // ── 35.2 从儿格比劫越位夺财为忌实测（《千里命稿》变格名造） ──
+  // 丁酉 己丑 丁丑 戊申（丁火生丑月土旺，年柱丁火比劫贴身直克酉金财星无食伤通关引化）
+  const cDuoCai = {
+    pillars: pillarsOf('丁酉', '己丑', '丁丑', '戊申'),
+    dayMaster: { stem: '丁', element: '火', bornMonthBranch: '丑' },
+  };
+  const an2 = congErAnalysisOf(cDuoCai);
+  eq('从儿格判定属于从儿', an2.属于从儿, true);
+  eq('比劫贴身直克财星判定为越位夺财为忌', an2.比劫判定.角色, '越位夺财为忌');
+  ok('比劫判定说明点明争财破耗', an2.比劫判定.说明.includes('争财破耗'), '');
+
+  // ── 35.3 tiyongRouteOf 整合验证 ──
+  const routeRes = tiyongRouteOf(cShunSheng);
+  ok('tiyongRouteOf 返回从儿分析对象', !!routeRes.从儿分析, '');
+  eq('tiyongRouteOf 挂接从儿分析属于从儿', routeRes.从儿分析.属于从儿, true);
+  eq('tiyongRouteOf 挂接比劫判定角色', routeRes.从儿分析.比劫判定.角色, '顺生为喜');
 }
 
 console.log('');
