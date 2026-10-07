@@ -9,6 +9,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isValidGregorianDate } from '../核心/engine.mjs';
 import { generateFullReport, formatConsoleSummary, ensureFullChart } from '../核心/report-generator.mjs';
 
 function printHelp() {
@@ -119,21 +120,39 @@ export async function runCli(argv = process.argv.slice(2)) {
       console.error(`错误：无法解析生辰日期格式「${opts.solar}」，请形如 "YYYY-MM-DD HH:mm"`);
       return 1;
     }
+    const y = Number(matched[1]);
+    const m = Number(matched[2]);
+    const d = Number(matched[3]);
+    const h = matched[4] ? Number(matched[4]) : 12;
+    const min = matched[5] ? Number(matched[5]) : 0;
+    if (!isValidGregorianDate(y, m, d) || h < 0 || h > 24 || min < 0 || min >= 60) {
+      console.error(`错误：生辰日期或时间「${opts.solar}」不合法，超出公历历法有效天数或时间范围`);
+      return 1;
+    }
     input = {
-      year: Number(matched[1]),
-      month: Number(matched[2]),
-      day: Number(matched[3]),
-      hour: matched[4] ? Number(matched[4]) : 12,
-      minute: matched[5] ? Number(matched[5]) : 0,
+      year: y,
+      month: m,
+      day: d,
+      hour: h,
+      minute: min,
       gender: opts.gender,
     };
   } else if (opts.year && opts.month && opts.day) {
+    const y = opts.year;
+    const m = opts.month;
+    const d = opts.day;
+    const h = opts.hour ?? 12;
+    const min = opts.minute ?? 0;
+    if (!isValidGregorianDate(y, m, d) || h < 0 || h > 24 || min < 0 || min >= 60) {
+      console.error(`错误：生辰日期或时间「${y}-${m}-${d} ${h}:${min}」不合法，超出公历历法有效范围`);
+      return 1;
+    }
     input = {
-      year: opts.year,
-      month: opts.month,
-      day: opts.day,
-      hour: opts.hour ?? 12,
-      minute: opts.minute ?? 0,
+      year: y,
+      month: m,
+      day: d,
+      hour: h,
+      minute: min,
       gender: opts.gender,
     };
   } else if (opts.pillars && opts.pillars.length === 4) {

@@ -8,10 +8,19 @@
 
 import {
   STEMS, BRANCHES, STEM_ELEMENT, BRANCH_ELEMENT, ELEMENTS,
+  STEM_YANG, HIDDEN_STEMS_SPEC, gzIndex, nayinOf, xunOf,
+  twelveStage, elementStrength, luckDirection, buildLuckPillars,
   castChart, gzRelations, shenshaOf, dateCandidates,
   BRANCH_CLASH, BRANCH_COMBINE, yearPillarOf, tenGod,
   tiaohouAssessment
 } from './engine.mjs';
+
+const MONTH_BRANCH_SEASON = {
+  寅: '木', 卯: '木', 辰: '土',
+  巳: '火', 午: '火', 未: '土',
+  申: '金', 酉: '金', 戌: '土',
+  亥: '水', 子: '水', 丑: '土',
+};
 import {
   tiyongRouteOf, gejuChengPoOf, protectionChainOf,
   coverageOf, arbitrateGanzhiForces
@@ -2049,89 +2058,185 @@ function strategyGuidance(domTenGod, dmElem, yongElem, dayStem) {
 }
 
 /**
+ * 无法通过公历高保真反推时，构建完备且字段全量的纯四柱排盘底座
+ */
+function buildPillarsChart(input, options = {}) {
+  const pos = ['年柱', '月柱', '日柱', '时柱'];
+  const dayStem = input[2][0];
+  const dayStemIdx = STEMS.indexOf(dayStem);
+  const yearStemIdx = STEMS.indexOf(input[0][0]);
+  const monthBranch = input[1][1];
+  const monthBranchIdx = BRANCHES.indexOf(monthBranch);
+  const gender = options.gender || '男';
+
+  const pillars = input.map((gz, i) => {
+    const stem = gz[0];
+    const branch = gz[1];
+    const stemIndex = STEMS.indexOf(stem);
+    const branchIndex = BRANCHES.indexOf(branch);
+    const stemEl = stemIndex >= 0 ? ELEMENTS[STEM_ELEMENT[stemIndex]] : '';
+    const branchEl = branchIndex >= 0 ? ELEMENTS[BRANCH_ELEMENT[branchIndex]] : '';
+
+    let gzIdx = -1;
+    if (stemIndex >= 0 && branchIndex >= 0 && stemIndex % 2 === branchIndex % 2) {
+      gzIdx = gzIndex(stemIndex, branchIndex);
+    }
+    let nayin = { name: '—', element: '—' };
+    let xun = { name: '—', voidBranches: [] };
+    if (gzIdx >= 0) {
+      try { nayin = nayinOf(gzIdx); } catch {}
+      try { xun = xunOf(gzIdx); } catch {}
+    }
+
+    const hidden = (branchIndex >= 0 && HIDDEN_STEMS_SPEC[branchIndex])
+      ? HIDDEN_STEMS_SPEC[branchIndex].map(([s, role, w]) => {
+          const sIdx = STEMS.indexOf(s);
+          return {
+            stem: s,
+            role,
+            weight: w,
+            tenGod: (dayStemIdx >= 0 && sIdx >= 0) ? tenGod(dayStemIdx, sIdx) : '',
+          };
+        })
+      : [];
+
+    return {
+      position: pos[i],
+      gz,
+      stem,
+      branch,
+      stemIndex,
+      branchIndex,
+      stemElement: stemEl,
+      branchElement: branchEl,
+      stemYinYang: (stemIndex >= 0 && STEM_YANG[stemIndex]) ? '阳' : '阴',
+      branchYinYang: branchIndex % 2 === 0 ? '阳' : '阴',
+      tenGod: (dayStemIdx >= 0 && stemIndex >= 0) ? (i === 2 ? '日主' : tenGod(dayStemIdx, stemIndex)) : '',
+      hidden,
+      nayin,
+      xun: xun.name,
+      voidBranches: xun.voidBranches || [],
+      selfStage: (stemIndex >= 0 && branchIndex >= 0) ? twelveStage(stemIndex, branchIndex) : '',
+      dayStemStage: (dayStemIdx >= 0 && branchIndex >= 0) ? twelveStage(dayStemIdx, branchIndex) : '',
+      zodiac: ['鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪'][branchIndex] || '',
+    };
+  });
+
+  const dayVoid = pillars[2].voidBranches || [];
+  const yearVoid = pillars[0].voidBranches || [];
+
+  const monthHiddenFirst = (monthBranchIdx >= 0 && HIDDEN_STEMS_SPEC[monthBranchIdx]?.[0])
+    ? HIDDEN_STEMS_SPEC[monthBranchIdx][0][0]
+    : '甲';
+  const silingEl = ELEMENTS[STEM_ELEMENT[STEMS.indexOf(monthHiddenFirst)]] || '木';
+
+  let strength;
+  try {
+    strength = elementStrength(pillars, monthBranch, silingEl);
+  } catch {
+    strength = { percent: { '木': 20, '火': 20, '土': 20, '金': 20, '水': 20 } };
+  }
+
+  let luckPillars = [];
+  try {
+    const forward = luckDirection(STEM_YANG[yearStemIdx], gender);
+    const mPillarObj = {
+      index: pillars[1].stemIndex >= 0 && pillars[1].branchIndex >= 0 && pillars[1].stemIndex % 2 === pillars[1].branchIndex % 2
+        ? gzIndex(pillars[1].stemIndex, pillars[1].branchIndex)
+        : 0
+    };
+    luckPillars = buildLuckPillars(mPillarObj, 10, forward);
+    luckPillars.forEach(lp => {
+      lp.tenGod = (dayStemIdx >= 0 && lp.stemIndex >= 0) ? tenGod(dayStemIdx, lp.stemIndex) : '';
+    });
+  } catch {}
+
+  const dayStemEl = dayStemIdx >= 0 ? ELEMENTS[STEM_ELEMENT[dayStemIdx]] : '木';
+  return {
+    input: { gzList: input, gender },
+    calendar: {
+      solar: '四柱直推推演',
+      solarTermMonth: { term: monthBranch + '令', startedAt: '未知', nextTerm: '未知', nextAt: '未知' },
+    },
+    pillars,
+    dayMaster: {
+      stem: dayStem,
+      element: dayStemEl,
+      yinYang: (dayStemIdx >= 0 && STEM_YANG[dayStemIdx]) ? '阳' : '阴',
+      bornMonthBranch: monthBranch,
+      stageInMonth: (dayStemIdx >= 0 && monthBranchIdx >= 0) ? twelveStage(dayStemIdx, monthBranchIdx) : '',
+      season: MONTH_BRANCH_SEASON[monthBranch] || '四季',
+      '司令': {
+        '月支': monthBranch,
+        '司令': monthHiddenFirst,
+        '司令五行': silingEl,
+        '本气': monthHiddenFirst,
+      },
+      '当令五行': silingEl,
+      '当令据': '月令本气司权（四柱直推模式）',
+    },
+    void: {
+      xunKong: [],
+      dayVoid,
+      yearVoid,
+    },
+    relations: gzRelations(pillars, null),
+    shensha: shenshaOf(pillars, dayStemIdx, yearStemIdx, gender),
+    strength,
+    luck: {
+      pillars: luckPillars,
+    },
+  };
+}
+
+/**
  * 确保输入被解析为完整的排盘 chart
  */
-export function ensureFullChart(input) {
+export function ensureFullChart(input, options = {}) {
+  const gender = options.gender || '男';
+
   if (input && input.pillars && input.dayMaster) {
     if (!input.relations) input.relations = gzRelations(input.pillars, null);
     if (!input.shensha) {
       const dayStemIdx = STEMS.indexOf(input.pillars[2].stem);
       const yearStemIdx = STEMS.indexOf(input.pillars[0].stem);
-      input.shensha = shenshaOf(input.pillars, dayStemIdx, yearStemIdx, input.input?.gender || '男');
+      input.shensha = shenshaOf(input.pillars, dayStemIdx, yearStemIdx, input.input?.gender || gender);
     }
     return input;
   }
 
   // 若传入的是生日对象 { year, month, day, hour, minute, gender }
   if (input && typeof input.year === 'number' && typeof input.month === 'number') {
-    return castChart(input);
+    return castChart({ ...input, gender: input.gender || gender });
   }
 
   // 若传入的是四柱数组 ['庚午', '辛巳', '乙酉', '癸未']
   if (Array.isArray(input) && input.length === 4) {
-    // 尝试利用 dateCandidates 寻找最佳公历匹配
     try {
-      const cands = dateCandidates(input, { fromYear: 1900, toYear: 2050 });
+      const cands = dateCandidates(input, { fromYear: 1600, toYear: 2050 });
       if (cands && cands.候选 && cands.候选.length > 0) {
-        const best = cands.候选[0];
-        const [y, m, d] = best.日期.split('-').map(Number);
-        // 推算小时
         const branchHourMap = {
-          '子': 23, '丑': 2, '寅': 4, '卯': 6, '辰': 8, '巳': 10,
+          '子': 0, '丑': 2, '寅': 4, '卯': 6, '辰': 8, '巳': 10,
           '午': 12, '未': 14, '申': 16, '酉': 18, '戌': 20, '亥': 22
         };
-        const h = branchHourMap[best.时支] ?? 12;
-        return castChart({ year: y, month: m, day: d, hour: h, minute: 30, gender: '男' });
+        const candidateList = [
+          ...cands.候选.filter(c => c.立春年 >= 1900 && c.立春年 <= 2050),
+          ...cands.候选.filter(c => c.立春年 < 1900 || c.立春年 > 2050)
+        ];
+        for (const cand of candidateList) {
+          const [y, m, d] = cand.日期.split('-').map(Number);
+          const h = branchHourMap[cand.时支] ?? 12;
+          const chart = castChart({ year: y, month: m, day: d, hour: h, minute: 30, gender });
+          // 严格校验排盘干支是否与传入四柱 100% 一致（彻底杜绝 Pillar Mutation 篡改盘面）！
+          if (chart.pillars.every((p, idx) => p.gz === input[idx])) {
+            return chart;
+          }
+        }
       }
-    } catch {
-      // 容错回退
-    }
+    } catch {}
 
-    // 无法反推或反推失败时，组装标准的四柱结构
-    const pos = ['年柱', '月柱', '日柱', '时柱'];
-    const pillars = input.map((gz, i) => {
-      const stem = gz[0];
-      const branch = gz[1];
-      const stemIndex = STEMS.indexOf(stem);
-      const branchIndex = BRANCHES.indexOf(branch);
-      return {
-        position: pos[i],
-        gz,
-        stem,
-        branch,
-        stemIndex,
-        branchIndex,
-        stemElement: STEM_ELEMENT[stemIndex],
-        branchElement: BRANCH_ELEMENT[branchIndex],
-      };
-    });
-
-    const dayStem = pillars[2].stem;
-    const dayStemIdx = STEMS.indexOf(dayStem);
-    const yearStemIdx = STEMS.indexOf(pillars[0].stem);
-
-    const chart = {
-      input: { gzList: input, gender: '男' },
-      calendar: {
-        solar: '根据四柱反推',
-        solarTermMonth: { term: '参考月令', startedAt: '未知', nextTerm: '未知', nextAt: '未知' },
-      },
-      pillars,
-      dayMaster: {
-        stem: dayStem,
-        element: STEM_ELEMENT[dayStemIdx],
-        bornMonthBranch: pillars[1].branch,
-      },
-      void: {
-        xunKong: [],
-      },
-      relations: gzRelations(pillars, null),
-      shensha: shenshaOf(pillars, dayStemIdx, yearStemIdx, '男'),
-      strength: {
-        percent: { '木': 20, '火': 20, '土': 20, '金': 20, '水': 20 }
-      }
-    };
-    return chart;
+    // 无法精准匹配公历或四柱自洽性异常时，走完备四柱结构构建器
+    return buildPillarsChart(input, { gender });
   }
 
   throw new Error('ensureFullChart: 无法识别的输入格式（支持生日对象或四柱数组）');
@@ -2495,52 +2600,80 @@ function renderSchoolSection(chart) {
   lines.push(`  * **局中干支真实做功路径**：`);
   const gongList = [];
 
+  // 1. 天干五合
   if (rels['天干五合'] && rels['天干五合'].length > 0) {
     rels['天干五合'].forEach((c) => {
-      if (c.pair.includes('月丙') && c.pair.includes('年辛')) {
-        gongList.push(`天干【${c.pair}】作五合（化${c.化}）：月干伤官合年干七杀（伤官合杀），主位食伤之气引通至月干，合制年月权威之杀，以合去杀、化煞为权做大功`);
+      const isZhu = c.pair.includes('日') || c.pair.includes('时');
+      const isBin = c.pair.includes('年') || c.pair.includes('月');
+      let meaning = '两干情聚气凝，以合做功';
+      if (isZhu && isBin) {
+        meaning = '主宾相合（主位合揽宾位），将外部社会环境与体制资源合入主位，以合做大功';
+      } else if (isZhu) {
+        meaning = '日时主位相合，自身归宿情意专聚';
       } else {
-        gongList.push(`天干【${c.pair}】作五合（化${c.化}）：两干情聚气凝，以合做功`);
+        meaning = '年月宾位相合，外部平台环境聚合';
       }
+      gongList.push(`天干【${c.pair}】作五合（合化${c.化}）：${meaning}`);
     });
   }
+
+  // 2. 天干相克
   if (rels['天干相克'] && rels['天干相克'].length > 0) {
     rels['天干相克'].forEach((c) => {
-      if (c.pair.includes('时丁') && c.pair.includes('年辛')) {
-        gongList.push(`时干【丁】火食神克制年干【辛】金七杀：主位时上食神回克宾位七杀，食神制杀做功，以才智与技术威慑外部权贵`);
+      const isZhuKeBin = (c.pair.startsWith('日') || c.pair.startsWith('时')) && (c.pair.includes('年') || c.pair.includes('月'));
+      const isBinKeZhu = (c.pair.startsWith('年') || c.pair.startsWith('月')) && (c.pair.includes('日') || c.pair.includes('时'));
+      if (isZhuKeBin) {
+        gongList.push(`天干【${c.pair}】：主位发力制克宾位（我制他人成产业），以制做功`);
+      } else if (isBinKeZhu) {
+        gongList.push(`天干【${c.pair}】：宾位制克主位，体制与外部平台对自身施加约束`);
       }
     });
   }
 
+  // 3. 地支六合
   if (rels['地支六合'] && rels['地支六合'].length > 0) {
     rels['地支六合'].forEach((c) => {
-      if (c.pair.includes('月申 — 日巳') || c.pair.includes('日巳 — 月申')) {
-        gongList.push(`地支【${c.pair}】作六合（合化${c.化}兼相刑相破）：日支主位【巳】火伤官直合月令宾位【申】金正官，巳申合中带刑（火金相炼，伤官合制官星做功），把月令公门体制之官印财富合入主位自身，成“制官得官、合官得权”之大功格局`);
-      } else if (c.pair.includes('年巳 — 月申') || c.pair.includes('月申 — 年巳')) {
-        gongList.push(`地支【${c.pair}】作六合（合化${c.化}兼相刑相破）：年支宾位【巳】亦合刑月令【申】，两巳合刑一申，全局火势强旺成党夹制申金`);
+      const isZhu = c.pair.includes('日') || c.pair.includes('时');
+      const isBin = c.pair.includes('年') || c.pair.includes('月');
+      if (isZhu && isBin) {
+        gongList.push(`地支【${c.pair}】作六合（合化${c.化}）：主位直合宾位，将年月外部公门体制与平台资源合入主位自身，以合做功`);
+      } else if (isZhu) {
+        gongList.push(`地支【${c.pair}】作六合（合化${c.化}）：日时主位相合，夫妻宫与门户相连，自我根基稳固凝聚`);
       } else {
-        const isDayInvolved = c.pair.includes('日');
-        gongList.push(`地支【${c.pair}】六合（化${c.化}）：${isDayInvolved ? '主位合制宾位' : '宾位互合'}做功`);
+        gongList.push(`地支【${c.pair}】作六合（合化${c.化}）：年月宾位互合，外部环境与祖基平台聚合`);
       }
     });
   }
 
+  // 4. 地支半合 / 三合
   if (rels['地支半合'] && rels['地支半合'].length > 0) {
     rels['地支半合'].forEach((c) => {
-      if (c.pair.includes('日巳 — 时丑') || c.pair.includes('时丑 — 日巳')) {
-        gongList.push(`地支【${c.pair}】半合拱【${c.拱 || '酉'}】金局：主位日支【巳】与主位时支【丑】拱合金局，食伤能量生财汇聚，官杀归库于时支丑土财杀之库，做功回流至主位自身`);
-      } else if (c.pair.includes('年巳 — 时丑') || c.pair.includes('时丑 — 年巳')) {
-        gongList.push(`地支【${c.pair}】半合拱【${c.拱 || '酉'}】金局：宾位年支【巳】与主位时支【丑】跨柱拱合金局，引外部资源归库于时门`);
-      } else {
-        gongList.push(`地支【${c.pair}】${c.type || '半合'}做功：汇聚${c.局 || '局'}之能量`);
-      }
+      const isZhu = c.pair.includes('日') || c.pair.includes('时');
+      const isBin = c.pair.includes('年') || c.pair.includes('月');
+      const tag = (isZhu && isBin) ? '主宾相通汇聚' : (isZhu ? '主位内部汇聚' : '宾位外部汇聚');
+      gongList.push(`地支【${c.pair}】${c.type || '半合'}${c.拱 ? `（拱${c.拱}）` : ''}：${tag}【${c.局 || c.化 || '合'}】局之能量做功`);
+    });
+  }
+  if (rels['地支三合'] && rels['地支三合'].length > 0) {
+    rels['地支三合'].forEach((c) => {
+      gongList.push(`地支【${c.局}】：局中三合汇聚成局，气专力大，全方位调动干支能量`);
     });
   }
 
+  // 5. 地支相刑
   if (rels['地支相刑'] && rels['地支相刑'].length > 0) {
     rels['地支相刑'].forEach((c) => {
-      if (c.members?.includes('巳申')) {
-        gongList.push(`地支【巳申相刑】：两巳刑一申，盲派视刑为“开库”或“借刑做功”，巳火强势克刑申金，做功能量翻倍放大`);
+      gongList.push(`地支【${c.刑}】（${c.positions || c.members}）：盲派视刑为“开库”或“借刑做功”，干支相刑相激，激发原局潜藏能量做功`);
+    });
+  }
+
+  // 6. 地支六冲
+  if (rels['地支六冲'] && rels['地支六冲'].length > 0) {
+    rels['地支六冲'].forEach((c) => {
+      const isZhu = c.pair.includes('日') || c.pair.includes('时');
+      const isBin = c.pair.includes('年') || c.pair.includes('月');
+      if (isZhu && isBin) {
+        gongList.push(`地支【${c.pair}】相冲：主位与宾位对冲互激，冲战交涉，以冲做功`);
       }
     });
   }
@@ -2553,7 +2686,15 @@ function renderSchoolSection(chart) {
     lines.push(`    * 局中干支以生克流通为主，岁运引动时干支交涉做功。`);
   }
 
-  lines.push(`  * **做功能量与层次研判**：盲派视“主位制宾位”为成家立业之大成法则（命诀云「我制他人成产业」）。本命日时主位食伤成党成势（日支巳火、时干丁火），群起制合年月宾位之官杀（年辛、月申），制用大、效率高，体现出极高强度的个人能动性与掌控外部资源之功力。`);
+  const zhuDesc = `日柱【${dayGz}】、时柱【${hourGz}】`;
+  const binDesc = `年柱【${yearGz}】、月柱【${monthGz}】`;
+  let gongDesc = '';
+  if (gongList.length > 0) {
+    gongDesc = `本命主位${zhuDesc}与宾位${binDesc}产生多重交涉做功（涵盖${gongList.length}条路径），通过克制合聚外部资源，体现出命主调动并掌控外部环境之能力。制用大、做功效率高则富贵层级显。`;
+  } else {
+    gongDesc = `本命主位${zhuDesc}与宾位${binDesc}各自成体，局中干支以清平顺遂自守为主；待岁运干支引动冲合交涉之时，方显主位制宾之功用。`;
+  }
+  lines.push(`  * **做功能量与层次研判**：盲派视“主位制宾位”为成家立业之大成法则（命诀云「我制他人成产业」）。${gongDesc}`);
 
   const mangpaiHits = schoolRes.bySchool?.mangpai || [];
   if (mangpaiHits.length > 0) {
@@ -2564,8 +2705,16 @@ function renderSchoolSection(chart) {
   }
   lines.push('* **学派实质分歧**：');
   lines.push('  * 彻底打破子平身强身弱、日主平衡之教条，纯以宾主做功效率与捕神贼神定社会财富量级；不问日元有根无根，功成即贵。');
+
+  const OPPOSITE_BRANCHES = {
+    '子': '午火', '丑': '未土', '寅': '申金', '卯': '酉金',
+    '辰': '戌土', '巳': '亥水', '午': '子水', '未': '丑土',
+    '申': '寅木', '酉': '卯木', '戌': '辰土', '亥': '巳火'
+  };
+  const dayOpp = OPPOSITE_BRANCHES[dayBranch] ? `${OPPOSITE_BRANCHES[dayBranch]}冲日支${dayBranch}` : '岁运冲日';
+  const monthOpp = OPPOSITE_BRANCHES[monthBranch] ? `${OPPOSITE_BRANCHES[monthBranch]}冲月令${monthBranch}` : '岁运冲提纲';
   lines.push('* **深入追问切入点**：');
-  lines.push('  * 岁运若逢亥水冲巳、寅木冲申等破局字眼，是否会瞬间打散巳申做功之闭环链条？\n');
+  lines.push(`  * 岁运若逢${dayOpp}、或${monthOpp}等震荡字眼，是否会瞬间打散原局做功与体用平衡之链条？\n`);
   lines.push('---\n');
 
   // 2.5 新派命理
@@ -3022,7 +3171,7 @@ function renderDisclaimerSection() {
  * 总装函数：生成完整万字级 Markdown 报告
  */
 export function generateFullReport(input, options = {}) {
-  const chart = ensureFullChart(input);
+  const chart = ensureFullChart(input, options);
 
   const sec1 = renderFactSection(chart);
   const sec2 = renderSchoolSection(chart);

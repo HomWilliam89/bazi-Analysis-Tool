@@ -1356,9 +1356,20 @@ export function monthsOfYear(gzYear) {
  * @param {number} [input.luckCount=10] 自动推演的大运步数
  * @returns {object} Chart
  */
+export function isValidGregorianDate(year, month, day) {
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return false;
+  if (month < 1 || month > 12 || day < 1) return false;
+  const isLeap = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0));
+  const maxDays = [0, 31, isLeap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month];
+  return day <= maxDays;
+}
+
 export function castChart(input) {
   const { year, month, day, hour, minute = 0, gender = '男' } = input;
   if (![year, month, day, hour].every((v) => Number.isFinite(v))) throw new Error('castChart: year/month/day/hour 必须为数字');
+  if (!isValidGregorianDate(year, month, day)) throw new Error(`castChart: 非法公历日期「${year}-${month}-${day}」，超出历法该月有效天数或月份非法`);
+  if (hour < 0 || hour > 24) throw new Error(`castChart: 非法小时「${hour}」，必须在 0 至 24 之间`);
+  if (minute < 0 || minute >= 60) throw new Error(`castChart: 非法分钟「${minute}」，必须在 0 至 59 之间`);
   const moment = { year, month, day, hour, minute };
   // 人元司令：当令之神随"本月的第几天"而变，故必须先算出来，再喂给五行力量统计。
   // （四柱模式没有 moment 可用，此路不通，其令态只能按月支本气估——见 elementStrength 的 `当令据`。）

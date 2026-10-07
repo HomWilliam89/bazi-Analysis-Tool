@@ -12,6 +12,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { generateFullReport, ensureFullChart, formatConsoleSummary } from './report-generator.mjs';
+import { isValidGregorianDate, castChart } from './engine.mjs';
 import { runCli } from '../命令行/bazi.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -440,6 +441,59 @@ const watchdog24Passed = allPatternReps.every((rep) => {
 assert('看门狗24：全格局岁运互动公理化自洽（大忌神逢岁运绝不误判为顺势，体用边界全篇保持绝对对称自洽）',
   watchdog24Passed
 );
+
+// 看门狗 25：四柱模式 --gender 选项全线贯通（男女大运顺逆与起运绝对不同）
+const maleFourGz = generateFullReport(['甲子', '丙寅', '甲子', '甲子'], { gender: '男' });
+const femaleFourGz = generateFullReport(['甲子', '丙寅', '甲子', '甲子'], { gender: '女' });
+const maleLuckSeq = maleFourGz.chart.luck.pillars.map((p) => p.gz).slice(0, 3).join(' ');
+const femaleLuckSeq = femaleFourGz.chart.luck.pillars.map((p) => p.gz).slice(0, 3).join(' ');
+assert('看门狗25：四柱模式 gender 选项贯通（甲年阳干男顺丁卯/戊辰，女逆乙丑/甲子，大运序列绝对不同）',
+  maleFourGz.chart.input.gender === '男' &&
+  femaleFourGz.chart.input.gender === '女' &&
+  maleLuckSeq.startsWith('丁卯') &&
+  femaleLuckSeq.startsWith('乙丑') &&
+  maleLuckSeq !== femaleLuckSeq
+);
+
+// 看门狗 26：杜绝四柱偷换（Pillar Mutation）与 20/20 兜底缺陷
+const pureRenZi = ['壬子', '壬子', '壬子', '壬子'];
+const renZiReport = generateFullReport(pureRenZi);
+const actualPillars = renZiReport.chart.pillars.map((p) => p.gz).join(' ');
+assert('看门狗26：全量案例0篡改与0兜底（纯四壬子盘严禁被偷换为庚子，能量严禁平分20%，绝无undefined）',
+  actualPillars === '壬子 壬子 壬子 壬子' &&
+  renZiReport.chart.strength.percent['水'] > 50 &&
+  !renZiReport.markdown.includes('undefined')
+);
+
+// 看门狗 27：2.4 节盲派研判彻底杜绝巳火/丁火/辛金/申金硬编码旗舰字面量
+const pureEarthMetal = ['庚戌', '庚辰', '庚辰', '庚戌'];
+const earthMetalRep = generateFullReport(pureEarthMetal).markdown;
+const sec2_4 = earthMetalRep.slice(earthMetalRep.indexOf('### 2.4'), earthMetalRep.indexOf('### 2.5'));
+assert('看门狗27：2.4 节盲派全动态化（纯金土盘绝不出巳火/丁火/辛金/申金/亥冲巳，动态追问精准命中戌土冲辰）',
+  !sec2_4.includes('巳火') &&
+  !sec2_4.includes('丁火') &&
+  !sec2_4.includes('辛金') &&
+  !sec2_4.includes('申金') &&
+  !sec2_4.includes('亥水冲巳') &&
+  !sec2_4.includes('寅木冲申') &&
+  sec2_4.includes('戌土冲日支辰') &&
+  sec2_4.includes('戌土冲月令辰')
+);
+
+// 看门狗 28：非法生辰日期拦截守门（闰年及大月份边界防御）
+let castInvalidFailed = false;
+try {
+  castChart({ year: 1990, month: 2, day: 30, hour: 12, minute: 0 });
+} catch (e) {
+  castInvalidFailed = true;
+}
+assert('看门狗28：非法生辰历法严密防御（1990-02-30 校验拦截且 castChart 拒绝排盘）',
+  !isValidGregorianDate(1990, 2, 30) &&
+  isValidGregorianDate(2024, 2, 29) &&
+  !isValidGregorianDate(2023, 2, 29) &&
+  castInvalidFailed
+);
+
 
 // -------------------------------------------------------------------
 // 统计汇总
