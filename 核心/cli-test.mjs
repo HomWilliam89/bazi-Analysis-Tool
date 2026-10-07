@@ -256,6 +256,30 @@ assert('看门狗14：未来十年太岁刑冲会合原局地支真实联动（�
   repSpecial.includes('太岁合原局年支巳、日支巳')
 );
 
+// 看门狗 15：暗冲类经世奇局智能识别（飞天禄马与井栏斜叉）
+const chartFeiTian = ['壬子', '壬子', '壬子', '庚子'];
+const repFeiTian = generateFullReport(chartFeiTian).markdown;
+const chartJingLan = ['庚申', '戊子', '庚辰', '壬申'];
+const repJingLan = generateFullReport(chartJingLan).markdown;
+assert('看门狗15：暗冲名局智能识别（四子飞天禄马局与申子辰全井栏斜叉局）',
+  repFeiTian.includes('【飞天禄马局】') &&
+  repFeiTian.includes('绝处凌虚 · 倒冲紫微之局') &&
+  repJingLan.includes('【井栏斜叉局（井栏叉）】') &&
+  repJingLan.includes('暗冲天门 · 汪洋聚贵之局')
+);
+
+// 看门狗 16：暗合与虚邀类少见杂格智能识别（六乙鼠贵与六阴朝阳）
+const chartShuGui = ['乙卯', '己卯', '乙亥', '丙子'];
+const repShuGui = generateFullReport(chartShuGui).markdown;
+const chartChaoYang = ['辛酉', '戊戌', '辛酉', '戊子'];
+const repChaoYang = generateFullReport(chartChaoYang).markdown;
+assert('看门狗16：暗合虚邀少见杂格智能识别（乙日丙子时六乙鼠贵局与辛日戊子时六阴朝阳局）',
+  repShuGui.includes('【六乙鼠贵局】') &&
+  repShuGui.includes('虚灵引贵 · 芝兰玉树之局') &&
+  repChaoYang.includes('【六阴朝阳局】') &&
+  repChaoYang.includes('金白朝阳 · 丹墀折桂之局')
+);
+
 // -------------------------------------------------------------------
 // 统计汇总
 // -------------------------------------------------------------------

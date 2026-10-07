@@ -962,6 +962,287 @@ function detectChartMajorConfigurations(chart) {
     });
   }
 
+  // 16. 井栏斜叉局（井栏叉格）
+  const hasShen = branches.includes('申');
+  const hasZi = branches.includes('子');
+  const hasChen = branches.includes('辰');
+  const hasWaterSanHe = (hasShen && hasZi && hasChen) || (rels['地支三合'] || []).some((r) => r['局'] === '水');
+  const hasFireClash = stems.includes('丙') || stems.includes('丁') || branches.includes('午');
+  if (dayStem === '庚' && hasWaterSanHe && !hasFireClash) {
+    configs.push({
+      name: '井栏斜叉局（井栏叉）',
+      badge: '暗冲天门 · 汪洋聚贵之局',
+      weight: 92,
+      whatIs: '庚日生人，地支申子辰三合水局全。庚以丁火为官星，局中绝无丙丁午火显露羁绊；申子辰纯阳水气磅礴，暗冲南方午火（子午相冲），冲动午中丁火官星、己土印绶。庚金暗中坐享官印福泽，名曰「井栏斜叉格」。',
+      meaning: '行事机敏灵动、不走寻常路、深具出其不意之战略眼光；不求虚名浮利，擅长在水面之下整合庞大势能，以隐蔽布局在关键时刻破局突围，属于大智若愚、暗度陈仓成就大事业之雄才。',
+      classics: [
+        {
+          source: '《渊海子平·井栏叉格》',
+          quote: '庚日申子辰三位，忌逢火位怕南方。申子辰全来冲午，庚日得官何足妨。井栏叉格少人知，庚日逢之福自齐。'
+        },
+        {
+          source: '《三命通会·论井栏叉》',
+          quote: '庚申、庚子、庚辰三日，地支申子辰全，暗冲午中丁火为官星，己土为印绶，无火羁绊，乃大贵之造。'
+        }
+      ]
+    });
+  }
+
+  // 17. 飞天禄马局
+  const ziCount = branches.filter((b) => b === '子').length;
+  const haiCount = branches.filter((b) => b === '亥').length;
+  const isGengRenZi = (
+    (dayStem === '庚' && ziCount >= 2 && !branches.includes('丑') && !branches.includes('午') && !branches.includes('巳') && !stems.includes('丙') && !stems.includes('丁')) ||
+    (dayStem === '壬' && ziCount >= 2 && !branches.includes('丑') && !branches.includes('午') && !stems.includes('戊') && !stems.includes('己') && !branches.includes('戌') && !branches.includes('未'))
+  );
+  const isXinGuiHai = (
+    (dayStem === '辛' && haiCount >= 2 && !branches.includes('寅') && !branches.includes('巳') && !branches.includes('午') && !stems.includes('丙') && !stems.includes('丁')) ||
+    (dayStem === '癸' && haiCount >= 2 && !branches.includes('寅') && !branches.includes('巳') && !stems.includes('戊') && !stems.includes('己') && !branches.includes('辰') && !branches.includes('戌') && !branches.includes('未'))
+  );
+  if (isGengRenZi || isXinGuiHai) {
+    configs.push({
+      name: '飞天禄马局',
+      badge: '绝处凌虚 · 倒冲紫微之局',
+      weight: 92,
+      whatIs: isGengRenZi
+        ? '庚壬日生人地支子字重聚，局中绝无官星与合绊羁绊。子水结党，气势凌虚，暗冲南方对宫午火（子冲午），倒拔午中丁己官星禄马，无中生有，故名「飞天禄马」。'
+        : '辛癸日生人地支亥字重聚，局中绝无官星与合绊羁绊。亥水结党，气势浩大，暗冲南方对宫巳火（亥冲巳），倒拔巳中丙戊官星禄马，凭虚引贵，故名「飞天禄马」。',
+      meaning: '具有极强的爆发力、破局魄力与逆商；往往在看似毫无依靠、没有体制现成背景的情况下，凭借自身极致的坚守与暗中借势，异军突起、横空出世，平地起风雷。',
+      classics: [
+        {
+          source: '《渊海子平·飞天禄马格》',
+          quote: '壬庚日生子字多，暗冲午字作官星。日时无合神清秀，飞天禄马享遐龄。'
+        },
+        {
+          source: '《三命通会·论飞天禄马》',
+          quote: '飞天禄马者，乃倒冲禄马之变格也。聚众冲寡，借对宫之官星为我之用，得之者多骤贵显达。'
+        }
+      ]
+    });
+  }
+
+  // 18. 壬骑龙背局
+  const isRenChenDay = p[2]?.gz === '壬辰';
+  const chenCount = branches.filter((b) => b === '辰').length;
+  const xuCount = branches.filter((b) => b === '戌').length;
+  if (isRenChenDay && chenCount >= 2 && xuCount < chenCount) {
+    configs.push({
+      name: '壬骑龙背局',
+      badge: '驭龙乘风 · 纵横开阖之局',
+      weight: 90,
+      whatIs: '壬辰日柱，辰为龙宿草泽。原局地支辰字重见，局无重戌填实；群龙奔腾，暗冲对宫戌土（辰多冲戌），冲开戌库中丁火正财、戊土七杀与辛金正印。财官印绶齐出，为命主所乘，威权赫奕。',
+      meaning: '胸怀丘壑、志存高远、器局宏伟；具有极高的大局统御与复杂局势驾驭能力，敢于涉险博弈，行事开阖自如，能在时代风口乘风破浪，成统摄一方之巨擘。',
+      classics: [
+        {
+          source: '《渊海子平·壬骑龙背格》',
+          quote: '壬骑龙背，见辰多而冲戌，富贵双全。天干透甲丙者富，透戊庚者贵，辰多冲戌，财官自来。'
+        },
+        {
+          source: '《三命通会·论壬骑龙背》',
+          quote: '壬辰日，以辰为龙。辰多则冲戌，戌中丁戊为财官。柱无戌字，多辰暗冲，大贵之格。'
+        }
+      ]
+    });
+  }
+
+  // 19. 六乙鼠贵局
+  const isLiuYiShuGui = dayStem === '乙' && p[3]?.gz === '丙子' && !branches.includes('午') && !branches.includes('丑') && !stems.includes('庚') && !stems.includes('辛') && !branches.includes('申') && !branches.includes('酉');
+  if (isLiuYiShuGui) {
+    configs.push({
+      name: '六乙鼠贵局',
+      badge: '虚灵引贵 · 芝兰玉树之局',
+      weight: 88,
+      whatIs: '乙木日干生于丙子时。乙以庚金为正官，子位暗合巳火（子巳暗合），巳中丙戊引动申中庚金官星，申为乙木官星与天乙贵人，辗转暗合而生官。局中不见庚辛官杀填实，不见午冲丑绊，清贵非常。',
+      meaning: '温润如玉、谈吐文雅、清奇脱俗；深孚人望，行事低调谦逊却总能获贵人长辈暗中提携青睐，文质彬彬，享有极高的社会清誉与崇高学识地位。',
+      classics: [
+        {
+          source: '《渊海子平·六乙鼠贵格》',
+          quote: '乙日生人得丙子，名曰六乙鼠贵乡。暗合巳中丙戊土，引动申金作栋梁。最怕庚辛官杀见，午冲丑绊总为殃。'
+        },
+        {
+          source: '《三命通会·论六乙鼠贵》',
+          quote: '六乙鼠贵，以子字暗合巳，巳合申，申中庚金为官星，乙木得之，名登金榜，清贵之极。'
+        }
+      ]
+    });
+  }
+
+  // 20. 六阴朝阳局
+  const isLiuYinChaoYang = dayStem === '辛' && p[3]?.gz === '戊子' && !stems.includes('丙') && !stems.includes('丁') && !branches.includes('巳') && !branches.includes('午') && !branches.includes('未');
+  if (isLiuYinChaoYang) {
+    configs.push({
+      name: '六阴朝阳局',
+      badge: '金白朝阳 · 丹墀折桂之局',
+      weight: 88,
+      whatIs: '辛金日干生于戊子时。辛为阴金，子为纯阴之水；辛以丙火为正官，子中癸水暗合巳中戊土，巳中丙火动而照临辛金，朝向旭日阳和之气，故称「六阴朝阳」。局无火星官煞填实，纯阴引阳，官自天降。',
+      meaning: '心性质朴高洁、持身清白、学贯天人；具有极强的学术悟性与组织协调才智，善于在幕后规划运筹，终能厚积薄发、一鸣惊人，名列前茅。',
+      classics: [
+        {
+          source: '《渊海子平·六阴朝阳格》',
+          quote: '辛日戊子号朝阳，子水暗合巳中阳。火星若见终为破，富贵荣华寿算长。'
+        },
+        {
+          source: '《三命通会·论六阴朝阳》',
+          quote: '六阴朝阳者，辛金生于戊子时，子能动巳，巳中丙火为辛官星。不杂官杀，位至宰辅。'
+        }
+      ]
+    });
+  }
+
+  // 21. 子遥巳格
+  const isZiYaoSi = dayStem === '甲' && p[2]?.branch === '子' && (p[3]?.gz === '甲子' || ziCount >= 2) && !stems.includes('庚') && !stems.includes('辛') && !branches.includes('申') && !branches.includes('酉') && !branches.includes('午') && !branches.includes('丑');
+  if (isZiYaoSi && !isLiuYiShuGui) {
+    configs.push({
+      name: '子遥巳格',
+      badge: '凌空遥摄 · 智谋远引之局',
+      weight: 86,
+      whatIs: '甲子日生甲子时（或地支重重见子），局中不见官星。甲以辛金为官，以重子暗中遥合对宫巳火，巳中丙戊引动申中庚金，转生官贵。无中生有、凭虚凌空，名曰「子遥巳格」。',
+      meaning: '思维具有极强的远见卓识与跨界穿透力；善于跳出本位格局进行高维布局，运筹帷幄之中，决胜千里之外，成无形中操盘大局之幕后战略大师。',
+      classics: [
+        {
+          source: '《渊海子平·子遥巳格》',
+          quote: '甲子日逢甲子时，遥合巳中丙戊奇。庚辛官杀休相犯，丑绊午冲总不宜。'
+        },
+        {
+          source: '《三命通会·论子遥巳格》',
+          quote: '子遥巳格，以子能动巳，巳能生申，转生官贵。四柱无官星羁绊，名扬万里。'
+        }
+      ]
+    });
+  }
+
+  // 22. 丑遥巳格
+  const chouCount = branches.filter((b) => b === '丑').length;
+  const isChouYaoSi = ['辛', '癸'].includes(dayStem) && p[2]?.branch === '丑' && chouCount >= 2 && !stems.includes('丙') && !stems.includes('丁') && !branches.includes('巳') && !branches.includes('午') && !branches.includes('未') && !branches.includes('子');
+  if (isChouYaoSi) {
+    configs.push({
+      name: '丑遥巳格',
+      badge: '暗蓄厚德 · 水到渠成之局',
+      weight: 86,
+      whatIs: '辛丑、癸丑日生人，地支丑字重见。辛癸以丙戊为官星，局中不见官星与刑冲合绊，重丑合聚，暗遥合巳火（丑巳暗拱暗合），引来巳中丙戊金神官印之气，名曰「丑遥巳格」。',
+      meaning: '为人沉潜笃实、厚重坚毅、极具战略定力；不喜浮夸张扬，善于在静默中蓄积深厚资本与技术底蕴，水到渠成之际平地登临高位。',
+      classics: [
+        {
+          source: '《三命通会·论丑遥巳格》',
+          quote: '辛癸二日见丑多，丑遥合巳火丙戊为财官。无子字羁绊，无未字冲破，富贵兼全。'
+        },
+        {
+          source: '《渊海子平·丑遥巳格》',
+          quote: '辛丑癸丑见丑多，暗合巳中官星过。四柱无火方为贵，名冠中朝享福多。'
+        }
+      ]
+    });
+  }
+
+  // 23. 虚拱禄贵局（拱禄拱贵）
+  const gzList = p.map((item) => item.gz);
+  const checkGongLuGui = () => {
+    // 拱禄
+    if (gzList.includes('癸亥') && gzList.includes('癸丑') && !branches.includes('子')) return { type: '拱禄', note: '癸亥见癸丑虚拱【子】禄' };
+    if (gzList.includes('丁巳') && gzList.includes('丁未') && !branches.includes('午')) return { type: '拱禄', note: '丁巳见丁未虚拱【午】禄' };
+    if (gzList.includes('己未') && gzList.includes('己巳') && !branches.includes('午')) return { type: '拱禄', note: '己未见己巳虚拱【午】禄' };
+    // 拱贵
+    if (gzList.includes('甲寅') && gzList.includes('甲子') && !branches.includes('丑')) return { type: '拱贵', note: '甲寅见甲子虚拱【丑】天乙贵人' };
+    if (gzList.includes('戊申') && gzList.includes('戊午') && !branches.includes('未')) return { type: '拱贵', note: '戊申见戊午虚拱【未】天乙贵人' };
+    if (gzList.includes('辛丑') && gzList.includes('辛卯') && !branches.includes('寅')) return { type: '拱贵', note: '辛丑见辛卯虚拱【寅】天乙贵人' };
+    return null;
+  };
+  const gongInfo = checkGongLuGui();
+  if (gongInfo) {
+    configs.push({
+      name: '虚拱禄贵局',
+      badge: '虚灵夹拱 · 藏锋守拙之局',
+      weight: 88,
+      whatIs: `四柱干支相夹，${gongInfo.note}。所拱之神在原局空灵虚设，无一字填实破格。古人谓之「神龙见首不见尾」，暗中借天地真气拱夹禄贵，格局清纯超拔。`,
+      meaning: '行事谦抑内敛、深藏不露、极具修养与贵人福荫；关键时刻总有不可思议之机缘与外力相助，无声无息中化险为夷、平步青云。',
+      classics: [
+        {
+          source: '《三命通会·论拱禄拱贵》',
+          quote: '贵禄在虚拱之中，四柱不得见其实。见实则为填实，反失其妙。虚灵夹拱，官高极品。'
+        },
+        {
+          source: '《渊海子平·拱禄拱贵》',
+          quote: '拱禄拱贵格稀奇，两柱虚夹隐元机。局中无填无伤破，青云直上占魁枝。'
+        }
+      ]
+    });
+  }
+
+  // 24. 日禄归时局（青云得路）
+  const luBranchMap = { 甲: '寅', 乙: '卯', 丙: '巳', 丁: '午', 戊: '巳', 己: '午', 庚: '申', 辛: '酉', 壬: '亥', 癸: '子' };
+  const hourBranch = p[3]?.branch;
+  const isRiLuGuiShi = luBranchMap[dayStem] === hourBranch && !tgs.includes('正官') && !tgs.includes('七杀');
+  if (isRiLuGuiShi) {
+    configs.push({
+      name: '日禄归时局（青云得路）',
+      badge: '青云得路 · 晚岁大成之局',
+      weight: 82,
+      whatIs: `日主【${dayStem}】在时支门户得临官禄位【${hourBranch}】，四柱天干无官杀攻克，时禄安稳清泰。时支为归宿之所，日禄居之，主平生自力更生、晚境丰隆，号曰「青云得路」。`,
+      meaning: '意志坚定、自立自强、深具长期主义精神；早岁深耕蓄势，中年之后声势大震，晚景丰隆享福，门庭光显，基业长青。',
+      classics: [
+        {
+          source: '《渊海子平·日禄归时格》',
+          quote: '日禄归时号青云，干头无官贵无伦。时支坐禄无刑破，晚年富贵福自亲。'
+        },
+        {
+          source: '《三命通会·论日禄归时》',
+          quote: '禄在时支，名青云得路。四柱无官星，自成贵气，子孙贤达，家业丰裕。'
+        }
+      ]
+    });
+  }
+
+  // 25. 伤官伤尽局
+  const allGuanCount = tgs.filter((t) => t === '正官').length + p.reduce((acc, cur) => acc + (cur.hidden || []).filter((h) => h.tenGod === '正官').length, 0);
+  if (hasShang && allGuanCount === 0 && !shangHeSha) {
+    configs.push({
+      name: '伤官伤尽局',
+      badge: '横刀立法 · 自开法度之局',
+      weight: 85,
+      whatIs: '日主伤官秀气旺盛发露，而原局四柱天干地支（含地支藏干）无半点官星显露或藏伏。伤官不见正官，无克破受辱之虞，伤尽官星反为至贵，豪迈倜傥，自开生面。',
+      meaning: '极具开创精神与颠覆性洞见；不受陈规陋习束缚，敢想敢干、横刀破局，善于在无路处开出新路，在制度空白区缔造新规则，成一代行业宗师或变革先锋。',
+      classics: [
+        {
+          source: '《渊海子平·论伤官》',
+          quote: '伤官伤尽最为奇，一品当朝天下知。四柱若无官星见，才高智大夺先机。'
+        },
+        {
+          source: '《三命通会·论伤官》',
+          quote: '伤官伤尽，贵不可言。秀气独发，无官星以乱其气，文通武达，雄冠一时。'
+        }
+      ]
+    });
+  }
+
+  // 26. 两气成象局（相生/相成）
+  const elemEntries = Object.entries(pct).sort((a, b) => Number(b[1]) - Number(a[1]));
+  const topTwoPct = (Number(elemEntries[0]?.[1]) || 0) + (Number(elemEntries[1]?.[1]) || 0);
+  const e1 = elemEntries[0]?.[0];
+  const e2 = elemEntries[1]?.[0];
+  if (topTwoPct >= 85 && e1 && e2) {
+    const isSheng = ELEM_REL[e1]?.生 === e2 || ELEM_REL[e2]?.生 === e1;
+    const isKe = ELEM_REL[e1]?.克 === e2 || ELEM_REL[e2]?.克 === e1;
+    if (isSheng || isKe) {
+      configs.push({
+        name: `两气成象局（${e1}${e2}相${isSheng ? '生' : '成'}）`,
+        badge: '两气双清 · 浑然天成之局',
+        weight: 84,
+        whatIs: `全命局能量高度凝聚于【${e1}】与【${e2}】两种五行（二者占比合计高达 ${topTwoPct.toFixed(1)}%），五行相${isSheng ? '生流通、气象纯和' : '克均停、交战相成'}，无第三行杂气破局，成两神相生之清粹纯局。`,
+        meaning: '性情纯粹、专注至极、无旁骛之思；在特定专业赛道或艺术科研领域具有惊人的超然天赋与沉浸力，往往能突破常人极限，成就非凡绝顶之境界。',
+        classics: [
+          {
+            source: '《滴天髓·两气成象》',
+            quote: '两气双清，非生即克；气全流通，大贵之造。干支两气，清纯不杂，神纯气粹。'
+          },
+          {
+            source: '《渊海子平·论五行清浊》',
+            quote: '纯粹之气，得天地之全；二气相生，福寿双全。'
+          }
+        ]
+      });
+    }
+  }
+
   // 排序与筛选：按重要性权重排序，取前 3 个最具代表性的大局
   configs.sort((a, b) => b.weight - a.weight);
   return configs.slice(0, 3);
