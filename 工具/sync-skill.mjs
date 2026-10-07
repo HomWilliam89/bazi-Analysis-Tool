@@ -34,9 +34,10 @@ const SKILL_DIR_NAME = 'bazi-myskill';
  * 正本向镜像的静态映射清单（正本相对路径 → 镜像相对路径）
  */
 export const SYNC_MANIFEST = [
-  // 技能入口
+  // 技能入口（同构保持 命令行/bazi.mjs 与根级快捷跳板 bazi.mjs）
   { src: 'SKILL.md', dest: 'SKILL.md' },
-  { src: '命令行/bazi.mjs', dest: 'bazi.mjs' },
+  { src: '命令行/bazi.mjs', dest: '命令行/bazi.mjs' },
+  { src: 'bazi.mjs', dest: 'bazi.mjs' },
 
   // 核心执行与推演大脑
   { src: '核心/engine.mjs', dest: '核心/engine.mjs' },
@@ -60,6 +61,10 @@ export const SYNC_MANIFEST = [
   { src: '流派/盲派象法.md', dest: '流派/盲派象法.md' },
   { src: '流派/古法三命.md', dest: '流派/古法三命.md' },
   { src: '流派/神煞.md', dest: '流派/神煞.md' },
+
+  // 自动化真跑回归工具与案例库
+  { src: '工具/case-runner.mjs', dest: '工具/case-runner.mjs' },
+  { src: '案例/cases.jsonl', dest: '案例/cases.jsonl' },
 ];
 
 function calcSha256(filePath) {

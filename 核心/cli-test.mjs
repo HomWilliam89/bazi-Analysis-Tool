@@ -9,6 +9,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { generateFullReport, ensureFullChart, formatConsoleSummary } from './report-generator.mjs';
 import { runCli } from '../命令行/bazi.mjs';
@@ -140,12 +141,27 @@ assert('SKILL.md 包含技能标识 name: bazi-analysis', skillContent.includes(
 assert('SKILL.md 包含命令行调用示例', skillContent.includes('node 命令行/bazi.mjs'));
 
 const { syncSkill, SYNC_MANIFEST } = await import('../工具/sync-skill.mjs');
-assert('sync-skill 清单定义至少包含 19 个核心资产', SYNC_MANIFEST.length >= 19);
+assert('sync-skill 清单定义至少包含 20 个核心资产', SYNC_MANIFEST.length >= 20);
 
 const tempMirrorDir = path.join(ROOT, '命令行', 'temp-skill-mirror');
 const applyRes = syncSkill({ skillDir: tempMirrorDir, apply: true, silent: true });
 assert('sync-skill --apply 真分发执行成功且返回退出码 0', applyRes.exitCode === 0 && applyRes.copiedCount === SYNC_MANIFEST.length);
-assert('镜像目录 bazi.mjs 入口真实落地', fs.existsSync(path.join(tempMirrorDir, 'bazi.mjs')));
+assert('镜像目录 命令行/bazi.mjs 入口真实落地', fs.existsSync(path.join(tempMirrorDir, '命令行', 'bazi.mjs')));
+assert('镜像目录 bazi.mjs 根级跳板真实落地', fs.existsSync(path.join(tempMirrorDir, 'bazi.mjs')));
+
+// 真跑断言 1：从镜像目录真实运行 node 命令行/bazi.mjs
+const mirrorOut1 = execFileSync(process.execPath, [path.join(tempMirrorDir, '命令行', 'bazi.mjs'), '庚午', '辛巳', '乙酉', '癸未'], {
+  cwd: tempMirrorDir,
+  encoding: 'utf8',
+});
+assert('镜像内 命令行/bazi.mjs 真实运行成功且输出正常', mirrorOut1.includes('日元：【乙】') && mirrorOut1.includes('第一段：排盘事实'));
+
+// 真跑断言 2：从镜像目录真实运行 node bazi.mjs
+const mirrorOut2 = execFileSync(process.execPath, [path.join(tempMirrorDir, 'bazi.mjs'), '庚午', '辛巳', '乙酉', '癸未'], {
+  cwd: tempMirrorDir,
+  encoding: 'utf8',
+});
+assert('镜像内 根级 bazi.mjs 真实运行成功且输出正常', mirrorOut2.includes('日元：【乙】') && mirrorOut2.includes('第一段：排盘事实'));
 
 const checkRes = syncSkill({ skillDir: tempMirrorDir, apply: false, silent: true });
 assert('sync-skill --check 二次复核 100% 一致且退出码 0', checkRes.exitCode === 0 && checkRes.consistentCount === SYNC_MANIFEST.length);

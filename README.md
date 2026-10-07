@@ -50,12 +50,12 @@ cd bazi-Analysis-Tool
 ```
 
 #### 3. 一键分发安装技能到 dsh 技能库
-本项目内置了自动化镜像分发脚本，执行以下命令，即可将本项目的 19 项核心资产单向同步安装到 `~/.dsh/skills/bazi-myskill`：
+本项目内置了自动化镜像分发脚本，执行以下命令，即可将本项目的 22 项核心资产单向同步安装到 `~/.dsh/skills/bazi-myskill`：
 ```bash
 # 执行真实分发复制并自动核验 SHA256 完整性
 node 工具/sync-skill.mjs --apply
 ```
-*(注：执行 `node 工具/sync-skill.mjs --check` 可只读校验正本与技能库文件是否一致。)*
+*(注：执行 `node 工具/sync-skill.mjs --check` 可只读校验正本与技能库文件是否一致；若因环境或沙箱限制遇到 EPERM/EACCES 错误，请使用管理员终端执行，或通过 `--skill <path>` 自定义指定可写目录。)*
 
 #### 4. 在 dsh 桌面端直接对话调用
 启动 **DeepSeek Harness 桌面版**，在对话输入框中直接向 AI 发送自然语言指令：
