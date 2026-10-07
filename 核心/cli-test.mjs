@@ -355,37 +355,89 @@ assert('看门狗21：神煞引文与追问动态契合（无将星/驿马盘绝
   watchdog21Passed
 );
 
-// 看门狗 22：防体用倒置（乙巳盘第一用神为火，灭工具第一大忌神为水，严禁水为用神）
-const rep1_tiyong = sampleReps[0];
-const watchdog22Passed = rep1_tiyong.includes('解决主要矛盾第一核心用神**：【火】') &&
-  rep1_tiyong.includes('破局灭工具第一大忌神**：【水】') &&
-  !rep1_tiyong.includes('解决主要矛盾第一核心用神**：【水】') &&
-  !rep1_tiyong.includes('救命生身第一用神：水');
-assert('看门狗22：体用立宪与公理化喜忌（乙巳盘第一用神为火、灭工具第一大忌为水，严禁印星水逆夺用神）',
+// 看门狗 22：全格局全十神体用立宪公理（五行代数闭环、十神对偶闭环、体用分离全十神篡权防御）
+const allPatternCharts = [
+  ['辛巳', '丙申', '乙巳', '丁丑'], // ① 食伤为用（火），印星为大忌（水），严防印星篡权
+  ['甲子', '癸酉', '己巳', '丁卯'], // ② 财星为用（水），比劫为大忌（土），严防比劫篡权
+  ['癸亥', '癸亥', '丁丑', '癸亥'], // ③ 印星为用（木），财星为大忌（金），严防财星篡权
+  ['庚子', '戊子', '庚子', '丁亥'], // ④ 官杀为用（火），食伤为大忌（水），严防食伤篡权
+  ['甲寅', '丙寅', '甲寅', '庚午'], // ⑤ 印星为用（水），财星为大忌（土），严防财星篡权
+  ['甲子', '丙寅', '甲子', '甲子'], // ⑥ 食伤为用（火），印星为大忌（水），严防印星篡权
+  ['戊午', '戊午', '戊午', '壬戌']  // ⑦ 财星为用（水），比劫为大忌（土），严防比劫篡权
+];
+const allPatternReps = allPatternCharts.map((p) => generateFullReport(p).markdown);
+
+const ELEM_KE_CYCLE = { '金': '火', '木': '金', '水': '土', '火': '水', '土': '木' };
+const TENGOD_KE_CYCLE = {
+  '食神伤官': '正印偏印', // 枭印夺食（印克食伤）
+  '正印偏印': '正财偏财', // 贪财坏印（财克印星）
+  '正财偏财': '比肩劫财', // 比劫夺财（比劫克财）
+  '正官七杀': '食神伤官', // 伤官见官（食伤克官杀）
+  '比肩劫财': '正官七杀'  // 官杀克刃（官杀克比劫）
+};
+
+const watchdog22Passed = allPatternReps.every((rep) => {
+  const yongM = rep.match(/解决主要矛盾第一核心用神\*\*：【([金木水火土])】（([^，]+)，/);
+  const jiM = rep.match(/破局灭工具第一大忌神\*\*：【([金木水火土])】（([^，]+)，/);
+  if (!yongM || !jiM) return false;
+  const yongElem = yongM[1];
+  const yongCat = yongM[2];
+  const jiElem = jiM[1];
+  const jiCat = jiM[2];
+
+  // 定理一：五行克灭代数闭环律（克灭用神者必为第一大忌）
+  const axiom1 = (ELEM_KE_CYCLE[yongElem] === jiElem);
+
+  // 定理二：十神克灭完全对偶律（克灭用神十神者必为破局大忌十神群）
+  const axiom2 = (TENGOD_KE_CYCLE[yongCat] === jiCat);
+
+  // 定理三：体用分离律与全十神篡权防御律（大忌绝不可被立为第一用神，绝无假神抢位）
+  const axiom3 = (yongElem !== jiElem && yongCat !== jiCat &&
+    !rep.includes(`解决主要矛盾第一核心用神**：【${jiElem}】`) &&
+    !rep.includes(`救命生身第一用神：${jiElem}`));
+
+  return axiom1 && axiom2 && axiom3;
+});
+assert('看门狗22：全格局全十神体用立宪公理（五行代数闭环、十神对偶闭环、体用分离全十神篡权防御，多格局100%全自洽）',
   watchdog22Passed
 );
 
-// 看门狗 23：天干虚浮折减律（乙巳盘无根乙木占比折减为 2.5%，严格低于水 6.7%，全盘木最少）
-const rep1_muMatch = rep1_tiyong.match(/\* \*\*木\*\*：\*\*([\d\.]+)%\*\*/);
-const rep1_shuiMatch = rep1_tiyong.match(/\* \*\*水\*\*：\*\*([\d\.]+)%\*\*/);
-const rep1_muPct = rep1_muMatch ? Number(rep1_muMatch[1]) : 0;
-const rep1_shuiPct = rep1_shuiMatch ? Number(rep1_shuiMatch[1]) : 0;
-const watchdog23Passed = rep1_muPct === 2.5 && rep1_shuiPct === 6.7 && rep1_muPct < rep1_shuiPct;
-assert('看门狗23：天干虚浮折减律生效（乙巳盘无根乙木占比降至 2.5%，严格低于水 6.7%，实现全盘木最少）',
+// 看门狗 23：全五行天干虚浮折减物理铁律（金、木、水、火、土全五行无根测试矩阵）
+const rootlessFiveElements = [
+  { elem: '木', pillars: ['辛巳', '丙申', '乙巳', '丁丑'], compareTarget: '水' }, // 乙木无根
+  { elem: '水', pillars: ['戊午', '戊午', '戊午', '壬戌'], compareTarget: '火' }, // 壬水无根
+  { elem: '火', pillars: ['庚子', '戊子', '庚子', '丁亥'], compareTarget: '木' }, // 丁火无根
+  { elem: '金', pillars: ['甲寅', '丙寅', '甲寅', '庚午'], compareTarget: '土' }, // 庚金无根
+  { elem: '土', pillars: ['己酉', '癸亥', '乙卯', '丁亥'], compareTarget: '金' }  // 己土无根
+];
+
+const watchdog23Passed = rootlessFiveElements.every((item) => {
+  const rep = generateFullReport(item.pillars);
+  const chart = rep.chart;
+  // 1. 底座打分折减律：无根天干基础权重必须精准折减为 0.25（比有根干 1.0 折减 75%）
+  const rawScore = chart.strength.raw[item.elem];
+  const isRawDiscounted = (rawScore === 0.25);
+
+  // 2. 能量压制律：无根五行全盘最终占比受深度压制，严格低于有地支中余气之五行
+  const rootlessPct = chart.strength.percent[item.elem];
+  const targetPct = chart.strength.percent[item.compareTarget];
+  const isSuppressed = (rootlessPct < targetPct);
+
+  return isRawDiscounted && isSuppressed;
+});
+assert('看门狗23：全五行天干虚浮折减物理铁律（金木水火土五行无根天干赋分全部严格折为0.25，能量占比全受通根压制）',
   watchdog23Passed
 );
 
-// 看门狗 24：全五行全格局喜忌推演自洽（五盘样本第一忌神皆锁定为克灭第一用神之五行，绝不无脑强扶印比）
-const watchdog24Passed = sampleReps.every((rep) => {
-  const yongM = rep.match(/第一核心用神\*\*：【([金木水火土])】/);
+// 看门狗 24：全格局岁运互动公理化自洽（大忌神逢岁运绝不误判为顺势，体用边界全篇保持绝对对称自洽）
+const watchdog24Passed = allPatternReps.every((rep) => {
   const jiM = rep.match(/破局灭工具第一大忌神\*\*：【([金木水火土])】/);
-  if (!yongM || !jiM) return false;
-  const yong = yongM[1];
-  const ji = jiM[1];
-  const keMap = { '金': '火', '木': '金', '水': '土', '火': '水', '土': '木' };
-  return keMap[yong] === ji;
+  if (!jiM) return false;
+  const jiElem = jiM[1];
+  return !rep.includes(`【${jiElem}】为用神顺势而为`) &&
+    !rep.includes(`第一核心用神**：【${jiElem}】`);
 });
-assert('看门狗24：全五行全格局公理化喜忌推演自洽（克灭第一用神者必为破局第一大忌神，五盘全部严格符合公理）',
+assert('看门狗24：全格局岁运互动公理化自洽（大忌神逢岁运绝不误判为顺势，体用边界全篇保持绝对对称自洽）',
   watchdog24Passed
 );
 
