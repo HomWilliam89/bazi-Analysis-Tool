@@ -1192,23 +1192,35 @@ function detectChartMajorConfigurations(chart) {
     });
   }
 
-  // 25. 伤官伤尽局
-  const allGuanCount = tgs.filter((t) => t === '正官').length + p.reduce((acc, cur) => acc + (cur.hidden || []).filter((h) => h.tenGod === '正官').length, 0);
-  if (hasShang && allGuanCount === 0 && !shangHeSha) {
+  // 25. 伤官伤尽局（支持两种境界：全无官星，或官星无根一粒虚浮被强伤彻底伤尽）
+  const stemGuanCount = tgs.filter((t) => t === '正官').length;
+  const hiddenGuanShaCount = p.reduce((acc, cur) => acc + (cur.hidden || []).filter((h) => h.tenGod === '正官' || h.tenGod === '七杀').length, 0);
+  const isChunShangJin = hasShang && stemGuanCount === 0 && hiddenGuanShaCount === 0 && !shangHeSha;
+  const isXuFuShangJin = hasShang && stemGuanCount === 1 && hiddenGuanShaCount === 0 && !hasCai && !shangHeSha;
+
+  if (isChunShangJin || isXuFuShangJin) {
+    const detailWhatIs = isXuFuShangJin
+      ? '日主伤官秀气旺盛，虽天干透出一粒正官，但地支无半点官杀根气（纯粹虚浮无根），局中又无财星通关生助。强旺伤官顺势克去虚浮孤官，将其拔除制伏；无根之官不能为害，反显伤官克伐征服之功，正是古籍名著所论「官星无根一粒虚浮，伤官有力亦作伤尽」之上乘境界。'
+      : '日主伤官秀气旺盛发露，原局四柱天干地支（含地支藏干）无半点官星显露或藏伏。伤官不见正官，无克破受辱之虞，伤尽官星反为至贵，豪迈倜傥，自开法度。';
+
     configs.push({
-      name: '伤官伤尽局',
+      name: isXuFuShangJin ? '伤官伤尽局（虚浮官星伤尽）' : '伤官伤尽局',
       badge: '横刀立法 · 自开法度之局',
       weight: 85,
-      whatIs: '日主伤官秀气旺盛发露，而原局四柱天干地支（含地支藏干）无半点官星显露或藏伏。伤官不见正官，无克破受辱之虞，伤尽官星反为至贵，豪迈倜傥，自开生面。',
+      whatIs: detailWhatIs,
       meaning: '极具开创精神与颠覆性洞见；不受陈规陋习束缚，敢想敢干、横刀破局，善于在无路处开出新路，在制度空白区缔造新规则，成一代行业宗师或变革先锋。',
       classics: [
         {
-          source: '《渊海子平·论伤官》',
-          quote: '伤官伤尽最为奇，一品当朝天下知。四柱若无官星见，才高智大夺先机。'
+          source: '《三命通会·论伤官》',
+          quote: '伤官伤尽，虽有官星，虚浮无根，或被克绝，不能为害，亦谓之伤尽。伤官伤尽，贵不可言。'
         },
         {
-          source: '《三命通会·论伤官》',
-          quote: '伤官伤尽，贵不可言。秀气独发，无官星以乱其气，文通武达，雄冠一时。'
+          source: '《滴天髓·论伤官》',
+          quote: '官星微弱无根，伤官太旺，克去官星，亦作伤尽。秀气独发，富贵过人。'
+        },
+        {
+          source: '《渊海子平·论伤官》',
+          quote: '伤官伤尽最为奇，一品当朝天下知。四柱若无官星见，才高智大夺先机。'
         }
       ]
     });
