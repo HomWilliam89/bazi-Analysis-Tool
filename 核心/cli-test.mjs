@@ -77,7 +77,7 @@ assert('第三段包含 3.1 格局深度研判与去留救应', md.includes('###
 assert('第三段包含 3.2 主要矛盾剖析与全景护卫双通路', md.includes('### 3.2 主要矛盾剖析与全景护卫双通路'));
 assert('第三段包含 3.3 财富与事业发展高阶专题', md.includes('### 3.3 财富与事业发展高阶专题报告'));
 assert('第三段包含 3.4 未来大运全景逐步详评', md.includes('### 3.4 未来大运全景逐步详评'));
-assert('第三段包含 3.5 未来十年流年财富走势折线图与表', md.includes('### 3.5 未来十年流年财富走势曲线与重点年份分析'));
+assert('第三段包含 3.5 未来十年流年财富走势曲线与重点年份分析', md.includes('### 3.5 未来十年流年财富走势曲线与重点年份分析'));
 assert('第三段包含 3.6 心性画像与心智修炼', md.includes('### 3.6 心性画像与深度心智修炼'));
 assert('第三段包含 3.7 婚恋情感走势', md.includes('### 3.7 婚恋情感走势与关键年份'));
 assert('第三段包含 3.8 健康体质监测与日常调养', md.includes('### 3.8 健康体质监测与日常身心调养'));
@@ -170,6 +170,58 @@ if (fs.existsSync(tempMirrorDir)) {
   fs.rmSync(tempMirrorDir, { recursive: true, force: true });
 }
 assert('测试临时镜像目录清理完毕', !fs.existsSync(tempMirrorDir));
+
+// -------------------------------------------------------------------
+// 7. 报告千盘千面与防伪防通稿看门狗测试
+// -------------------------------------------------------------------
+console.log('\n▶ [测试组 7] 报告千盘千面与防伪防通稿看门狗测试');
+
+const chartA = { year: 1990, month: 5, day: 20, hour: 14, minute: 30, gender: '男' };
+const chartB = { year: 1984, month: 10, day: 2, hour: 6, minute: 0, gender: '男' };
+const repA = generateFullReport(chartA).markdown;
+const repB = generateFullReport(chartB).markdown;
+
+assert('看门狗1：A盘日元属性为乙木且无写死错字', repA.includes('日元属性**：乙木（阴木）'));
+assert('看门狗2：B盘日元属性为己土且无写死木字', repB.includes('日元属性**：己土（阴土）'));
+assert('看门狗3：A盘最旺五行为金，B盘最旺五行为水', repA.includes('最旺五行【金】') && repB.includes('最旺五行【水】'));
+assert('看门狗4：A盘与B盘健康体质诊断文本绝不相同', repA.slice(repA.indexOf('### 3.8'), repA.indexOf('### 3.8') + 300) !== repB.slice(repB.indexOf('### 3.8'), repB.indexOf('### 3.8') + 300));
+assert('看门狗5：A盘夫妻宫坐酉透七杀，B盘夫妻宫坐巳透正印且画像不同', repA.includes('日支坐【酉】（藏干本气透【七杀】）') && repB.includes('日支坐【巳】（藏干本气透【正印】）'));
+assert('看门狗6：流年太岁真实计算，2026年A盘岁君为伤官而B盘为正印', repA.includes('| **2026 年** | 丙午 | 天河水 | 伤官 |') && repB.includes('| **2026 年** | 丙午 | 天河水 | 正印 |'));
+assert('看门狗7：报告彻底废除假折线图和虚假分值（88分/68分清零）', !repA.includes('财富景气指数折线图') && !repA.includes('88 分') && !repA.includes('68 分'));
+assert('看门狗8：未覆盖盘坚决熔断，第三段仅含认怂横幅且绝无3.1/3.5等伪解读', uncoveredReport.markdown.includes('本体系未覆盖，暂不判断') && !uncoveredReport.markdown.includes('### 3.1') && !uncoveredReport.markdown.includes('### 3.5'));
+assert('看门狗9：三盘报告全篇严禁出现 undefined 字段错配残渣（1.1 神煞栏与 2.6 神煞详析须真实落地）', !repA.includes('undefined') && !repB.includes('undefined') && !uncoveredReport.markdown.includes('undefined'));
+
+const matrixCharts = [
+  { name: 'A-乙木七杀', input: chartA },
+  { name: 'B-己土印绶', input: chartB },
+  { name: 'C-甲木火伤官', input: ['丁卯', '丙午', '甲午', '丙寅'] },
+  { name: 'D-辛金水伤官', input: ['癸亥', '癸亥', '辛丑', '己丑'] },
+  { name: 'E-建禄身旺', input: ['甲子', '丙寅', '甲子', '甲子'] },
+];
+
+const matrixSec3 = matrixCharts.map((c) => {
+  const md = generateFullReport(c.input).markdown;
+  const sec3 = md.slice(md.indexOf('## 第三段'), md.indexOf('## 第四段'));
+  const lines = sec3.split('\n').map((l) => l.trim()).filter((l) => l.length > 0 && !l.startsWith('#') && l !== '---');
+  return { name: c.name, lines, set: new Set(lines) };
+});
+
+let maxPairRatio = 0;
+let allPairsUnder60 = true;
+for (let i = 0; i < matrixSec3.length; i++) {
+  for (let j = i + 1; j < matrixSec3.length; j++) {
+    const c1 = matrixSec3[i];
+    const c2 = matrixSec3[j];
+    const sameCount = c1.lines.filter((l) => c2.set.has(l)).length;
+    const ratio1 = sameCount / c1.lines.length;
+    const ratio2 = sameCount / c2.lines.length;
+    const maxR = Math.max(ratio1, ratio2);
+    if (maxR > maxPairRatio) maxPairRatio = maxR;
+    if (maxR >= 0.60) allPairsUnder60 = false;
+  }
+}
+
+assert('看门狗10：多盘对全矩阵（5盘10对组合）第三段实质解读相同率严格低于60%（实测峰值≤50%，彻底锁定千盘千面）', allPairsUnder60 && maxPairRatio < 0.50);
 
 // -------------------------------------------------------------------
 // 统计汇总
