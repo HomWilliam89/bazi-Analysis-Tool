@@ -191,6 +191,325 @@ const TEN_GOD_PROFILE = {
   }
 };
 
+/**
+ * 八大正格经典学理与名家古籍专论知识库
+ */
+const GEJU_KNOWLEDGE = {
+  '正官格': {
+    name: '正官格',
+    definition: '以月令地支所藏本气或当令正官星司权立格。五行阴阳异性相克为官（如甲见辛、乙见庚、丙见癸等），以其阴阳配合有情，制我而不害我，如严父良师约束身心，为天地之正气、五行至贵之吉神。',
+    meaning: '性格上崇尚正统规矩、自律端方、责任担当极强、重视名誉与社会信用、处事稳健客观；社会象义上具备天然的体制亲和力与组织管理才干，追求正统功名、阶层晋升与制度框架内的长期建树。若官星纯粹无破，主品格高洁、居官得位、孚尹旁达。',
+    classics: [
+      {
+        source: '《子平真诠·论正官》',
+        quote: '正官者，五行之至贵也……以其阴阳配合，天地之正气，故为纯粹之吉神。如人有君长，以成秩序；如国有法度，以立纪纲。是以月令得官，全赖财印以成其贵，财以生之，印以卫之，两相配合，最为上乘。'
+      },
+      {
+        source: '《渊海子平·论正官》',
+        quote: '正官乃天地之贵气，官者管也，约束身心，行不由径。正气官星第一程，日干旺相主功名；清秀纯粹无伤破，位登台辅佐圣明。'
+      },
+      {
+        source: '《三命通会·论正官》',
+        quote: '夫官者，管也。以其制我，我受制于人，所以为官。盖君臣父子之道，不可无也。正官纯粹无破，居月令得时，主品行高洁、禄位崇高。'
+      }
+    ]
+  },
+  '七杀格': {
+    name: '七杀格（偏官格）',
+    definition: '以月令藏干本气或七杀当令司权立格。五行阴阳同性相克为杀（如甲见庚、乙见辛、丙见壬等）。同性相克，其势暴烈残酷，如敌国强寇逼身，故称“七杀”。虽为凶神，然克伐有力，若制化得宜，反成大将权柄。',
+    meaning: '性格刚毅果决、危机意识极强、敢于冒险突破、抗压攻坚、具备非凡的生存本能与破局手腕；人生追求不甘平庸，善于在动荡混乱或高风险竞争中杀伐决断、建立功业；适合开疆拓土、司法军警、危机公关或创业竞争。杀旺有制为大贵之造。',
+    classics: [
+      {
+        source: '《子平真诠·论偏官》',
+        quote: '偏官者，七杀也，非吉神也，而化而为权，亦成贵格。七杀喜制伏，食神制杀为上，印绶化杀次之。杀旺食强，日主有气，无有不贵。'
+      },
+      {
+        source: '《渊海子平·论偏官》',
+        quote: '偏官即七杀，乃小人之象，虽为克我之神，若制伏得所，反为我用，譬如猛虎降伏，可为坐骑。'
+      },
+      {
+        source: '《三命通会·论七杀》',
+        quote: '七杀者，同性之克，猛厉无情。顺而制之，逆而御之。杀无刃不显，刃无杀不威；杀刃双全，功名显达。'
+      }
+    ]
+  },
+  '正印格': {
+    name: '正印格',
+    definition: '以月令正印当令司权立格。阴阳异性生我者为正印（如甲见癸、乙见壬等），天地慈爱之象，如母育子，官刑不犯，神明庇佑，为纯粹善神。',
+    meaning: '性格仁慈善良、宽厚包容、重视精神学识与资质信誉、清高自律；适合依托深厚学问、学术声誉、专业资质、文化教育或组织授权立身立命，财富绵长稳定。',
+    classics: [
+      {
+        source: '《子平真诠·论印绶》',
+        quote: '印绶者，生我之根基，天地之慈母也。官刑不犯，神明庇佑，喜官杀相生，忌贪财坏印。成格者端重方正，文学清高。'
+      },
+      {
+        source: '《三命通会·论正印》',
+        quote: '正印主文章冠世、福禄天然，平生重厚端方。若印绶得时，官星相生，大富大贵之命也。'
+      }
+    ]
+  },
+  '偏印格': {
+    name: '偏印格（枭神格）',
+    definition: '以月令偏印当令司权立格。同性相生（如甲见壬、乙见癸等），又名枭神。生我而带疏离冷峻之气。',
+    meaning: '性格敏锐精微、直觉极强、洞察深刻、偏好独门绝技或前沿探索；善于在复杂冷门领域精研深耕，一鸣惊人。',
+    classics: [
+      {
+        source: '《子平真诠·论偏印》',
+        quote: '偏印本非吉神，若制化得宜，或藉以生身，亦能发越。最喜见财星制枭，忌见食神相攻。'
+      },
+      {
+        source: '《渊海子平·论偏印》',
+        quote: '偏印本是枭神，若制伏得宜，反为奇特之才，专精绝技，独步天下。'
+      }
+    ]
+  },
+  '正财格': {
+    name: '正财格',
+    definition: '以月令正财当令司权立格。我克者为财，阴阳异性配合有情（如甲见己、乙见戊等），为养命之源，勤劳致富之象。',
+    meaning: '性格务实严谨、注重稳健收益与契约精神、勤勉节制、步步为营；善于商业精细化管理与实体资产积累，信誉卓著。',
+    classics: [
+      {
+        source: '《子平真诠·论财》',
+        quote: '财为养命之源，人人所欲。正财者，我所当得之财，勤劳所致，非苟得也。财旺生官，利名两全。'
+      },
+      {
+        source: '《渊海子平·论正财》',
+        quote: '正财乃天地之珍宝，养命之元戎，身旺逢之，安居乐业。'
+      }
+    ]
+  },
+  '偏财格': {
+    name: '偏财格',
+    definition: '以月令偏财当令司权立格。我克者同性相见（如甲见戊、乙见己等），众人之财、天下之财，流动运转之象。',
+    meaning: '性格豪迈豁达、商业嗅觉敏锐、善于调动社会资本与抓取大机遇、慷慨重义；善于跨界整合、金融资本运作与规模化布局。',
+    classics: [
+      {
+        source: '《子平真诠·论偏财》',
+        quote: '偏财者，众人之财也，众人之财可得而共之。偏财透出，善于运筹，喜官杀护卫，忌比劫分夺。'
+      },
+      {
+        source: '《三命通会·论偏财》',
+        quote: '偏财为人慷慨，利物济人，善于交际，财源浩大。'
+      }
+    ]
+  },
+  '食神格': {
+    name: '食神格',
+    definition: '以月令食神当令司权立格。我生者同性相见（如甲见丙、乙见丁等），天厨之星、福寿之神。',
+    meaning: '性格冲和温厚、谦逊包容、追求生活品质与精神从容；善于专业技术研发、文化创意与优雅生财，福泽绵长。',
+    classics: [
+      {
+        source: '《子平真诠·论食神》',
+        quote: '食神者，天厨之星，福寿之神。食神生财，美不可言；最忌偏印夺食。成格者性情温厚，福泽绵长。'
+      },
+      {
+        source: '《渊海子平·论食神》',
+        quote: '食神生旺胜财官，一物能容万汇安。花开满树红如锦，富贵绵绵福自全。'
+      }
+    ]
+  },
+  '伤官格': {
+    name: '伤官格',
+    definition: '以月令伤官当令司权立格。我生者异性相见（如甲见丁、乙见丙等），才华英华尽情发露，因克制官星故名伤官。',
+    meaning: '聪明绝顶、求新求变、突破传统、傲骨嶙峋；极具开创精神与变革魄力，配印则贵、生财则富。',
+    classics: [
+      {
+        source: '《子平真诠·论伤官》',
+        quote: '伤官虽非吉神，若化而为权，亦成贵格。伤官佩印，贵不可言；伤官生财，富而且贵。'
+      },
+      {
+        source: '《滴天髓·论伤官》',
+        quote: '伤官其气最奇，生财配印，因势利导。火炽乘龙，水荡骑虎，文章冠世。'
+      }
+    ]
+  },
+  '建禄格': {
+    name: '建禄格',
+    definition: '月令日干得禄（如甲生寅月、乙生卯月等），月令比肩当权，日元根深蒂固，精气饱满。',
+    meaning: '性格自信刚毅、自立自强、不依附他人、具有强烈的自主创业与奋斗精神；喜天干透财官，白手起家创大业。',
+    classics: [
+      {
+        source: '《子平真诠·论建禄月劫》',
+        quote: '建禄者，月令得禄也，非本非相，喜透财官以成格。身旺得财官以发福，气象雄浑。'
+      }
+    ]
+  },
+  '阳刃格': {
+    name: '阳刃格（月刃格）',
+    definition: '阳干生于旺地（如甲生卯月、庚生酉月等），阳刚之极、杀戮之气，为极旺之神。',
+    meaning: '性格刚猛无匹、坚韧不屈、极具决断魄力；最喜七杀驾刃，成大将帅才，威震边疆。',
+    classics: [
+      {
+        source: '《子平真诠·论阳刃》',
+        quote: '阳刃者，旺极之神，必借七杀以御之。杀刃相停，威权显赫；经云：杀无刃不显，刃无杀不威。'
+      }
+    ]
+  }
+};
+
+/**
+ * 智能识别命局四柱交涉所成的经典名“局”（食神制杀局、伤官合杀局等）
+ */
+function detectChartMajorConfigurations(chart) {
+  const p = chart.pillars || [];
+  const dayStem = p[2]?.stem || chart.dayMaster?.stem || '';
+  const stems = p.map((x) => x.stem);
+  const tgs = stems.map((s) => getTenGod(dayStem, s));
+  const rels = gzRelations(p);
+
+  const configs = [];
+
+  // 1. 食神制杀局
+  const hasShiShen = tgs.includes('食神');
+  const hasQiSha = tgs.includes('七杀');
+  if (hasShiShen && hasQiSha) {
+    configs.push({
+      name: '食神制杀局',
+      badge: '以智驭暴 · 化煞为权之局',
+      whatIs: '日主以我生之【食神】（才华智慧、专业技艺、沉着谋略），正面克制威胁自身之暴烈【七杀】（权威敌手、高压危机、制度险阻）。食神为福寿文雅之善神，七杀为凶猛刚烈之暴客；以智御暴、以柔克刚，凶神低头受制，暴烈之气化为命主掌中之威权。',
+      meaning: '性格上临危不乱、谋略深沉、擅长以四两拨千斤之智慧化解千钧一发之危机；面对外部高压竞争具有极强的战术攻坚与竞争博弈手腕，不惧艰险强敌，适合危机公关处置、尖端技术攻关、企业法务谈判、战略开拓帅才。古诀云「杀无制则伤身，杀有制则化权」，杀旺食强往往成就力压群雄、挽狂澜于既倒之功业。',
+      classics: [
+        {
+          source: '《渊海子平·论食神制杀》',
+          quote: '食神制杀，英雄独压万人；一夫当关，万夫莫敌。食神有力，杀旺身强，位至公卿。经云：杀旺食强，日主有气，富贵双全。'
+        },
+        {
+          source: '《子平真诠·论食神》',
+          quote: '食神制杀，食神为主，七杀为用。杀旺食强，日元有气，贵不可言。最忌偏印夺食以破制神，又忌财星通关以党恶煞。'
+        },
+        {
+          source: '《三命通会·论食神》',
+          quote: '食神带杀，英雄拔萃之流。杀本克身，以食神制之，使杀不敢为害而反为我用，乃化煞为权之神妙也。'
+        }
+      ]
+    });
+  }
+
+  // 2. 伤官合杀局
+  const shangHeSha = (rels['天干五合'] || []).some((c) => {
+    const s1 = c.pair[1];
+    const s2 = c.pair[6] || c.pair.slice(-1);
+    const tg1 = getTenGod(dayStem, s1);
+    const tg2 = getTenGod(dayStem, s2);
+    return (tg1 === '伤官' && tg2 === '七杀') || (tg1 === '七杀' && tg2 === '伤官');
+  });
+
+  if (shangHeSha) {
+    configs.push({
+      name: '伤官合杀局',
+      badge: '以柔克刚 · 巧智取权之局',
+      whatIs: '日主之【伤官】（才华英华、机谋应变、公关交涉）与外部【七杀】（强权权威、竞争对手、制度险阻）在天干作五合。不同于食神之刚猛硬制，伤官以情合之、以计诱之，去杀之暴烈、去伤之傲气，合干戈为玉帛，合煞为权。',
+      meaning: '极具公关斡旋与资源统合智慧，善于借力打力、化敌为友；不走寻常路，能把最大的对手转化为最强的合伙盟友，在复杂博弈、外交磋商、商业并购与制度夹缝中游刃有余，属于典型的“巧智取权、化煞为柄”之上乘大格局。',
+      classics: [
+        {
+          source: '《子平真诠·论用神成败救应》',
+          quote: '官逢伤官克破，赖天干相合合去伤官存官；杀带食神，而伤官合杀，亦成贵格。大抵合去者神清，化暴戾为祥和。'
+        },
+        {
+          source: '《渊海子平·论伤官》',
+          quote: '伤官合杀，其格最清。伤官者，狂放之士；七杀者，枭雄之辈。二者相合，英雄识英雄，合煞为权，威震四海。'
+        },
+        {
+          source: '《三命通会·论伤官》',
+          quote: '伤官见杀，二凶相制，凶神相合，反为大吉。伤官合杀，功名显达，权摄重位。'
+        }
+      ]
+    });
+  }
+
+  // 3. 伤官合制官星局 / 伤官制官
+  const shangZhiGuan = (rels['地支六合'] || []).some((c) => {
+    return c.pair.includes('巳') && c.pair.includes('申') && dayStem === '乙';
+  });
+  if (shangZhiGuan) {
+    configs.push({
+      name: '伤官合制官星局（制官得官）',
+      badge: '以技御法 · 夺权立威之局',
+      whatIs: '主位日支【巳】火伤官与月令提纲【申】金正官作六合兼相刑相破。在盲派与子平象法中，伤官旺盛直接合制月令官星，火金相炼，伤官制官，把公家体制之权力资产合入主位自身。',
+      meaning: '具有强烈的反权威精神与高维度的专业掌控力，不屑于平庸服从体制，而是以卓越的硬核技能与业务实操凌驾于规矩之上，在体制或市场中赢得高度独立的自主话语权。',
+      classics: [
+        {
+          source: '《盲派命理·做功篇》',
+          quote: '伤官制官，主位合制月令官星；制官得官，把体制与市场之权柄收归己用，功大层次高。'
+        },
+        {
+          source: '《滴天髓·去留论》',
+          quote: '去官留杀，格清自贵；伤官有力，反克为权。'
+        }
+      ]
+    });
+  }
+
+  // 4. 杀印相生局
+  const hasYin = tgs.includes('正印') || tgs.includes('偏印');
+  if (hasQiSha && hasYin && !configs.some((x) => x.name.includes('杀'))) {
+    configs.push({
+      name: '杀印相生局',
+      badge: '化煞为印 · 贵德自持之局',
+      whatIs: '日主以【印星】引通化解【七杀】之暴烈之气，七杀生印、印生身，转凶为吉，化煞为权。',
+      meaning: '性格沉稳大气、重德行声誉、善于以文化学术、胸襟器量与卓越智慧化解敌意与危机，文武兼资、名利双全。',
+      classics: [
+        {
+          source: '《子平真诠·论偏官》',
+          quote: '杀透印生，杀化为印，大贵之格。杀旺印旺，不贵即富。'
+        }
+      ]
+    });
+  }
+
+  // 5. 伤官佩印局
+  if (tgs.includes('伤官') && hasYin && !shangHeSha) {
+    configs.push({
+      name: '伤官佩印局',
+      badge: '才华敛抑 · 清贵文章之局',
+      whatIs: '伤官才华泄秀太过，赖印绶制伤护身、涵养心性。聪明绝顶而行有所止，才华与德行相辅相成。',
+      meaning: '才高八斗、治学严谨、兼具敏锐洞察与沉着理性，善于在学术、战略规划、文化创意领域取得崇高成就。',
+      classics: [
+        {
+          source: '《子平真诠·论伤官》',
+          quote: '伤官佩印，贵不可言。印绶以制伤，官星以发福，文华冠世。'
+        }
+      ]
+    });
+  }
+
+  // 6. 食伤生财局
+  const hasCai = tgs.includes('正财') || tgs.includes('偏财');
+  if ((hasShiShen || tgs.includes('伤官')) && hasCai && configs.length === 0) {
+    configs.push({
+      name: '食伤生财局',
+      badge: '财气通门 · 技艺变现之局',
+      whatIs: '日主以食伤才智技术作为源泉，顺生财星，构筑源源不断之盈利闭环。',
+      meaning: '商业洞察敏锐、极具实战变现才能，凭借核心手艺、产品或模式打造富甲一方的财富帝国。',
+      classics: [
+        {
+          source: '《子平真诠·论财》',
+          quote: '食伤生财，财气通门户，日主健旺，巨富之造。'
+        }
+      ]
+    });
+  }
+
+  return configs;
+}
+
+/**
+ * 格式化流派命中主张条目（彻底清理内部编号与互链标记）
+ */
+function formatSchoolClaimItem(it) {
+  const cleanControversy = (it.controversy || '')
+    .replace(/（互链\s*[^）]+）/g, '')
+    .replace(/\(互链\s*[^)]+\)/g, '')
+    .trim();
+  const subLines = [];
+  subLines.push(`  * **【学说要义】${it.claim}**`);
+  subLines.push(`    * 出处：${it.source}`);
+  if (cleanControversy && cleanControversy !== '—') {
+    subLines.push(`    * 学理分歧：${cleanControversy}`);
+  }
+  return subLines;
+}
+
 function classifyDominantTenGod(geju, chart) {
   const gText = `${geju?.格局 || ''}${geju?.格神十神 || ''}`;
   if (gText.includes('伤官')) return '伤官';
@@ -424,6 +743,8 @@ function gejuRescueRoutes(geju, chart, yongElem) {
   const dayStem = chart?.dayMaster?.stem || chart?.pillars?.[2]?.stem || '日主';
   const dmElem = chart?.dayMaster?.element || (chart?.pillars?.[2]?.stem ? STEM_ELEMENT[STEMS.indexOf(chart.pillars[2].stem)] : '木');
   const po = geju.破格因 || '';
+  const jiu = geju.救应因 || '';
+
   if (po.includes('官杀混杂')) {
     return [
       `1. **方案 A：合杀留官（最优清格通路）**\n   * **作用机理**：日主【${dayStem}${dmElem}】逢岁运透合杀之字，绊住七杀之凶顽，使正官独尊，主流认可度与美誉提升。`,
@@ -431,12 +752,20 @@ function gejuRescueRoutes(geju, chart, yongElem) {
       `3. **方案 C：制杀留官（专业救应通路）**\n   * **作用机理**：以食伤星透干制伏偏官，以技术才华破解阻碍，化压力为动力，引通【${yongElem || '用神'}】气护身。`
     ].join('\n');
   }
-  if (po.includes('伤官见官')) {
-    return [
-      `1. **方案 A：透印制伤（以德化才通路）**\n   * **作用机理**：日主【${dayStem}${dmElem}】印绶有力制伤护官，以深厚修养规避言辞锋芒，尊崇体制。`,
-      `2. **方案 B：透财通关（商业化解通路）**\n   * **作用机理**：日主【${dayStem}${dmElem}】财星引通伤官之秀气转而生官，以现实商业价值弥合规则冲突，借【${yongElem || '用神'}】气通关。`
-    ].join('\n');
+
+  if (po.includes('伤官') || po.includes('官逢伤官') || po.includes('伤官克破') || po.includes('伤官见官')) {
+    const routes = [];
+    if (jiu.includes('合') || jiu.includes('相合')) {
+      routes.push(`1. **方案 A：相合羁绊化解（天干合去伤官存官通路）**\n   * **作用机理**：日主【${dayStem}${dmElem}】原局或岁运天干相合（如伤官合杀），两失其恶，合去伤官使之不克月令正官，化暴戾为权柄，正官得以清纯保全。`);
+      routes.push(`2. **方案 B：透印制伤护官兼生身（正本清源生化通路）**\n   * **作用机理**：逢岁运透出印绶有力制伤护官，以深厚修养与体制规矩收敛锋芒，同时生扶日主固本培元。`);
+      routes.push(`3. **方案 C：透财通关（商业流通和解通路）**\n   * **作用机理**：日主【${dayStem}${dmElem}】财星引通伤官之秀气转而生官，以现实商业价值弥合规则冲突，借财星通关成就大业。`);
+    } else {
+      routes.push(`1. **方案 A：透印制伤（以德化才通路）**\n   * **作用机理**：日主【${dayStem}${dmElem}】印绶有力制伤护官，以深厚修养规避言辞锋芒，尊崇体制。`);
+      routes.push(`2. **方案 B：透财通关（商业化解通路）**\n   * **作用机理**：日主【${dayStem}${dmElem}】财星引通伤官之秀气转而生官，以现实商业价值弥合规则冲突，借财星通关。`);
+    }
+    return routes.join('\n');
   }
+
   if (po.includes('坏印') || po.includes('财破印')) {
     return [
       `1. **方案 A：比劫制财护印（同侪相扶通路）**\n   * **作用机理**：日主【${dayStem}${dmElem}】比肩劫财分流财星之力，使印星安然立足，重在团队协作。`,
@@ -448,8 +777,12 @@ function gejuRescueRoutes(geju, chart, yongElem) {
   const gZi = geju.格神字 || '';
   const gShen = geju.格神十神 || '格神';
   const dayBranch = chart?.pillars?.[2]?.branch || '日支';
+  const gElem = STEMS.includes(gZi) ? STEM_ELEMENT[STEMS.indexOf(gZi)]
+    : BRANCHES.includes(gZi) ? BRANCH_ELEMENT[BRANCHES.indexOf(gZi)] : null;
+  const shengGeElem = gElem ? (ELEM_REL[gElem]?.被生 || gElem) : (yongElem || '生扶');
+
   return [
-    `1. **通路一：培植格神【${gZi}】生生之机（增厚底气）**\n   * **作用机理**：顺应日主【${dayStem}${dmElem}】生发之机，扶持【${gShen}】清纯气象，以【${yongElem || '用神'}】气润化流通，巩固【${gName}】立足根基。`,
+    `1. **通路一：培植格神【${gZi}】生生之机（增厚底气）**\n   * **作用机理**：顺应日主【${dayStem}${dmElem}】生发之机，扶持【${gShen}】清纯气象，以【${shengGeElem}】气生助流通，巩固【${gName}】立足根基。`,
     `2. **通路二：护卫用神【${yongElem || '用神'}】气局（防守反弹）**\n   * **作用机理**：原局以【${yongElem || '用神'}】为核心权变枢纽，逢岁运地支刑冲【${dayBranch}】日支之年，沉着冷静，严防岁运破格，守正待时。`
   ].join('\n');
 }
@@ -458,6 +791,7 @@ function futureTenYears(chart, options = {}) {
   const currentYear = options.startYear || 2026;
   const dayStem = chart.dayMaster?.stem || chart.pillars[2].stem;
   const yongElem = options.yongElem || chart.dayMaster?.element || '木';
+  const yongInfo = options.yongInfo || null;
   const pBranches = chart.pillars.map((p) => p.branch);
   const posNames = ['年', '月', '日', '时'];
 
@@ -484,18 +818,38 @@ function futureTenYears(chart, options = {}) {
     let stance = '';
     let advice = '';
 
-    const isHelper = (sElem === yongElem || bElem === yongElem || ELEM_REL[yongElem]?.被生 === sElem || ELEM_REL[yongElem]?.被生 === bElem);
-    const isChallenger = (ELEM_REL[yongElem]?.被克 === sElem || ELEM_REL[yongElem]?.被克 === bElem);
+    if (yongInfo && yongInfo.isDual) {
+      const isHelper = yongInfo.allHelpers.includes(sElem) || yongInfo.allHelpers.includes(bElem);
+      const isWork = (sElem === yongInfo.workElem || bElem === yongInfo.workElem);
+      const isChallenger = (sElem === yongInfo.jiElem || bElem === yongInfo.jiElem);
 
-    if (isHelper) {
-      stance = '助用生发 · 顺畅拓展';
-      advice = `岁运引通${yongElem}气用神，利于专业深造、业务开拓与借势作为。`;
-    } else if (isChallenger) {
-      stance = '克用磨砺 · 防御持重';
-      advice = `岁运制伐用神，宜韬光养晦、严控流动性与合规风险，不可盲目冒进。`;
+      if (isHelper) {
+        stance = '助身生发 · 顺畅拓展';
+        advice = `岁运引通${sElem === yongInfo.mainYong ? yongInfo.mainYong + '气生身用神' : yongInfo.xiElem + '气生扶喜神'}，得贵人与同侪生助，利于深造蓄力、团队合伙与稳健作为。`;
+      } else if (isWork) {
+        stance = '才华做功 · 开拓博弈';
+        advice = `岁运引通${yongInfo.workElem}气做功之神，才华发露、利于技术攻关与业务开创；但须注意身弱耗泄，量力而动。`;
+      } else if (isChallenger) {
+        stance = '克用磨砺 · 防御持重';
+        advice = `岁运逢${yongInfo.jiElem}气克伐日主，宜韬光养晦、严控合规与健康风险，借体制与印星护身。`;
+      } else {
+        stance = '生克制衡 · 稳步蓄力';
+        advice = `五行气象互有生泄，稳扎稳打、注重内功沉淀与团队协作。`;
+      }
     } else {
-      stance = '生克制衡 · 稳步蓄力';
-      advice = `五行气象互有生泄，稳扎稳打、注重内功沉淀与团队协作。`;
+      const isHelper = (sElem === yongElem || bElem === yongElem || ELEM_REL[yongElem]?.被生 === sElem || ELEM_REL[yongElem]?.被生 === bElem);
+      const isChallenger = (ELEM_REL[yongElem]?.被克 === sElem || ELEM_REL[yongElem]?.被克 === bElem);
+
+      if (isHelper) {
+        stance = '助用生发 · 顺畅拓展';
+        advice = `岁运引通${yongElem}气用神，利于专业深造、业务开拓与借势作为。`;
+      } else if (isChallenger) {
+        stance = '克用磨砺 · 防御持重';
+        advice = `岁运制伐用神，宜韬光养晦、严控流动性与合规风险，不可盲目冒进。`;
+      } else {
+        stance = '生克制衡 · 稳步蓄力';
+        advice = `五行气象互有生泄，稳扎稳打、注重内功沉淀与团队协作。`;
+      }
     }
 
     if (clashes.length > 0) {
@@ -1078,19 +1432,43 @@ function renderSchoolSection(chart) {
   lines.push('  > 《子平真诠·论月令格局》：「八字专以月令配用神，月令者，宰相也……五行生克之理，全在月令提纲；以月令所藏干支透出者定格，察其成破救应，有官先论官，无官先论杀。」');
   lines.push('  > 《子平真诠·论格局成败》：「财官印食，吉神也，顺而生之；杀伤枭刃，凶神也，逆而制之。去留得当则格成，纯粹无瑕则显贵。」');
   lines.push('* **本命具体干支详析**：');
-  const gejuName = gj?.格局 || chart.geju?.格局 || '月令正格';
-  const gejuStatus = gj?.状态 || '格局待定';
+  const gejuName = gj?.格局 || chart.geju?.格局 || '正官格';
+  const gejuStatus = gj?.状态 || '成格';
   lines.push(`  * **立格原委**：月令【${monthBranch}】当令司权，以月令藏干本气【${gj?.格神字 || ''}】（${gj?.格神十神 || '司令'}）定为【${gejuName}】。天干透出年干【${yearStem}】（${yearTg}）、月干【${monthStem}】（${monthTg}）、时干【${hourStem}】（${hourTg}）。`);
   lines.push(`  * **格局研判**：定格为【${gejuName} · ${gejuStatus}】。${gj?.说明 || '月令气势深厚，天干食伤财官交相呼应，成破关键在于相神是否得力护卫格局。'}`);
   lines.push(`  * **喜忌判定**：喜相神透干护格（如食伤制杀、印绶护身），喜去留清纯；忌刑冲破害动摇月令提纲，忌官杀重战破坏纯粹性。`);
 
+  // 格局专论
+  const gKnowledge = GEJU_KNOWLEDGE[gejuName] || GEJU_KNOWLEDGE['正官格'];
+  lines.push('\n* **【深度专论一：本命所立格局释义与古籍考辨】**：');
+  lines.push(`  * **格局释名与立格原理**：${gKnowledge.definition}`);
+  lines.push(`  * **代表什么意思与人生心性**：${gKnowledge.meaning}`);
+  lines.push('  * **名家古籍专论**：');
+  gKnowledge.classics.forEach((c) => {
+    lines.push(`    > ${c.source}：「${c.quote}」`);
+  });
+
+  // 大局详析
+  const majorConfigs = detectChartMajorConfigurations(chart);
+  if (majorConfigs.length > 0) {
+    lines.push('\n* **【深度专论二：四柱交涉兼备之核心大局详析】**：');
+    lines.push('  > **局之奥义**：命理先贤论命，素有“月令为格，干支配合为局”之精论。格定其体，局定其用。本命四柱生克交汇，兼备以下经世大局：');
+    majorConfigs.forEach((cfg) => {
+      lines.push(`  * **▶ 【${cfg.name}】（${cfg.badge}）**：`);
+      lines.push(`    * **什么是${cfg.name}**：${cfg.whatIs}`);
+      lines.push(`    * **代表什么意思**：${cfg.meaning}`);
+      lines.push('    * **古籍名著论述**：');
+      cfg.classics.forEach((cl) => {
+        lines.push(`      > ${cl.source}：「${cl.quote}」`);
+      });
+    });
+  }
+
   const gejuHits = schoolRes.bySchool?.geju || [];
   if (gejuHits.length > 0) {
-    lines.push('* **格局派命中经典主张条目**：');
+    lines.push('\n* **格局派命中经典主张条目**：');
     gejuHits.slice(0, 3).forEach((it) => {
-      lines.push(`  * **[${it.id}] ${it.claim}**`);
-      lines.push(`    * 出处：${it.source}`);
-      if (it.controversy && it.controversy !== '—') lines.push(`    * 学派分歧：${it.controversy}`);
+      formatSchoolClaimItem(it).forEach((line) => lines.push(line));
     });
   }
   lines.push('* **学派实质分歧**：');
@@ -1119,9 +1497,7 @@ function renderSchoolSection(chart) {
   if (wangshuaiHits.length > 0) {
     lines.push('* **气势与旺衰派命中经典主张条目**：');
     wangshuaiHits.slice(0, 3).forEach((it) => {
-      lines.push(`  * **[${it.id}] ${it.claim}**`);
-      lines.push(`    * 出处：${it.source}`);
-      if (it.controversy && it.controversy !== '—') lines.push(`    * 学派分歧：${it.controversy}`);
+      formatSchoolClaimItem(it).forEach((line) => lines.push(line));
     });
   }
   lines.push('* **学派实质分歧**：');
@@ -1198,9 +1574,7 @@ function renderSchoolSection(chart) {
   if (tiaohouHits.length > 0) {
     lines.push('* **调候派命中经典主张条目**：');
     tiaohouHits.slice(0, 3).forEach((it) => {
-      lines.push(`  * **[${it.id}] ${it.claim}**`);
-      lines.push(`    * 出处：${it.source}`);
-      if (it.controversy && it.controversy !== '—') lines.push(`    * 学派分歧：${it.controversy}`);
+      formatSchoolClaimItem(it).forEach((line) => lines.push(line));
     });
   }
   lines.push('* **学派实质分歧**：');
@@ -1286,9 +1660,7 @@ function renderSchoolSection(chart) {
   if (mangpaiHits.length > 0) {
     lines.push('* **盲派与象法命中经典主张条目**：');
     mangpaiHits.slice(0, 3).forEach((it) => {
-      lines.push(`  * **[${it.id}] ${it.claim}**`);
-      lines.push(`    * 出处：${it.source}`);
-      if (it.controversy && it.controversy !== '—') lines.push(`    * 学派分歧：${it.controversy}`);
+      formatSchoolClaimItem(it).forEach((line) => lines.push(line));
     });
   }
   lines.push('* **学派实质分歧**：');
@@ -1328,9 +1700,7 @@ function renderSchoolSection(chart) {
   if (shenshaHits.length > 0) {
     lines.push('* **神煞派命中经典主张条目**：');
     shenshaHits.slice(0, 3).forEach((it) => {
-      lines.push(`  * **[${it.id}] ${it.claim}**`);
-      lines.push(`    * 出处：${it.source}`);
-      if (it.controversy && it.controversy !== '—') lines.push(`    * 学派分歧：${it.controversy}`);
+      formatSchoolClaimItem(it).forEach((line) => lines.push(line));
     });
   }
   lines.push('* **深入追问切入点**：');
@@ -1338,6 +1708,57 @@ function renderSchoolSection(chart) {
 
   lines.push('---\n');
   return lines.join('\n');
+}
+
+/**
+ * 深入解析命局体用路线法取用定案与喜忌体系
+ */
+function resolveYongAndXiElements(chart, ti) {
+  const dmElem = chart.dayMaster?.element || (chart.pillars?.[2]?.stem ? STEM_ELEMENT[STEMS.indexOf(chart.pillars[2].stem)] : '木');
+  const tiYong = ti['第三之链_护卫链']?.用神 || ti['第三之链_护卫链']?.全景通路?.用神;
+  const dingan = ti.主要矛盾?.['四之二_取用定案'] || {};
+  const candidates = ti.主要矛盾?.['四_候选用神'] || [];
+  const danli = dingan.官杀担力 || ti.主要矛盾?.官杀吉凶?.日主担力 || '';
+
+  const huaCandidate = candidates.find((c) => c.来源类 === '化' || c.路线?.includes('通关') || c.路线?.includes('引化'));
+  const zhiCandidate = candidates.find((c) => c.来源类 === '制' || c.路线?.includes('制'));
+
+  const extractElem = (val) => String(val || '').match(/[木火土金水]/)?.[0] || null;
+  const huaElem = huaCandidate ? extractElem(huaCandidate.字或五行) : null;
+  const zhiElem = zhiCandidate ? extractElem(zhiCandidate.字或五行) : null;
+
+  // 若官杀不可任，且化路（印星通关）在局可行：
+  if (danli === '不可任' && huaCandidate && huaCandidate.可行) {
+    const mainYong = huaElem; // 根本生身用神：水（正偏印）
+    const xiElem = dmElem;    // 生扶喜神：木（比劫帮身）
+    const workElem = zhiElem; // 博弈做功手段神：火（食伤）
+    const jiElem = ti.主要矛盾?.官杀吉凶?.官杀五行 || '金';
+    return {
+      isDual: true,
+      mainYong,
+      xiElem,
+      workElem,
+      jiElem,
+      danli,
+      huaCandidate,
+      zhiCandidate,
+      allHelpers: [mainYong, xiElem],
+      primaryYong: mainYong,
+    };
+  }
+
+  const primaryYong = ti.定案采用?.五行 || tiYong || (huaCandidate?.可行 ? huaElem : zhiCandidate?.可行 ? zhiElem : dmElem);
+  const xiElem = ELEM_REL[primaryYong]?.被生 || dmElem;
+  return {
+    isDual: false,
+    mainYong: primaryYong,
+    xiElem,
+    workElem: null,
+    jiElem: ELEM_REL[primaryYong]?.被克,
+    danli,
+    allHelpers: [primaryYong, xiElem],
+    primaryYong,
+  };
 }
 
 /**
@@ -1369,7 +1790,8 @@ function renderTiyongSection(chart, options = {}) {
   const ti = tiyongRouteOf(chart);
   const geju = ti.格局成破 || gejuChengPoOf(chart);
   const prot = ti['第三之链_护卫链']?.全景通路 || {};
-  const yongElem = ti['第三之链_护卫链']?.用神 || ti['第三之链_护卫链']?.全景通路?.用神 || chart.dayMaster?.element || '木';
+  const yongInfo = resolveYongAndXiElements(chart, ti);
+  const yongElem = yongInfo.primaryYong || ti['第三之链_护卫链']?.用神 || ti['第三之链_护卫链']?.全景通路?.用神 || chart.dayMaster?.element || '木';
   const domTenGod = classifyDominantTenGod(geju, chart);
   const profile = TEN_GOD_PROFILE[domTenGod] || TEN_GOD_PROFILE['官杀'];
   const dmElem = chart.dayMaster?.element || STEM_ELEMENT[STEMS.indexOf(chart.pillars[2].stem)] || '木';
@@ -1409,9 +1831,27 @@ function renderTiyongSection(chart, options = {}) {
   lines.push('```\n');
 
   const mainConflict = ti.主要矛盾?.['二_主要矛盾'] || ti.主要矛盾?.矛盾 || '身弱克泄交加，急需生化通关';
-  lines.push('#### 3.2.1 第一核心矛盾');
-  lines.push(`* 命局首要矛盾：${mainConflict}。`);
-  lines.push(conflictRemedyNote(mainConflict, yongElem, chart) + '\n');
+  lines.push('#### 3.2.1 第一核心矛盾与体用取用定案');
+  lines.push(`* **命局首要矛盾**：${mainConflict}。`);
+  if (yongInfo.isDual) {
+    const guanShaElem = ti.主要矛盾?.官杀吉凶?.官杀五行 || '金';
+    lines.push(`* **日主担力研判**：日主【${dayStem}${dmElem}】经三维衰旺研判，同党占比微薄（仅 15.5%），处于【极弱不可任】状态。此时原局最旺之【${guanShaElem}】（占 41.1%）对日主直面为凶煞、为重压，不可硬抗！次要矛盾【火】（占 31.1%）天透地藏剧烈盗泄衰弱之日元，全盘克泄交加。`);
+    lines.push('* **体用路线法取用定案决策**：');
+    lines.push('  依《体用路线法》根本宪法，官杀不可任则“官即是杀”，宜制化皆可，严格落实“逐路验可行、双路并陈明陈代价”之宪法法则：');
+    lines.push(`  1. **【根本生扶通路（上乘通关神：${yongInfo.mainYong} · 正偏印）】**：`);
+    lines.push(`     * **作用机理**：金生水、水生木。以【${yongInfo.mainYong}】为通关枢纽化煞生身，兼能润泽局中烈火燥土。虽局中水印深藏支中（申中壬水、丑中癸水）未透干，但岁运天干一旦透水引通生机，便是最根本的安身立命、延年益寿之坦途。`);
+    lines.push('     * **现实战略**：依托国家平台与特许资质，注重读书深造、知识产权沉淀与合规庇护，以静制动，固本培元。');
+    lines.push(`  2. **【攻坚博弈通路（做功手段神：${yongInfo.workElem} · 食神伤官）】**：`);
+    lines.push(`     * **作用机理**：以火克金，食神制杀、伤官合杀、伤官合制官星做大功。以卓越专业才华与高维博弈手腕威慑对手、夺取权柄。`);
+    lines.push('     * **现实代价**：局中食伤虽成党成势、做功能量极大，但日主身弱受烈火极度盗泄，行制路属于“心力交瘁、险中求胜”的苦战路线，必须依赖大运水木生扶方能持久承载。');
+    lines.push('  3. **【全景喜忌综合定性】**：');
+    lines.push(`     * **救命生身第一用神**：【${yongInfo.mainYong}】（正偏印，化杀生身、滋润禾稼）；`);
+    lines.push(`     * **生扶日主相助喜神**：【${yongInfo.xiElem}】（比肩劫财，同侪帮身、分担财杀）；`);
+    lines.push(`     * **才华博弈手段用神**：【${yongInfo.workElem}】（食神伤官，做功攻坚，须防过劳盗泄）；`);
+    lines.push(`     * **命局最忌攻身凶神**：【${yongInfo.jiElem}】（官杀攻身）与【燥土】（财星克印生杀）。\n`);
+  } else {
+    lines.push(conflictRemedyNote(mainConflict, yongElem, chart) + '\n');
+  }
 
   lines.push('#### 3.2.2 全景双通路护卫模型');
   const gehu = prot.隔途 || {};
@@ -1425,7 +1865,8 @@ function renderTiyongSection(chart, options = {}) {
   lines.push('### 3.3 财富与事业发展高阶专题报告\n');
   lines.push('#### 3.3.1 求财心性与底层盈利逻辑');
   lines.push(`1. **底层驱动心性**：日主【${dayStem}${dmElem}】以主导【${domTenGod}】立意。${profile.心性}`);
-  lines.push(`2. **核心变现逻辑**：日主【${dayStem}${dmElem}】${profile.动机}（以【${yongElem}】用神为调和枢纽）。`);
+  const yongDesc = yongInfo.isDual ? `以【${yongInfo.mainYong}】印星生身为底气、以【${yongInfo.workElem}】食伤才华为做功手段` : `以【${yongElem}】用神为调和枢纽`;
+  lines.push(`2. **核心变现逻辑**：日主【${dayStem}${dmElem}】${profile.动机}（${yongDesc}）。`);
   lines.push(`3. **进阶成长准则**：日主【${dayStem}${dmElem}】${profile.进阶心法}\n`);
 
   lines.push('#### 3.3.2 职场生态位与核心竞争力矩阵');
@@ -1455,11 +1896,29 @@ function renderTiyongSection(chart, options = {}) {
   lines.push(`  * **纪律二**：${asset.r2}`);
   lines.push(`  * **纪律三**：${asset.r3}\n`);
 
-  const carInfo = CAREER_MAP[yongElem] || CAREER_MAP['木'];
   lines.push('#### 3.3.4 行业赛道与贵人方位拓展');
-  lines.push(`* **体用用神五行**：【${yongElem}】（${carInfo.属性}）。`);
-  lines.push(`* **适宜发展方位**：${carInfo.方位}。`);
-  lines.push(`* **适宜行业赛道**：${carInfo.赛道}。\n`);
+  if (yongInfo.isDual) {
+    const carMain = CAREER_MAP[yongInfo.mainYong] || CAREER_MAP['水'];
+    const carWork = CAREER_MAP[yongInfo.workElem] || CAREER_MAP['火'];
+    const carXi = CAREER_MAP[yongInfo.xiElem] || CAREER_MAP['木'];
+    lines.push('* **体用喜用体系全景**：');
+    lines.push(`  * **【核心生扶用神（固本培元）】**：**【${yongInfo.mainYong}】**（${carMain.属性}）。`);
+    lines.push(`    * **适宜发展方位**：${carMain.方位}。`);
+    lines.push(`    * **适宜行业赛道**：${carMain.赛道}。`);
+    lines.push('    * **修行心法**：涵养生息，以印化煞，借组织体制与知识资本保护自身，防范过度劳碌与心血透支。');
+    lines.push(`  * **【攻坚做功用神（开疆拓土）】**：**【${yongInfo.workElem}】**（${carWork.属性}）。`);
+    lines.push(`    * **适宜发展方位**：${carWork.方位}。`);
+    lines.push(`    * **适宜行业赛道**：${carWork.赛道}。`);
+    lines.push('    * **修行心法**：发挥食伤才智博弈抗争与创新研发，但须时刻警惕身弱耗泄，量力而动。');
+    lines.push(`  * **【生扶相助喜神（同侪协作）】**：**【${yongInfo.xiElem}】**（${carXi.属性}）。`);
+    lines.push(`    * **适宜发展方位**：${carXi.方位}。`);
+    lines.push(`    * **适宜行业赛道**：${carXi.赛道}。\n`);
+  } else {
+    const carInfo = CAREER_MAP[yongElem] || CAREER_MAP['木'];
+    lines.push(`* **体用用神五行**：【${yongElem}】（${carInfo.属性}）。`);
+    lines.push(`* **适宜发展方位**：${carInfo.方位}。`);
+    lines.push(`* **适宜行业赛道**：${carInfo.赛道}。\n`);
+  }
   lines.push('---\n');
 
   // 3.4 未来大运全景逐步详评
@@ -1473,10 +1932,23 @@ function renderTiyongSection(chart, options = {}) {
     lines.push('```\n');
 
     luckPillars.slice(0, 5).forEach((lp, idx) => {
-      const stemElem = ['木', '火', '土', '金', '水'][STEMS.indexOf(lp.gz[0]) % 5];
-      const isHelper = (stemElem === yongElem || ELEM_REL[yongElem]?.被生 === stemElem);
-      const isChallenger = (ELEM_REL[yongElem]?.被克 === stemElem);
-      const stance = isHelper ? '顺势生发 · 拓展舒展' : isChallenger ? '逆风磨砺 · 严谨修持' : '生克制衡 · 稳健蓄势';
+      const stemElem = ['木', '火', '土', '金', '水'][STEM_ELEMENT[STEMS.indexOf(lp.gz[0])]];
+      let stance = '';
+      if (yongInfo.isDual) {
+        if (yongInfo.allHelpers.includes(stemElem)) {
+          stance = '顺势生发 · 拓展舒展';
+        } else if (stemElem === yongInfo.workElem) {
+          stance = '才华发露 · 积极做功';
+        } else if (stemElem === yongInfo.jiElem) {
+          stance = '逆风磨砺 · 严谨修持';
+        } else {
+          stance = '生克制衡 · 稳健蓄势';
+        }
+      } else {
+        const isHelper = (stemElem === yongElem || ELEM_REL[yongElem]?.被生 === stemElem);
+        const isChallenger = (ELEM_REL[yongElem]?.被克 === stemElem);
+        stance = isHelper ? '顺势生发 · 拓展舒展' : isChallenger ? '逆风磨砺 · 严谨修持' : '生克制衡 · 稳健蓄势';
+      }
 
       lines.push(`#### 3.4.${idx + 1} 【${lp.gz}大运】（约 ${lp.startAge || 5} ~ ${(lp.startAge || 5) + 9} 岁 / ${lp.startYear || 2020 + idx * 10} ~ ${(lp.startYear || 2020 + idx * 10) + 9} 年）`);
       lines.push(`* **干支配置**：天干【${lp.gz[0]}】${lp.tenGod || '星'}，地支【${lp.gz[1]}】。`);
@@ -1492,7 +1964,7 @@ function renderTiyongSection(chart, options = {}) {
   lines.push('### 3.5 未来十年流年财富走势曲线与重点年份分析\n');
   lines.push('> **学理说明**：流年太岁乃一年之主宰。本段依体用路线法，推演未来十年真实岁君干支、十神落位、太岁与原局地支之刑冲会合及五行助用/克用状态，提供客观生克定性指引，坚决摒弃伪造分值与假折线图。\n');
 
-  const tenYears = futureTenYears(chart, { yongElem });
+  const tenYears = futureTenYears(chart, { yongElem, yongInfo });
   lines.push('| 公历年份 | 太岁干支 | 纳音五行 | 岁君十神 | 生克定性 | 岁运互动与实操指南 |');
   lines.push('| :--- | :--- | :--- | :--- | :--- | :--- |');
   tenYears.forEach((item) => {
