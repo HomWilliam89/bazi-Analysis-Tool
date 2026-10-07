@@ -355,6 +355,40 @@ assert('看门狗21：神煞引文与追问动态契合（无将星/驿马盘绝
   watchdog21Passed
 );
 
+// 看门狗 22：防体用倒置（乙巳盘第一用神为火，灭工具第一大忌神为水，严禁水为用神）
+const rep1_tiyong = sampleReps[0];
+const watchdog22Passed = rep1_tiyong.includes('解决主要矛盾第一核心用神**：【火】') &&
+  rep1_tiyong.includes('破局灭工具第一大忌神**：【水】') &&
+  !rep1_tiyong.includes('解决主要矛盾第一核心用神**：【水】') &&
+  !rep1_tiyong.includes('救命生身第一用神：水');
+assert('看门狗22：体用立宪与公理化喜忌（乙巳盘第一用神为火、灭工具第一大忌为水，严禁印星水逆夺用神）',
+  watchdog22Passed
+);
+
+// 看门狗 23：天干虚浮折减律（乙巳盘无根乙木占比折减为 2.5%，严格低于水 6.7%，全盘木最少）
+const rep1_muMatch = rep1_tiyong.match(/\* \*\*木\*\*：\*\*([\d\.]+)%\*\*/);
+const rep1_shuiMatch = rep1_tiyong.match(/\* \*\*水\*\*：\*\*([\d\.]+)%\*\*/);
+const rep1_muPct = rep1_muMatch ? Number(rep1_muMatch[1]) : 0;
+const rep1_shuiPct = rep1_shuiMatch ? Number(rep1_shuiMatch[1]) : 0;
+const watchdog23Passed = rep1_muPct === 2.5 && rep1_shuiPct === 6.7 && rep1_muPct < rep1_shuiPct;
+assert('看门狗23：天干虚浮折减律生效（乙巳盘无根乙木占比降至 2.5%，严格低于水 6.7%，实现全盘木最少）',
+  watchdog23Passed
+);
+
+// 看门狗 24：全五行全格局喜忌推演自洽（五盘样本第一忌神皆锁定为克灭第一用神之五行，绝不无脑强扶印比）
+const watchdog24Passed = sampleReps.every((rep) => {
+  const yongM = rep.match(/第一核心用神\*\*：【([金木水火土])】/);
+  const jiM = rep.match(/破局灭工具第一大忌神\*\*：【([金木水火土])】/);
+  if (!yongM || !jiM) return false;
+  const yong = yongM[1];
+  const ji = jiM[1];
+  const keMap = { '金': '火', '木': '金', '水': '土', '火': '水', '土': '木' };
+  return keMap[yong] === ji;
+});
+assert('看门狗24：全五行全格局公理化喜忌推演自洽（克灭第一用神者必为破局第一大忌神，五盘全部严格符合公理）',
+  watchdog24Passed
+);
+
 // -------------------------------------------------------------------
 // 统计汇总
 // -------------------------------------------------------------------

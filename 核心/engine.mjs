@@ -882,17 +882,28 @@ export function elementStrength(pillars, monthBranchName, silingEl) {
   const visible = { 木: 0, 火: 0, 土: 0, 金: 0, 水: 0 };
   const rooted = { 木: 0, 火: 0, 土: 0, 金: 0, 水: 0 };
 
-  for (const p of pillars) {
-    const se = ELEMENTS[STEM_ELEMENT[p.stemIndex]];
-    visible[se] += 1;
-    score[se] += 1.0;
-  }
+  const hasMain = { 木: false, 火: false, 土: false, 金: false, 水: false };
+  const hasSub = { 木: false, 火: false, 土: false, 金: false, 水: false };
+
+  // 1. 先统计地支藏干通根分布（本气深根 vs 中余气微根）
   for (const p of pillars) {
     for (const h of HIDDEN_STEMS_SPEC[p.branchIndex]) {
       const se = ELEMENTS[STEM_ELEMENT[STEMS.indexOf(h[0])]];
       rooted[se] += h[2];
+      if (h[1] === '本') hasMain[se] = true;
+      else hasSub[se] = true;
       score[se] += h[2] * 1.2;
     }
+  }
+
+  // 2. 天干打分挂钩通根深度（虚浮折减律，D-043，方案 A）
+  //    - 地支有通根者（含本气或中余气）：天干有根依托，得 1.0 分；
+  //    - 全局 0 通根（完全虚浮无根者）：天干虚浮无根，折减为 0.25 分（如乙巳盘之乙木）。
+  for (const p of pillars) {
+    const se = ELEMENTS[STEM_ELEMENT[p.stemIndex]];
+    visible[se] += 1;
+    let stemScore = (rooted[se] > 0) ? 1.0 : 0.25;
+    score[se] += stemScore;
   }
   const adjusted = {};
   let total = 0;

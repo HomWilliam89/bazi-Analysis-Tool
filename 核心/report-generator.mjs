@@ -1719,20 +1719,20 @@ function futureTenYears(chart, options = {}) {
     let stance = '';
     let advice = '';
 
-    if (yongInfo && yongInfo.isDual) {
-      const isHelper = yongInfo.allHelpers.includes(sElem) || yongInfo.allHelpers.includes(bElem);
-      const isWork = (sElem === yongInfo.workElem || bElem === yongInfo.workElem);
-      const isChallenger = (sElem === yongInfo.jiElem || bElem === yongInfo.jiElem);
+    if (yongInfo) {
+      const isHelper = (sElem === yongInfo.primaryYong || bElem === yongInfo.primaryYong || sElem === yongInfo.huShenElem || bElem === yongInfo.huShenElem || sElem === yongInfo.shengYongElem || bElem === yongInfo.shengYongElem);
+      const isWork = (sElem === yongInfo.primaryYong || bElem === yongInfo.primaryYong);
+      const isChallenger = (sElem === yongInfo.mieToolElem || bElem === yongInfo.mieToolElem || sElem === yongInfo.bingElem || bElem === yongInfo.bingElem);
 
-      if (isHelper) {
-        stance = '助身生发 · 顺畅拓展';
-        advice = `岁运引通${sElem === yongInfo.mainYong ? yongInfo.mainYong + '气生身用神' : yongInfo.xiElem + '气生扶喜神'}，得贵人与同侪生助，利于深造蓄力、团队合伙与稳健作为。`;
-      } else if (isWork) {
+      if (isWork) {
         stance = '才华做功 · 开拓博弈';
-        advice = `岁运引通${yongInfo.workElem}气做功之神，才华发露、利于技术攻关与业务开创；但须注意身弱耗泄，量力而动。`;
+        advice = `岁运引通${yongInfo.primaryYong}气做功之神，才华发露、利于技术攻关与业务开创；顺势而为，建立核心壁垒。`;
+      } else if (isHelper) {
+        stance = '助身生发 · 顺畅拓展';
+        advice = `岁运引通${sElem === yongInfo.huShenElem ? yongInfo.huShenElem + '气护卫喜神' : yongInfo.shengYongElem + '气生扶喜神'}，得外部贵人与同侪生助，利于稳健作为。`;
       } else if (isChallenger) {
         stance = '克用磨砺 · 防御持重';
-        advice = `岁运逢${yongInfo.jiElem}气克伐日主，宜韬光养晦、严控合规与健康风险，借体制与印星护身。`;
+        advice = `岁运逢${sElem === yongInfo.mieToolElem ? yongInfo.mieToolElem + '气克伐用神' : yongInfo.bingElem + '气激化病灶'}，宜韬光养晦、严控合规与财务风险，坚守底线。`;
       } else {
         stance = '生克制衡 · 稳步蓄力';
         advice = `五行气象互有生泄，稳扎稳打、注重内功沉淀与团队协作。`;
@@ -2642,53 +2642,84 @@ function renderSchoolSection(chart) {
 }
 
 /**
- * 深入解析命局体用路线法取用定案与喜忌体系
+ * 辅助推导日主与目标五行的十神通称类别（拓展至所有五行与所有格局）
+ */
+function elemTenGodCategory(dmElem, targetElem) {
+  if (!targetElem || !dmElem) return '十神';
+  if (targetElem === dmElem) return '比肩劫财';
+  if (ELEM_REL[targetElem]?.生 === dmElem) return '正印偏印';
+  if (ELEM_REL[dmElem]?.生 === targetElem) return '食神伤官';
+  if (ELEM_REL[targetElem]?.克 === dmElem) return '正官七杀';
+  if (ELEM_REL[dmElem]?.克 === targetElem) return '正财偏财';
+  return '十神';
+}
+
+/**
+ * 深入解析命局体用路线法取用定案与喜忌体系（公理化拓展至所有五行、所有格局，D-043 落地）
  */
 function resolveYongAndXiElements(chart, ti) {
   const dmElem = chart.dayMaster?.element || (chart.pillars?.[2]?.stem ? STEM_ELEMENT[STEMS.indexOf(chart.pillars[2].stem)] : '木');
-  const tiYong = ti['第三之链_护卫链']?.用神 || ti['第三之链_护卫链']?.全景通路?.用神;
   const dingan = ti.主要矛盾?.['四之二_取用定案'] || {};
   const candidates = ti.主要矛盾?.['四_候选用神'] || [];
   const danli = dingan.官杀担力 || ti.主要矛盾?.官杀吉凶?.日主担力 || '';
 
-  const huaCandidate = candidates.find((c) => c.来源类 === '化' || c.路线?.includes('通关') || c.路线?.includes('引化'));
-  const zhiCandidate = candidates.find((c) => c.来源类 === '制' || c.路线?.includes('制'));
-
   const extractElem = (val) => String(val || '').match(/[木火土金水]/)?.[0] || null;
+  const tonggui = candidates.find((c) => c.来源类 === '同归' && c.可行);
+  const primaryYong = (tonggui ? extractElem(tonggui.字或五行) : null)
+    || ti.定案采用?.五行
+    || ti['第三之链_护卫链']?.全景通路?.用神
+    || ti['第三之链_护卫链']?.用神
+    || (candidates.find((c) => c.可行)?.字或五行 ? extractElem(candidates.find((c) => c.可行).字或五行) : null)
+    || ti.用神五行
+    || dmElem;
+
+  // 1. 破用克神（灭工具第一大忌神：克第一用神者）
+  const mieToolElem = ELEM_REL[primaryYong]?.被克 || ti['第三之链_护卫链']?.全景通路?.克神 || ELEM_REL[primaryYong]?.被克;
+
+  // 2. 护神（制克神者）与生用神（生第一用神者）
+  const huShenElem = ELEM_REL[mieToolElem]?.被克; // 如土克水护火
+  const shengYongElem = ELEM_REL[primaryYong]?.被生; // 如木生火
+  const xiElem = huShenElem || shengYongElem || dmElem;
+
+  // 3. 病灶凶神（主要矛盾太旺之源头）
+  const { pct: normPct } = calcTongYiDang(chart);
+  const sortedElems = Object.entries(normPct).sort((a, b) => b[1] - a[1]);
+  const maxElem = sortedElems[0]?.[0] || '金';
+  const bingElem = (maxElem !== primaryYong) ? maxElem : (sortedElems[1]?.[0] || '水');
+
+  const huaCandidate = candidates.find((c) => (c.来源类 === '化' || c.路线?.includes('通关') || c.路线?.includes('引化')) && c.可行);
+  const zhiCandidate = candidates.find((c) => (c.来源类 === '制' || c.路线?.includes('制')) && c.可行);
   const huaElem = huaCandidate ? extractElem(huaCandidate.字或五行) : null;
   const zhiElem = zhiCandidate ? extractElem(zhiCandidate.字或五行) : null;
 
-  // 若官杀不可任，且化路（印星通关）在局可行：
-  if (danli === '不可任' && huaCandidate && huaCandidate.可行) {
-    const mainYong = huaElem; // 根本生身用神：水（正偏印）
-    const xiElem = dmElem;    // 生扶喜神：木（比劫帮身）
-    const workElem = zhiElem; // 博弈做功手段神：火（食伤）
-    const jiElem = ti.主要矛盾?.官杀吉凶?.官杀五行 || '金';
-    return {
-      isDual: true,
-      mainYong,
-      xiElem,
-      workElem,
-      jiElem,
-      danli,
-      huaCandidate,
-      zhiCandidate,
-      allHelpers: [mainYong, xiElem],
-      primaryYong: mainYong,
-    };
-  }
+  // 若化神直接克制第一用神（如水克火灭工具），则化神断然不可为用，直接定为破局灭工具大忌神，绝不作双通路！
+  const huaClashesTool = Boolean(huaElem && ELEM_REL[primaryYong]?.被克 === huaElem);
+  const isDual = !huaClashesTool && Boolean(
+    huaCandidate && zhiCandidate && huaElem && zhiElem
+    && huaElem !== zhiElem
+    && ELEM_REL[huaElem]?.克 !== zhiElem
+    && ELEM_REL[zhiElem]?.克 !== huaElem
+    && huaElem === primaryYong
+  );
 
-  const primaryYong = ti.定案采用?.五行 || tiYong || (huaCandidate?.可行 ? huaElem : zhiCandidate?.可行 ? zhiElem : dmElem);
-  const xiElem = ELEM_REL[primaryYong]?.被生 || dmElem;
   return {
-    isDual: false,
-    mainYong: primaryYong,
-    xiElem,
-    workElem: null,
-    jiElem: ELEM_REL[primaryYong]?.被克,
-    danli,
-    allHelpers: [primaryYong, xiElem],
+    isDual,
     primaryYong,
+    mainYong: primaryYong,
+    mieToolElem,
+    jiElem: mieToolElem,
+    bingElem,
+    huShenElem,
+    shengYongElem,
+    xiElem,
+    workElem: primaryYong,
+    danli,
+    huaCandidate,
+    zhiCandidate,
+    huaElem,
+    zhiElem,
+    huaClashesTool,
+    allHelpers: [primaryYong, huShenElem, shengYongElem].filter(Boolean),
   };
 }
 
@@ -2769,65 +2800,49 @@ function renderTiyongSection(chart, options = {}) {
   const mainConflict = ti.主要矛盾?.['二_主要矛盾'] || ti.主要矛盾?.矛盾 || '身弱克泄交加，急需生化通关';
   lines.push('#### 3.2.1 第一核心矛盾与体用取用定案');
   lines.push(`* **命局首要矛盾**：${mainConflict}。`);
-  if (yongInfo.isDual) {
-    const guanShaElem = ti.主要矛盾?.官杀吉凶?.官杀五行 || yongInfo.jiElem || '金';
-    const danliState = tongPct < 25 ? '【极弱不可任】' : tongPct < 40 ? '【身弱难以任煞】' : tongPct < 55 ? '【中和偏弱】' : '【身旺有托】';
+  const danliState = tongPct < 25 ? '【极弱不可任】' : tongPct < 40 ? '【身弱难以任煞】' : tongPct < 55 ? '【中和偏弱】' : '【身旺有托】';
 
-    const maxRel = ELEM_REL[maxElem[0]]?.克 === dmElem ? '直面为凶煞重压、不可硬抗'
-      : ELEM_REL[dmElem]?.生 === maxElem[0] ? '剧烈盗泄身心、秀气过甚成患'
-      : ELEM_REL[dmElem]?.克 === maxElem[0] ? '耗竭日元精气、财重身困'
-      : ELEM_REL[maxElem[0]]?.生 === dmElem ? '生扶过重、反生壅滞'
-      : '比劫并旺、分夺财福';
+  const maxRel = ELEM_REL[maxElem[0]]?.克 === dmElem ? '直面为凶煞重压、不可硬抗'
+    : ELEM_REL[dmElem]?.生 === maxElem[0] ? '剧烈盗泄身心、秀气过甚成患'
+    : ELEM_REL[dmElem]?.克 === maxElem[0] ? '耗竭日元精气、财重身困'
+    : ELEM_REL[maxElem[0]]?.生 === dmElem ? '生扶过重、反生壅滞'
+    : '比劫并旺、分夺财福';
 
-    const secondRel = ELEM_REL[secondElem[0]]?.克 === dmElem ? '克制日主成夹击'
-      : ELEM_REL[dmElem]?.生 === secondElem[0] ? '盗泄衰弱之日元'
-      : ELEM_REL[dmElem]?.克 === secondElem[0] ? '耗损日主之真气'
-      : ELEM_REL[secondElem[0]]?.生 === dmElem ? '微弱生身难抵凶势'
-      : '并肩争战激化矛盾';
+  const secondRel = ELEM_REL[secondElem[0]]?.克 === dmElem ? '克制日主成夹击'
+    : ELEM_REL[dmElem]?.生 === secondElem[0] ? '盗泄衰弱之日元'
+    : ELEM_REL[dmElem]?.克 === secondElem[0] ? '耗损日主之真气'
+    : ELEM_REL[secondElem[0]]?.生 === dmElem ? '微弱生身难抵凶势'
+    : '并肩争战激化矛盾';
 
-    lines.push(`* **日主担力研判**：日主【${dayStem}${dmElem}】经三维衰旺研判，同党占比为 ${tongPct.toFixed(1)}%，处于${danliState}状态。此时原局最旺之【${maxElem[0]}】（占 ${maxElem[1].toFixed(1)}%）${maxRel}！次要矛盾【${secondElem[0]}】（占 ${secondElem[1].toFixed(1)}%）${secondRel}，全局克泄并见。`);
-    lines.push('* **体用路线法取用定案决策**：');
-    lines.push('  依《体用路线法》根本宪法，官杀不可任则“官即是杀”，宜制化皆可，严格落实“逐路验可行、双路并陈明陈代价”之宪法法则：');
+  lines.push(`* **日主担力研判**：日主【${dayStem}${dmElem}】经三维衰旺研判，同党占比为 ${tongPct.toFixed(1)}%，处于${danliState}状态。此时原局最旺之【${maxElem[0]}】（占 ${maxElem[1].toFixed(1)}%）${maxRel}！次要矛盾【${secondElem[0]}】（占 ${secondElem[1].toFixed(1)}%）${secondRel}，全局克泄并见。`);
+  lines.push('* **体用路线法取用定案决策**：');
+  lines.push('  依《体用路线法》根本宪法：「忌神和用神看他做了什么，妨碍解决主要矛盾者为忌神，帮助解决主要矛盾者为用神。“生我”不自动等于喜——若克灭做功工具，纵能生身亦为大忌；克用神者必为第一大忌神！」严格落实全格局全五行公理化推演：');
 
-    // 动态扫描原局印星透藏状态
-    const hiddenYinList = [];
-    const exposedYinList = [];
-    chart.pillars?.forEach((col) => {
-      if (STEM_ELEMENT[STEMS.indexOf(col.stem)] === yongInfo.mainYong) {
-        exposedYinList.push(`${col.position}干${col.stem}`);
-      }
-      col.hidden?.forEach((h) => {
-        if (STEM_ELEMENT[STEMS.indexOf(h.stem)] === yongInfo.mainYong) {
-          hiddenYinList.push(`${col.branch}中${h.stem}`);
-        }
-      });
-    });
+  const yongTenGod = elemTenGodCategory(dmElem, yongInfo.primaryYong);
+  const mieTenGod = elemTenGodCategory(dmElem, yongInfo.mieToolElem);
+  const huTenGod = elemTenGodCategory(dmElem, yongInfo.huShenElem);
+  const shengTenGod = elemTenGodCategory(dmElem, yongInfo.shengYongElem);
+  const bingTenGod = elemTenGodCategory(dmElem, yongInfo.bingElem);
 
-    let yinPresenceNote = '';
-    if (exposedYinList.length > 0) {
-      yinPresenceNote = `原局天干透出【${exposedYinList.join('、')}】引通生机，生化路线已立`;
-    } else if (hiddenYinList.length > 0) {
-      yinPresenceNote = `虽局中印星深藏支中（${hiddenYinList.join('、')}）未透干，但岁运天干一旦透出引通生机，便是最根本的安身立命之坦途`;
-    } else {
-      yinPresenceNote = `局中印星虽不显露，专待岁运透干通关化煞，以柔制刚`;
-    }
+  lines.push(`  1. **【根本立命用神（做功枢纽：${yongInfo.primaryYong} · ${yongTenGod}）】**：`);
+  lines.push(`     * **作用机理**：以【${yongInfo.primaryYong}】克制化解原局主要矛盾【${yongInfo.bingElem}】。用神为命主安身立命、攻坚做功之核心利器。`);
+  lines.push(`     * **现实战略**：深耕【${yongInfo.primaryYong}】所代表的专业技术壁垒与高维博弈能力，由技入道，以硬核做功手腕在复杂局势中确立核心生态位。`);
 
-    lines.push(`  1. **【根本生扶通路（上乘通关神：${yongInfo.mainYong} · 正偏印）】**：`);
-    lines.push(`     * **作用机理**：${guanShaElem}生${yongInfo.mainYong}、${yongInfo.mainYong}生${dmElem}。以【${yongInfo.mainYong}】为通关枢纽化煞生身。${yinPresenceNote}。`);
-    lines.push('     * **现实战略**：依托国家平台与特许资质，注重读书深造、知识产权沉淀与合规庇护，以静制动，固本培元。');
-    lines.push(`  2. **【攻坚博弈通路（做功手段神：${yongInfo.workElem} · 食神伤官）】**：`);
-    lines.push(`     * **作用机理**：以【${yongInfo.workElem}】克【${guanShaElem}】，食伤做功制伏官杀。以卓越专业才华与高维博弈手腕威慑对手、夺取权柄。`);
-    lines.push('     * **现实代价**：局中食伤虽能做功攻坚，但日主身弱受盗泄，行制路属于“心力交瘁、险中求胜”的苦战路线，必须依赖岁运印比生扶方能持久承载。');
+  lines.push(`  2. **【破局第一大忌（灭用克神：${yongInfo.mieToolElem} · ${mieTenGod}）】**：`);
+  const mieExplanation = yongInfo.mieToolElem === ELEM_REL[dmElem]?.生
+    ? `虽常理以【${yongInfo.mieToolElem}】（印星）能生扶日主，但在本局中，【${yongInfo.mieToolElem}】会直接克灭命主解决主要矛盾的核心工具【${yongInfo.primaryYong}】（${yongTenGod}），且激化原局太旺之势（犯旺）。故依《体用路线法》宪法原则，“生我不自动等于喜”，【${yongInfo.mieToolElem}】坚决定性为**破局灭工具之第一大忌神**！`
+    : `以【${yongInfo.mieToolElem}】直接克伐第一用神【${yongInfo.primaryYong}】，毁坏命主立足之工具枢纽，属于动摇全局命脉之头号凶神。`;
+  lines.push(`     * **破坏机理**：${mieExplanation}`);
+  lines.push(`     * **现实防范**：凡岁运遇【${yongInfo.mieToolElem}】气强旺之时，切忌盲目依赖外部教条或轻举妄动，务必固守底层核心工具防线。`);
 
-    const caiElem = ELEM_REL[dmElem]?.克 || '土';
-    lines.push('  3. **【全景喜忌综合定性】**：');
-    lines.push(`     * **救命生身第一用神**：【${yongInfo.mainYong}】（正偏印，化杀生身、滋润日元）；`);
-    lines.push(`     * **生扶日主相助喜神**：【${yongInfo.xiElem}】（比肩劫财，同侪帮身、分担压力）；`);
-    lines.push(`     * **才华博弈手段用神**：【${yongInfo.workElem}】（食神伤官，做功攻坚，须防过劳盗泄）；`);
-    lines.push(`     * **命局最忌攻身凶神**：【${yongInfo.jiElem}】（官杀攻身）与【${caiElem}】（财星克印坏局）。\n`);
-  } else {
-    lines.push(conflictRemedyNote(mainConflict, yongElem, chart) + '\n');
-  }
+  lines.push(`  3. **【护卫用神喜神通路（护神：${yongInfo.huShenElem} · ${huTenGod} / 生神：${yongInfo.shengYongElem} · ${shengTenGod}）】**：`);
+  lines.push(`     * **护卫机理**：以【${yongInfo.huShenElem}】克制【${yongInfo.mieToolElem}】（制途中流砥柱，护卫用神不伤），以【${yongInfo.shengYongElem}】生扶【${yongInfo.primaryYong}】（生神源源不断注入动能）。`);
+
+  lines.push('  4. **【全景喜忌综合定性】**：');
+  lines.push(`     * **解决主要矛盾第一核心用神**：【${yongInfo.primaryYong}】（${yongTenGod}，立命做功之工具枢纽）；`);
+  lines.push(`     * **破局灭工具第一大忌神**：【${yongInfo.mieToolElem}】（${mieTenGod}，克害用神灭工具，纵能生身亦是大凶！）；`);
+  lines.push(`     * **护卫用神相助喜神**：【${yongInfo.huShenElem}】（${huTenGod}，制克神护卫）与【${yongInfo.shengYongElem}】（${shengTenGod}，生助用神）；`);
+  lines.push(`     * **原局太旺病灶凶神**：【${yongInfo.bingElem}】（${bingTenGod}，太旺压迫日主之主要矛盾源头）。\n`);
 
   lines.push('#### 3.2.2 全景双通路护卫模型');
   const gehu = prot.隔途 || {};
@@ -2841,7 +2856,7 @@ function renderTiyongSection(chart, options = {}) {
   lines.push('### 3.3 财富与事业发展高阶专题报告\n');
   lines.push('#### 3.3.1 求财心性与底层盈利逻辑');
   lines.push(`1. **底层驱动心性**：日主【${dayStem}${dmElem}】以主导【${domTenGod}】立意。${profile.心性}`);
-  const yongDesc = yongInfo.isDual ? `以【${yongInfo.mainYong}】印星生身为底气、以【${yongInfo.workElem}】食伤才华为做功手段` : `以【${yongElem}】用神为调和枢纽`;
+  const yongDesc = yongInfo ? `以【${yongInfo.primaryYong}】（${elemTenGodCategory(dmElem, yongInfo.primaryYong)}）做功为枢纽、以【${yongInfo.huShenElem}】（${elemTenGodCategory(dmElem, yongInfo.huShenElem)}）护卫防线为依托` : `以【${yongElem}】用神为调和枢纽`;
   lines.push(`2. **核心变现逻辑**：日主【${dayStem}${dmElem}】${profile.动机}（${yongDesc}）。`);
   lines.push(`3. **进阶成长准则**：日主【${dayStem}${dmElem}】${profile.进阶心法}\n`);
 
@@ -2873,27 +2888,22 @@ function renderTiyongSection(chart, options = {}) {
   lines.push(`  * **纪律三**：${asset.r3}\n`);
 
   lines.push('#### 3.3.4 行业赛道与贵人方位拓展');
-  if (yongInfo.isDual) {
-    const carMain = CAREER_MAP[yongInfo.mainYong] || CAREER_MAP['水'];
-    const carWork = CAREER_MAP[yongInfo.workElem] || CAREER_MAP['火'];
-    const carXi = CAREER_MAP[yongInfo.xiElem] || CAREER_MAP['木'];
-    lines.push('* **体用喜用体系全景**：');
-    lines.push(`  * **【核心生扶用神（固本培元）】**：**【${yongInfo.mainYong}】**（${carMain.属性}）。`);
-    lines.push(`    * **适宜发展方位**：${carMain.方位}。`);
-    lines.push(`    * **适宜行业赛道**：${carMain.赛道}。`);
-    lines.push('    * **修行心法**：涵养生息，以印化煞，借组织体制与知识资本保护自身，防范过度劳碌与心血透支。');
-    lines.push(`  * **【攻坚做功用神（开疆拓土）】**：**【${yongInfo.workElem}】**（${carWork.属性}）。`);
-    lines.push(`    * **适宜发展方位**：${carWork.方位}。`);
-    lines.push(`    * **适宜行业赛道**：${carWork.赛道}。`);
-    lines.push('    * **修行心法**：发挥食伤才智博弈抗争与创新研发，但须时刻警惕身弱耗泄，量力而动。');
-    lines.push(`  * **【生扶相助喜神（同侪协作）】**：**【${yongInfo.xiElem}】**（${carXi.属性}）。`);
-    lines.push(`    * **适宜发展方位**：${carXi.方位}。`);
-    lines.push(`    * **适宜行业赛道**：${carXi.赛道}。\n`);
-  } else {
-    const carInfo = CAREER_MAP[yongElem] || CAREER_MAP['木'];
-    lines.push(`* **体用用神五行**：【${yongElem}】（${carInfo.属性}）。`);
-    lines.push(`* **适宜发展方位**：${carInfo.方位}。`);
-    lines.push(`* **适宜行业赛道**：${carInfo.赛道}。\n`);
+  const carYong = CAREER_MAP[yongInfo?.primaryYong] || CAREER_MAP[yongElem] || CAREER_MAP['火'];
+  const carHu = CAREER_MAP[yongInfo?.huShenElem] || CAREER_MAP['土'];
+  lines.push('* **体用喜用体系全景**：');
+  lines.push(`  * **【核心做功用神（开疆拓土）】**：**【${yongInfo?.primaryYong || yongElem}】**（${carYong.属性}）。`);
+  lines.push(`    * **适宜发展方位**：${carYong.方位}。`);
+  lines.push(`    * **适宜行业赛道**：${carYong.赛道}。`);
+  lines.push(`    * **修行心法**：深耕【${yongInfo?.primaryYong || yongElem}】所代表的核心技艺与专业洞察，由技入道。`);
+  if (yongInfo?.huShenElem) {
+    lines.push(`  * **【护卫稳固喜神（固本培元）】**：**【${yongInfo.huShenElem}】**（${carHu.属性}）。`);
+    lines.push(`    * **适宜发展方位**：${carHu.方位}。`);
+    lines.push(`    * **适宜行业赛道**：${carHu.赛道}。`);
+    lines.push(`    * **修行心法**：借【${yongInfo.huShenElem}】扎实护盘，制克神以保用神长青，注重合规风控。`);
+  }
+  if (yongInfo?.mieToolElem) {
+    lines.push(`  * **【严禁涉足忌凶五行】**：**【${yongInfo.mieToolElem}】**（克破第一用神之大忌）。`);
+    lines.push(`    * **风险提示**：在涉及【${yongInfo.mieToolElem}】之领域与岁运中，务必严防思维浮夸与决策冒进，切勿轻信虚名庇护而丢失专业立身之本。\n`);
   }
   lines.push('---\n');
 
@@ -2910,16 +2920,11 @@ function renderTiyongSection(chart, options = {}) {
     luckPillars.slice(0, 5).forEach((lp, idx) => {
       const stemElem = ['木', '火', '土', '金', '水'][STEM_ELEMENT[STEMS.indexOf(lp.gz[0])]];
       let stance = '';
-      if (yongInfo.isDual) {
-        if (yongInfo.allHelpers.includes(stemElem)) {
-          stance = '顺势生发 · 拓展舒展';
-        } else if (stemElem === yongInfo.workElem) {
-          stance = '才华发露 · 积极做功';
-        } else if (stemElem === yongInfo.jiElem) {
-          stance = '逆风磨砺 · 严谨修持';
-        } else {
-          stance = '生克制衡 · 稳健蓄势';
-        }
+      if (yongInfo) {
+        const isHelper = (stemElem === yongInfo.primaryYong || stemElem === yongInfo.huShenElem || stemElem === yongInfo.shengYongElem);
+        const isChallenger = (stemElem === yongInfo.mieToolElem || stemElem === yongInfo.bingElem);
+        const isWork = (stemElem === yongInfo.primaryYong);
+        stance = isWork ? '才华发露 · 积极做功' : isHelper ? '顺势生发 · 拓展舒展' : isChallenger ? '逆风磨砺 · 严谨修持' : '生克制衡 · 稳健蓄势';
       } else {
         const isHelper = (stemElem === yongElem || ELEM_REL[yongElem]?.被生 === stemElem);
         const isChallenger = (ELEM_REL[yongElem]?.被克 === stemElem);
