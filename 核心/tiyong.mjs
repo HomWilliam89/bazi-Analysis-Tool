@@ -124,6 +124,13 @@ export function formatTiyong(t) {
     L.push(`　护神自身：${t3.护神自身.有损
       ? t3.护神自身.明细.map((x) => `${x.护神}[${x.受损.join('/')}]`).join('、')
       : '未被冲刑合破牵制'}`);
+    if (t.第三之链_护卫链?.全景通路) {
+      const p = t.第三之链_护卫链.全景通路;
+      L.push(`　全景通路：【${p.状态定性}】（剩余有效路数：${p.剩余有效路数}，替代解：${p.替代解}）`);
+      L.push(`　· 隔途通关（${p.隔途.护神}）：${p.隔途.状态}（落点：${p.隔途.落点.join('、') || '无'}）`);
+      L.push(`　· 制途护卫（${p.制途.护神}）：${p.制途.状态}（落点：${p.制途.落点.join('、') || '无'}）`);
+      if (p.衰竭警报) L.push(`　⚠ ${p.警报说明}`);
+    }
     L.push(`　岁运警示：${t3.岁运警示}`);
   } else {
     L.push('　（未声明用神，无法判护卫——请用 --yongshen 声明）');
@@ -2219,7 +2226,7 @@ export function protectionOf(chart, 用神五行, opts = {}) {
  * @param {{最大层数?: number}} [opts]
  */
 export function protectionChainOf(chart, 用神五行, opts = {}) {
-  const { 最大层数 = 6 } = opts;
+  const { 最大层数 = 6, 岁运 = null } = opts;
   const 落 = (el) => occupantsOf(chart, el).map((o) => `${o.宫位}${o.字}${o.藏 ? `(${o.藏})` : ''}`);
   const 链 = [];
   const 路径 = [];
@@ -2282,6 +2289,72 @@ export function protectionChainOf(chart, 用神五行, opts = {}) {
     };
   }
 
+  // ====================================================================
+  // 全景护卫通路评估与剩余有效路数求值（D-041 裁定 · 判据 P-020）
+  // ====================================================================
+  const K = 克我者(用神五行);
+  const X = 生我者(用神五行);     // 隔途通关神（母）
+  const Z = SHENG_MAP[用神五行];  // 制途护卫神（子）
+
+  const arb = arbitrateGanzhiForces(chart, { 岁运 });
+  const zhicheng = arb.逐支受力 ?? [];
+
+  function 评估通路(el, 途名) {
+    const occs = occupantsOf(chart, el);
+    const 落点名 = occs.map((o) => `${o.宫位}${o.字}${o.藏 ? `(${o.藏})` : ''}`);
+    if (!occs.length) {
+      return { 途径: 途名, 护神: el, 状态: '缺失', 有效: false, 落点: [], 力度档: '无', 受损: [] };
+    }
+    const pwr = powerOf(chart, el, { 岁运 });
+    const brOccs = occs.filter((o) => o.层 !== '天干');
+    const 受损支 = [];
+    for (const bo of brOccs) {
+      const match = zhicheng.find((z) => z.字 === bo.字 && bo.宫位.startsWith(z.宫位[0]));
+      if (match && match.动摇否) {
+        受损支.push({ 支: bo.字, 宫位: bo.宫位, 受力: match.最终受力 });
+      }
+    }
+
+    if (pwr.档 === '弱') {
+      return { 途径: 途名, 护神: el, 状态: '在位但不足力', 有效: false, 落点: 落点名, 力度档: pwr.档, 受损: 受损支 };
+    }
+
+    if (brOccs.length > 0 && 受损支.length === brOccs.length) {
+      return { 途径: 途名, 护神: el, 状态: '受损动摇', 有效: false, 落点: 落点名, 力度档: pwr.档, 受损: 受损支 };
+    }
+
+    return { 途径: 途名, 护神: el, 状态: '畅通有效', 有效: true, 落点: 落点名, 力度档: pwr.档, 受损: 受损支 };
+  }
+
+  const 隔途 = 评估通路(X, '隔途通关');
+  const 制途 = 评估通路(Z, '制途护卫');
+
+  const 剩余有效路数 = (隔途.有效 ? 1 : 0) + (制途.有效 ? 1 : 0);
+  const 状态定性 = 剩余有效路数 === 2 ? '双路齐备' : 剩余有效路数 === 1 ? '独木难支' : '衰竭断链';
+  const 替代解 = (隔途.有效 && !制途.有效)
+    ? '隔途替代制途'
+    : (!隔途.有效 && 制途.有效)
+      ? '制途替代隔途'
+      : (隔途.有效 && 制途.有效)
+        ? '双路齐备无须替代'
+        : '无替代解';
+  const 衰竭警报 = 剩余有效路数 === 0;
+  const 警报说明 = 衰竭警报
+    ? '【护卫衰竭警报】用神之隔途与制途双双失陷（缺失、不足力或被冲拔），克神长驱直入无遮挡！'
+    : '护卫通路尚存依托，未触发衰竭警报。';
+
+  const 全景通路 = {
+    用神: 用神五行,
+    克神: K,
+    隔途,
+    制途,
+    剩余有效路数,
+    状态定性,
+    替代解,
+    衰竭警报,
+    警报说明,
+  };
+
   return {
     用神: 用神五行,
     链,
@@ -2293,11 +2366,15 @@ export function protectionChainOf(chart, 用神五行, opts = {}) {
         ? `**局部循环**（环：${结局.环.join(' → ')}，仅涉 ${结局.环上五行数} 行）`
           + `——非完整五行之环，环外仍有断处。`
         : `**断链**：${结局.因}`,
+    全景通路,
+    剩余有效路数,
+    通路状态: 状态定性,
+    衰竭警报,
     说明: '⚠ **本引擎不把"闭环"等同于"结构稳定"**：五行上的环（相生关系）与四柱上的宫位关联'
       + '（合冲刑害破、根是否被动摇）**不是同一件事**，二者**分开报**（宫位网络见 `structureOf`）。'
       + '使用者 2026-09-27 裁「不是同一件事」。故本函数只报链与环，**不作结构判断**。'
       + '⚠ 每层只判护神**在位与否**，未判其力度；须按 `tenGodStrength` 复核（在位者未必有力）。',
-    据: '规格 §一之二「★ 护卫是相对概念，且递归」；使用者「依此类推」',
+    据: '规格 §一之二「★ 护卫是相对概念，且递归」；使用者「依此类推」；决策编号 D-041',
   };
 }
 
@@ -4015,7 +4092,7 @@ export function tiyongRouteOf(chart, opts = {}) {
     第一_财官威胁: 第一,
     第二_印比有情: 第二,
     第三_用神护卫: 第三,
-    第三之链_护卫链: 采用用神 ? protectionChainOf(chart, 采用用神) : null,
+    第三之链_护卫链: 采用用神 ? protectionChainOf(chart, 采用用神, { 岁运 }) : null,
     第四_结构稳定: 第四,
     承载重估: chengzaiReassess(chart, { 岁运 }),
     相战择优: xiangzhanOf(chart, { 用神五行: 采用用神 }),

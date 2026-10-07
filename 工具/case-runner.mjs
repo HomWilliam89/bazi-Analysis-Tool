@@ -566,6 +566,70 @@ for (const c of casesToRun) {
     }
   }
 
+  // 断言 25: 护卫通路求值 (D-041 裁定 · 判据 P-020)
+  if (typeof c.期望.护卫通路 !== 'undefined') {
+    const expObj = c.期望.护卫通路;
+    const yong = c.期望.用神五行 ?? res.用神五行;
+    const chainRes = protectionChainOf(chart, yong, { 岁运: c.期望.岁运 });
+    const p = chainRes.全景通路;
+
+    if (typeof expObj.剩余路数 !== 'undefined') {
+      totalAssertions += 1;
+      const act = p?.剩余有效路数 ?? -1;
+      const ok = act === expObj.剩余路数;
+      if (ok) {
+        passedAssertions += 1;
+        console.log(`  ✓ [护卫剩余路数] 期望: ${expObj.剩余路数} == 实际: ${act}`);
+      } else {
+        failedAssertions += 1;
+        console.log(`  ✗ [护卫剩余路数] 期望: ${expObj.剩余路数} != 实际: ${act}`);
+        failureDetails.push({ id: c.id, item: '护卫剩余路数', exp: expObj.剩余路数, act, p: c.判据 });
+      }
+    }
+
+    if (typeof expObj.定性 !== 'undefined') {
+      totalAssertions += 1;
+      const act = p?.状态定性 ?? '—';
+      const ok = act === expObj.定性;
+      if (ok) {
+        passedAssertions += 1;
+        console.log(`  ✓ [护卫通路定性] 期望: ${expObj.定性} == 实际: ${act}`);
+      } else {
+        failedAssertions += 1;
+        console.log(`  ✗ [护卫通路定性] 期望: ${expObj.定性} != 实际: ${act}`);
+        failureDetails.push({ id: c.id, item: '护卫通路定性', exp: expObj.定性, act, p: c.判据 });
+      }
+    }
+
+    if (typeof expObj.替代解 !== 'undefined') {
+      totalAssertions += 1;
+      const act = p?.替代解 ?? '—';
+      const ok = act === expObj.替代解;
+      if (ok) {
+        passedAssertions += 1;
+        console.log(`  ✓ [护卫替代解] 期望: ${expObj.替代解} == 实际: ${act}`);
+      } else {
+        failedAssertions += 1;
+        console.log(`  ✗ [护卫替代解] 期望: ${expObj.替代解} != 实际: ${act}`);
+        failureDetails.push({ id: c.id, item: '护卫替代解', exp: expObj.替代解, act, p: c.判据 });
+      }
+    }
+
+    if (typeof expObj.衰竭警报 !== 'undefined') {
+      totalAssertions += 1;
+      const act = p?.衰竭警报 ?? false;
+      const ok = act === expObj.衰竭警报;
+      if (ok) {
+        passedAssertions += 1;
+        console.log(`  ✓ [护卫衰竭警报] 期望: ${expObj.衰竭警报} == 实际: ${act}`);
+      } else {
+        failedAssertions += 1;
+        console.log(`  ✗ [护卫衰竭警报] 期望: ${expObj.衰竭警报} != 实际: ${act}`);
+        failureDetails.push({ id: c.id, item: '护卫衰竭警报', exp: expObj.衰竭警报, act, p: c.判据 });
+      }
+    }
+  }
+
   console.log('');
 }
 
