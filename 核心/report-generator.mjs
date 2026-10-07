@@ -58,6 +58,19 @@ function getTenGod(dayStem, otherStem) {
   return tenGod(dIdx, oIdx);
 }
 
+/**
+ * 地支六冲与六合查询辅助
+ */
+function getBranchClash(b) {
+  const hit = BRANCH_CLASH.find((p) => p.includes(b));
+  return hit ? hit.replace(b, '') : '';
+}
+
+function getBranchCombine(b) {
+  const hit = Object.keys(BRANCH_COMBINE).find((p) => p.includes(b));
+  return hit ? hit.replace(b, '') : '';
+}
+
 const ELEM_REL = {
   '木': { 生: '火', 克: '土', 被生: '水', 被克: '金', 同: '木' },
   '火': { 生: '土', 克: '金', 被生: '木', 被克: '水', 同: '火' },
@@ -1015,8 +1028,8 @@ function marriageProfile(chart) {
   for (let i = 0; i < 4; i++) {
     if (i === 2) continue;
     const b = chart.pillars[i].branch;
-    if (BRANCH_CLASH[dayBranch] === b) clashPillars.push(posNames[i]);
-    if (BRANCH_COMBINE[dayBranch] === b) combinePillars.push(posNames[i]);
+    if (getBranchClash(dayBranch) === b) clashPillars.push(posNames[i]);
+    if (getBranchCombine(dayBranch) === b) combinePillars.push(posNames[i]);
   }
 
   // 扫描地支三合/半合与相冲（直接从 chart.relations 提取日支相关的动态事实）
@@ -1272,8 +1285,8 @@ function futureTenYears(chart, options = {}) {
     const clashes = [];
     const combines = [];
     pBranches.forEach((ob, idx) => {
-      if (BRANCH_CLASH[tBranch] === ob) clashes.push(`${posNames[idx]}支${ob}`);
-      if (BRANCH_COMBINE[tBranch] === ob) combines.push(`${posNames[idx]}支${ob}`);
+      if (getBranchClash(tBranch) === ob) clashes.push(`${posNames[idx]}支${ob}`);
+      if (getBranchCombine(tBranch) === ob) combines.push(`${posNames[idx]}支${ob}`);
     });
 
     let stance = '';
@@ -2456,7 +2469,8 @@ function renderTiyongSection(chart, options = {}) {
   lines.push(`* **伴侣特质**：${mInfo.spouseDesc}`);
   lines.push(`* **互动格局**：${mInfo.interDesc}\n`);
   lines.push('#### 3.7.2 重点年份修护建议');
-  lines.push(`* **[岁运通识 · 重点年份修护建议]**：原局夫妻宫坐【${mInfo.dayBranch}】，凡逢岁运太岁冲克夫妻宫（如【${BRANCH_CLASH[mInfo.dayBranch] || '逢冲'}】年相冲）或刑害之年份，观念易生摩擦，宜主动安排聚少离多、出差修学或共赴旅途以化解气场冲撞。\n`);
+  const clashYearBranch = getBranchClash(mInfo.dayBranch);
+  lines.push(`* **[岁运通识 · 重点年份修护建议]**：原局夫妻宫坐【${mInfo.dayBranch}】，凡逢岁运太岁冲克夫妻宫（如【${clashYearBranch || '逢冲'}】年相冲）或刑害之年份，观念易生摩擦，宜主动安排聚少离多、出差修学或共赴旅途以化解气场冲撞。\n`);
   lines.push('---\n');
 
   // 3.8 健康体质监测与日常身心调养
