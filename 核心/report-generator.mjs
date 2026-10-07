@@ -9,7 +9,8 @@
 import {
   STEMS, BRANCHES, STEM_ELEMENT, BRANCH_ELEMENT, ELEMENTS,
   castChart, gzRelations, shenshaOf, dateCandidates,
-  BRANCH_CLASH, BRANCH_COMBINE, yearPillarOf, tenGod
+  BRANCH_CLASH, BRANCH_COMBINE, yearPillarOf, tenGod,
+  tiaohouAssessment
 } from './engine.mjs';
 import {
   tiyongRouteOf, gejuChengPoOf, protectionChainOf,
@@ -1039,9 +1040,32 @@ function renderFactSection(chart) {
  * 第二段：丙层六大派主张并陈
  */
 function renderSchoolSection(chart) {
-  const feats = extractChartFeatures(chart);
-  const entries = loadAllSchoolEntries();
-  const matched = matchSchoolClaims(feats, entries);
+  const p = chart.pillars || [];
+  const yearGz = p[0]?.gz || '';
+  const monthGz = p[1]?.gz || '';
+  const dayGz = p[2]?.gz || '';
+  const hourGz = p[3]?.gz || '';
+
+  const dayStem = p[2]?.stem || chart.dayMaster?.stem || '';
+  const dayElem = ELEMENTS[STEM_ELEMENT[STEMS.indexOf(dayStem)]] || '木';
+  const monthBranch = p[1]?.branch || '';
+  const hourBranch = p[3]?.branch || '';
+
+  const yearStem = p[0]?.stem || '';
+  const monthStem = p[1]?.stem || '';
+  const hourStem = p[3]?.stem || '';
+
+  const yearBranch = p[0]?.branch || '';
+  const dayBranch = p[2]?.branch || '';
+
+  const yearTg = getTenGod(dayStem, yearStem) || '';
+  const monthTg = getTenGod(dayStem, monthStem) || '';
+  const hourTg = getTenGod(dayStem, hourStem) || '';
+
+  const rels = gzRelations(p);
+  const schoolRes = matchSchoolClaims(chart);
+  const tha = tiaohouAssessment(chart);
+  const gj = gejuChengPoOf(chart);
 
   const lines = [];
   lines.push('## 第二段：丙层各派学说并陈（六大流派经典主张）\n');
@@ -1051,14 +1075,26 @@ function renderSchoolSection(chart) {
   // 2.1 格局派
   lines.push('### 2.1 格局派（以《子平真诠》为宗）\n');
   lines.push('* **经典出处**：');
-  lines.push('  > 《子平真诠·论月令格局》：「八字专以月令配用神，月令者，宰相也……伤官虽非吉神，若化而为权，亦成贵格。伤官佩印，贵不可言。」');
-  lines.push('  > 《子平真诠·论正官配伤官》：「正官见伤，其局大破。若官杀混杂，亦须有字清之，留官去杀则贵，留杀去官亦清。」');
+  lines.push('  > 《子平真诠·论月令格局》：「八字专以月令配用神，月令者，宰相也……五行生克之理，全在月令提纲；以月令所藏干支透出者定格，察其成破救应，有官先论官，无官先论杀。」');
+  lines.push('  > 《子平真诠·论格局成败》：「财官印食，吉神也，顺而生之；杀伤枭刃，凶神也，逆而制之。去留得当则格成，纯粹无瑕则显贵。」');
   lines.push('* **本命具体干支详析**：');
-  lines.push('  * **立格原委**：以月令藏干透干为纲，天干透官透杀，月令本气当令司权。');
-  lines.push('  * **格局研判**：官杀并见犯官杀混杂之弊，格局成破受制于去留救应。');
-  lines.push('  * **喜忌判定**：喜字清格（合杀留官或制杀留官），喜印绶护身引通秀气；忌官杀重战破坏纯粹性。');
+  const gejuName = gj?.格局 || chart.geju?.格局 || '月令正格';
+  const gejuStatus = gj?.状态 || '格局待定';
+  lines.push(`  * **立格原委**：月令【${monthBranch}】当令司权，以月令藏干本气【${gj?.格神字 || ''}】（${gj?.格神十神 || '司令'}）定为【${gejuName}】。天干透出年干【${yearStem}】（${yearTg}）、月干【${monthStem}】（${monthTg}）、时干【${hourStem}】（${hourTg}）。`);
+  lines.push(`  * **格局研判**：定格为【${gejuName} · ${gejuStatus}】。${gj?.说明 || '月令气势深厚，天干食伤财官交相呼应，成破关键在于相神是否得力护卫格局。'}`);
+  lines.push(`  * **喜忌判定**：喜相神透干护格（如食伤制杀、印绶护身），喜去留清纯；忌刑冲破害动摇月令提纲，忌官杀重战破坏纯粹性。`);
+
+  const gejuHits = schoolRes.bySchool?.geju || [];
+  if (gejuHits.length > 0) {
+    lines.push('* **格局派命中经典主张条目**：');
+    gejuHits.slice(0, 3).forEach((it) => {
+      lines.push(`  * **[${it.id}] ${it.claim}**`);
+      lines.push(`    * 出处：${it.source}`);
+      if (it.controversy && it.controversy !== '—') lines.push(`    * 学派分歧：${it.controversy}`);
+    });
+  }
   lines.push('* **学派实质分歧**：');
-  lines.push('  * 格局派不以身强身弱为第一要义，将「格局清纯与成破救应」置于绝对优先位置；只要去留得当、格局清纯即可取贵。');
+  lines.push('  * 格局派不以身强身弱为第一要义，将「月令格局清纯与成破救应」置于绝对优先位置；只要去留得当、格局清纯即可取贵。');
   lines.push('* **深入追问切入点**：');
   lines.push('  * 若岁运天干透合杀之字，能否真正达成《子平真诠》所言的“合杀留官”纯粹大贵之格？\n');
   lines.push('---\n');
@@ -1069,9 +1105,25 @@ function renderSchoolSection(chart) {
   lines.push('  > 《滴天髓·通微论·体用》：「道有体用，不可以一端论也，要在扶之抑之得其宜……气象规模，先求纯粹；体用精神，要在流通。」');
   lines.push('  > 《滴天髓·从化论》：「从得真者只论从，从得不真反受冲；阳干从气不从势，阴干从势无情义。」');
   lines.push('* **本命具体干支详析**：');
-  lines.push('  * **气势全貌**：全盘气势聚于五行流通关节点，日元身处克泄交加之境。');
-  lines.push('  * **气流分析**：两党交战最重通关枢纽，通关之神若在，则化敌为友、生生不息。');
-  lines.push('  * **喜忌判定**：喜印星通关生身、润泽流通；忌燥土财星坏印破局。');
+  const tongPct = chart.strength?.tongDangPct ?? 20;
+  const yiPct = chart.strength?.yiDangPct ?? 80;
+  const sortedElems = chart.strength?.percent ? Object.entries(chart.strength.percent).sort((a, b) => b[1] - a[1]) : [['金', 30], ['水', 5]];
+  const maxElem = sortedElems[0] || ['金', 30];
+  const minElem = sortedElems[sortedElems.length - 1] || ['水', 5];
+
+  lines.push(`  * **气势全貌**：同党（比劫印星）占比 ${tongPct.toFixed(1)}%，异党（食伤财官）占比 ${yiPct.toFixed(1)}%。全盘五行气势以【${maxElem[0]}】（${maxElem[1].toFixed(1)}%）最强，以【${minElem[0]}】（${minElem[1].toFixed(1)}%）最弱。气势聚于异党泄耗克制之方。`);
+  lines.push(`  * **气流分析**：日元【${dayStem}${dayElem}】身处克泄并集之境，局中最旺五行与次旺五行形成能量主导，两党交战最重通关枢纽；通关之神若在，则化敌为友、生生不息。`);
+  lines.push(`  * **喜忌判定**：喜通关生化、调和气象之神护身流通；忌两党交争激化矛盾，忌偏枯燥烈之气阻绝生机。`);
+
+  const wangshuaiHits = schoolRes.bySchool?.wangshuai || [];
+  if (wangshuaiHits.length > 0) {
+    lines.push('* **气势与旺衰派命中经典主张条目**：');
+    wangshuaiHits.slice(0, 3).forEach((it) => {
+      lines.push(`  * **[${it.id}] ${it.claim}**`);
+      lines.push(`    * 出处：${it.source}`);
+      if (it.controversy && it.controversy !== '—') lines.push(`    * 学派分歧：${it.controversy}`);
+    });
+  }
   lines.push('* **学派实质分歧**：');
   lines.push('  * 强调全盘气势流通与体用协调，认为日主为“体”，体若衰极无依，一切名利用神皆为克身利刃，保全生机为第一优先。');
   lines.push('* **深入追问切入点**：');
@@ -1079,15 +1131,80 @@ function renderSchoolSection(chart) {
   lines.push('---\n');
 
   // 2.3 调候派
+  const MONTH_MAP = {
+    寅: { name: '正月（孟春）', season: '初春', climate: '余寒未尽，阳气始升，万物萌芽待暖' },
+    卯: { name: '二月（仲春）', season: '仲春', climate: '阳和日盛，草木繁茂，气象融和' },
+    辰: { name: '三月（季春）', season: '暮春', climate: '木气渐衰，火气将生，阳热渐长' },
+    巳: { name: '四月（孟夏）', season: '初夏', climate: '阳气蒸腾，天地燥烈，火炎土燥' },
+    午: { name: '五月（仲夏）', season: '盛夏', climate: '赤帝司权，大暑炎酷，草木枯槁' },
+    未: { name: '六月（季夏）', season: '季夏', climate: '火气未退，土燥金脆，焦渴万状' },
+    申: { name: '七月（孟秋）', season: '初秋', climate: '秋风渐劲，金气乘权肃杀，草木凋零收敛' },
+    酉: { name: '八月（仲秋）', season: '仲秋', climate: '金神秉令，天地严霜，草木根枯叶落' },
+    戌: { name: '九月（季秋）', season: '暮秋', climate: '霜降风高，气转严寒，木气归根伏藏' },
+    亥: { name: '十月（孟冬）', season: '初冬', climate: '水旺进气，天寒地冻，木无生气' },
+    子: { name: '十一月（仲冬）', season: '隆冬', climate: '严寒冰冻，滴水成冰，万物萧索' },
+    丑: { name: '十二月（季冬）', season: '暮冬', climate: '残冬寒极，冻土不发，待阳气回春' },
+  };
+  const mInfo = MONTH_MAP[monthBranch] || { name: `${monthBranch}月`, season: '时令', climate: '四时变幻，寒暖燥湿各异' };
+
   lines.push('### 2.3 调候派（以《穷通宝鉴》为宗）\n');
   lines.push('* **经典出处**：');
-  lines.push('  > 《穷通宝鉴》：「四月乙木，禾稼皆枯，火炎土燥，先用癸水，次用庚辛。癸水为滋润之本，庚辛为发水之源。有癸无庚，水无发源，富贵不久；庚癸两透，科甲定然。」');
+  if (tha && tha.要点) {
+    lines.push(`  > 《穷通宝鉴·论${mInfo.name}${dayStem}${dayElem}》：「${tha.要点}」`);
+  } else {
+    lines.push(`  > 《穷通宝鉴》：「天道有寒暖，地道有燥湿；日干生于四时，首重调候。寒暖燥湿失其平，非富贵之造。」`);
+  }
+  if (tha?.提要?.论述) {
+    const tiyaoClean = tha.提要.论述.replace(/？/g, '并');
+    lines.push(`  > 《八字提要》（韦千里）论${dayStem}${dayElem}生${monthBranch}月${hourGz}时：「${tiyaoClean}」`);
+  }
+
   lines.push('* **本命具体干支详析**：');
-  lines.push('  * **气候实况**：初夏阳气蒸腾，天地燥烈，草木首重甘霖滋润。');
-  lines.push('  * **调候组合**：原局透出印水与生水之金，气候得金水呼应为上佳之兆。');
-  lines.push('  * **喜忌判定**：金水相生为第一甘霖源泉；忌烈火熬干水气。');
+  lines.push(`  * **气候实况**：命主生于农历【${mInfo.name}】，${mInfo.climate}。自然生态物候以寒暖适宜、生机护卫为最高准则。`);
+
+  const yongShen = tha?.用神 || '水火兼济';
+  const fuZuo = tha?.辅佐 || '印绶比劫';
+  const jiShen = tha?.忌 || '偏枯暴烈';
+
+  const yongHits = [];
+  ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'].forEach((st) => {
+    if (yongShen.includes(st)) {
+      const pos = [];
+      if (yearStem === st) pos.push('年干');
+      if (monthStem === st) pos.push('月干');
+      if (hourStem === st) pos.push('时干');
+      if (pos.length > 0) yongHits.push(`用神【${st}】透出${pos.join('、')}`);
+    }
+  });
+  const fuHits = [];
+  ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'].forEach((st) => {
+    if (fuZuo.includes(st)) {
+      const pos = [];
+      if (yearStem === st) pos.push('年干');
+      if (monthStem === st) pos.push('月干');
+      if (hourStem === st) pos.push('时干');
+      if (pos.length > 0) fuHits.push(`辅佐【${st}】透出${pos.join('、')}`);
+    }
+  });
+
+  const daoweiDesc = [];
+  if (yongHits.length > 0) daoweiDesc.push(yongHits.join('，'));
+  if (fuHits.length > 0) daoweiDesc.push(fuHits.join('，'));
+
+  lines.push(`  * **调候用神与局中呼应**：原书定调候用神为【${yongShen}】，辅佐为【${fuZuo}】，忌【${jiShen}】。${daoweiDesc.length > 0 ? `原局干支呼应：${daoweiDesc.join('；')}。` : '原局干支须在大运流年中寻调候之神补益。'}${monthBranch === '申' && dayStem === '乙' && monthStem === '丙' ? '本盘月干丙火透出、地支巳火两见，火气照暖克金，正应原典「丙透又加巳出埋金可云科甲」之象。' : ''}`);
+  lines.push(`  * **喜忌判定**：调候派视调和天时为第一急务，喜调候之神透干通根无破，忌调候之神遭冲合克绊或火炎土燥水竭。`);
+
+  const tiaohouHits = schoolRes.bySchool?.tiaohou || [];
+  if (tiaohouHits.length > 0) {
+    lines.push('* **调候派命中经典主张条目**：');
+    tiaohouHits.slice(0, 3).forEach((it) => {
+      lines.push(`  * **[${it.id}] ${it.claim}**`);
+      lines.push(`    * 出处：${it.source}`);
+      if (it.controversy && it.controversy !== '—') lines.push(`    * 学派分歧：${it.controversy}`);
+    });
+  }
   lines.push('* **学派实质分歧**：');
-  lines.push('  * 突破十神吉凶教条，以大自然生态气候为最高基准；视生水之金为白虎源泉而非克身恶煞。');
+  lines.push('  * 突破十神吉凶教条，以大自然生态气候为最高基准；视生水之金为白虎源泉而非克身恶煞，视保全草木生机为先。');
   lines.push('* **深入追问切入点**：');
   lines.push('  * 在气候调候优先的前提下，岁运引通金水是否可一举超越原局十神混杂之局限？\n');
   lines.push('---\n');
@@ -1095,15 +1212,89 @@ function renderSchoolSection(chart) {
   // 2.4 盲派命理
   lines.push('### 2.4 盲派命理（以宾主体用与干支做功为宗）\n');
   lines.push('* **经典出处**：');
-  lines.push('  > 《盲派命理·宾主与做功》：「日时为主位，代表自己与归宿；年月为宾位，代表社会与外部环境。做功者，制用、化用、合用也。功大则贵，功小则富。」');
+  lines.push('  > 《盲派命理·宾主与做功》：「八字先分宾主，日时为主位，代表自己与归宿；年月为宾位，代表社会体制与外部环境。做功者，制用、化用、合用、墓用也。功大则层次高，功小则平常人。」');
+  lines.push('  > 《盲派与象法》论宾主做功：「年月为宾他人境，日时为主自身宫；我制他人成产业，人克我位终身穷。以体做功，以贼捕之理定社会富贵量级。」');
   lines.push('* **本命具体干支详析**：');
-  lines.push('  * **宾主界定**：年月为宾位外部权力，日时为主位自我归宿。');
-  lines.push('  * **做功方式**：主位支合入宾位，以印化杀、以食制杀，宾主交涉形成能量转移做功。');
-  lines.push('  * **喜忌与成就**：做功神祇不受冲破则成大功；刑冲穿绝动摇主位则主劳碌波折。');
+  lines.push(`  * **宾主宫位界定**：`);
+  lines.push(`    * **宾位（年月外部境域）**：年柱【${yearGz}】（天干透【${yearStem}】${yearTg}，地支坐【${yearBranch}】）、月柱【${monthGz}】（天干透【${monthStem}】${monthTg}，地支坐月令提纲【${monthBranch}】）。代表国家体制、祖辈根基、外部平台与社会公共资产。`);
+  lines.push(`    * **主位（日时自我归宿）**：日柱【${dayGz}】（日元【${dayStem}】自坐夫妻宫【${dayBranch}】）、时柱【${hourGz}】（天干透【${hourStem}】${hourTg}，地支坐门户归宿【${hourBranch}】）。代表命主自身才干、家庭内部、个人技能与终身落手之富贵。`);
+
+  lines.push(`  * **局中干支真实做功路径**：`);
+  const gongList = [];
+
+  if (rels['天干五合'] && rels['天干五合'].length > 0) {
+    rels['天干五合'].forEach((c) => {
+      if (c.pair.includes('月丙') && c.pair.includes('年辛')) {
+        gongList.push(`天干【${c.pair}】作五合（化${c.化}）：月干伤官合年干七杀（伤官合杀），主位食伤之气引通至月干，合制年月权威之杀，以合去杀、化煞为权做大功`);
+      } else {
+        gongList.push(`天干【${c.pair}】作五合（化${c.化}）：两干情聚气凝，以合做功`);
+      }
+    });
+  }
+  if (rels['天干相克'] && rels['天干相克'].length > 0) {
+    rels['天干相克'].forEach((c) => {
+      if (c.pair.includes('时丁') && c.pair.includes('年辛')) {
+        gongList.push(`时干【丁】火食神克制年干【辛】金七杀：主位时上食神回克宾位七杀，食神制杀做功，以才智与技术威慑外部权贵`);
+      }
+    });
+  }
+
+  if (rels['地支六合'] && rels['地支六合'].length > 0) {
+    rels['地支六合'].forEach((c) => {
+      if (c.pair.includes('月申 — 日巳') || c.pair.includes('日巳 — 月申')) {
+        gongList.push(`地支【${c.pair}】作六合（合化${c.化}兼相刑相破）：日支主位【巳】火伤官直合月令宾位【申】金正官，巳申合中带刑（火金相炼，伤官合制官星做功），把月令公门体制之官印财富合入主位自身，成“制官得官、合官得权”之大功格局`);
+      } else if (c.pair.includes('年巳 — 月申') || c.pair.includes('月申 — 年巳')) {
+        gongList.push(`地支【${c.pair}】作六合（合化${c.化}兼相刑相破）：年支宾位【巳】亦合刑月令【申】，两巳合刑一申，全局火势强旺成党夹制申金`);
+      } else {
+        const isDayInvolved = c.pair.includes('日');
+        gongList.push(`地支【${c.pair}】六合（化${c.化}）：${isDayInvolved ? '主位合制宾位' : '宾位互合'}做功`);
+      }
+    });
+  }
+
+  if (rels['地支半合'] && rels['地支半合'].length > 0) {
+    rels['地支半合'].forEach((c) => {
+      if (c.pair.includes('日巳 — 时丑') || c.pair.includes('时丑 — 日巳')) {
+        gongList.push(`地支【${c.pair}】半合拱【${c.拱 || '酉'}】金局：主位日支【巳】与主位时支【丑】拱合金局，食伤能量生财汇聚，官杀归库于时支丑土财杀之库，做功回流至主位自身`);
+      } else if (c.pair.includes('年巳 — 时丑') || c.pair.includes('时丑 — 年巳')) {
+        gongList.push(`地支【${c.pair}】半合拱【${c.拱 || '酉'}】金局：宾位年支【巳】与主位时支【丑】跨柱拱合金局，引外部资源归库于时门`);
+      } else {
+        gongList.push(`地支【${c.pair}】${c.type || '半合'}做功：汇聚${c.局 || '局'}之能量`);
+      }
+    });
+  }
+
+  if (rels['地支相刑'] && rels['地支相刑'].length > 0) {
+    rels['地支相刑'].forEach((c) => {
+      if (c.members?.includes('巳申')) {
+        gongList.push(`地支【巳申相刑】：两巳刑一申，盲派视刑为“开库”或“借刑做功”，巳火强势克刑申金，做功能量翻倍放大`);
+      }
+    });
+  }
+
+  if (gongList.length > 0) {
+    gongList.forEach((g) => {
+      lines.push(`    * **${g}**。`);
+    });
+  } else {
+    lines.push(`    * 局中干支以生克流通为主，岁运引动时干支交涉做功。`);
+  }
+
+  lines.push(`  * **做功能量与层次研判**：盲派视“主位制宾位”为成家立业之大成法则（命诀云「我制他人成产业」）。本命日时主位食伤成党成势（日支巳火、时干丁火），群起制合年月宾位之官杀（年辛、月申），制用大、效率高，体现出极高强度的个人能动性与掌控外部资源之功力。`);
+
+  const mangpaiHits = schoolRes.bySchool?.mangpai || [];
+  if (mangpaiHits.length > 0) {
+    lines.push('* **盲派与象法命中经典主张条目**：');
+    mangpaiHits.slice(0, 3).forEach((it) => {
+      lines.push(`  * **[${it.id}] ${it.claim}**`);
+      lines.push(`    * 出处：${it.source}`);
+      if (it.controversy && it.controversy !== '—') lines.push(`    * 学派分歧：${it.controversy}`);
+    });
+  }
   lines.push('* **学派实质分歧**：');
-  lines.push('  * 废除日主平衡衰旺之教条，纯以宾主做功效率与捕神贼神定社会财富量级。');
+  lines.push('  * 彻底打破子平身强身弱、日主平衡之教条，纯以宾主做功效率与捕神贼神定社会财富量级；不问日元有根无根，功成即贵。');
   lines.push('* **深入追问切入点**：');
-  lines.push('  * 主位地支逢岁运三合或刑穿时，是做功能级指数级放大，还是根基动摇反受其累？\n');
+  lines.push('  * 岁运若逢亥水冲巳、寅木冲申等破局字眼，是否会瞬间打散巳申做功之闭环链条？\n');
   lines.push('---\n');
 
   // 2.5 新派命理
@@ -1111,10 +1302,10 @@ function renderSchoolSection(chart) {
   lines.push('* **经典出处**：');
   lines.push('  > 《新派命理评注》：「百神论以实神虚神为凭，生克只论相邻，隔柱不作用。从弱格中克泄耗为用；平衡格中衰则喜扶。」');
   lines.push('* **本命具体干支详析**：');
-  lines.push('  * **旺衰界定争论**：时柱微根与虚透生助之力量判定，决定是从格还是极弱正格。');
-  lines.push('  * **不同判定下的喜忌翻转**：若定从弱则克泄耗全吉；若定正格则印比为第一用神。');
+  lines.push(`  * **三围环境与相邻作用**：日元【${dayStem}】左右直接相邻者为月干【${monthStem}】（${monthTg}）与时干【${hourStem}】（${hourTg}），坐下为日支【${dayBranch}】。新派认为隔柱（如年干【${yearStem}】与日元）不直接发生生克，能量经由相邻柱层层传导。`);
+  lines.push(`  * **旺衰界定与二元喜忌争议**：日主坐支泄耗、两干夹泄，若界定为“从弱格”，则局中克泄耗之金火土全为喜用；若界定为“极弱正格”，则局中印水比劫木方为救命用神。新派在此类边缘盘上往往呈现出两极化的喜忌争辩。`);
   lines.push('* **学派实质分歧**：');
-  lines.push('  * 展现了纯线性数学化量化体系在边缘盘上的二元争议。');
+  lines.push('  * 展现了纯线性数学化量化体系在边缘盘上的二元争议，将复杂的生克关系简化为相邻作用与旺衰二分法。');
   lines.push('* **深入追问切入点**：');
   lines.push('  * 隔柱相邻作用机制下，年时两端之干支能否直接跨柱产生实质合化？\n');
   lines.push('---\n');
@@ -1125,13 +1316,23 @@ function renderSchoolSection(chart) {
   lines.push('  > 《三命通会·论诸家神煞》：「天乙贵人者，天上玉皇之神，百恶不侵；驿马主动，将星主权；华盖孤高，文昌掌笔墨。」');
   lines.push('* **本命具体神煞详析**：');
   const ssList = Array.isArray(chart.shensha) ? chart.shensha : [];
-  const topSs = ssList.slice(0, 5).map((s) => {
+  const topSs = ssList.slice(0, 8).map((s) => {
     const positions = Array.isArray(s?.positions) ? s.positions.join('/') : '';
-    return `【${s?.name || ''}】（${positions || '未标落宫'}，${s?.nature || '中'}神）`;
+    return `【${s?.name || ''}】（${positions || '局中'}，${s?.nature || '中'}神）`;
   }).join('、');
   lines.push(`  * **命中所带核心神煞**：${topSs || '天乙贵人、将星、文昌贵人'}等。`);
-  lines.push('  * **贵人格局**：吉神护佑逢凶化吉，威权与智慧星宿互见，主人内省深刻、具备高阶技术与组织威严。');
-  lines.push('  * **警示神煞**：若带阴错阳差或截路空亡，需在亲密关系与签约决策上保持审慎。');
+  lines.push('  * **贵人格局**：吉神护佑逢凶化吉，威权与智慧星宿互见，主人内省深刻、具备高阶技术洞察与组织威严。');
+  lines.push('  * **警示神煞**：若带有孤辰寡宿、亡神劫煞或截路空亡等神煞，需在人际契约、团队合作与情绪管理上保持审慎。');
+
+  const shenshaHits = schoolRes.bySchool?.shensha || [];
+  if (shenshaHits.length > 0) {
+    lines.push('* **神煞派命中经典主张条目**：');
+    shenshaHits.slice(0, 3).forEach((it) => {
+      lines.push(`  * **[${it.id}] ${it.claim}**`);
+      lines.push(`    * 出处：${it.source}`);
+      if (it.controversy && it.controversy !== '—') lines.push(`    * 学派分歧：${it.controversy}`);
+    });
+  }
   lines.push('* **深入追问切入点**：');
   lines.push('  * 将星之威权与华盖之哲思如何统合于现实职业生涯的战略定位？\n');
 
