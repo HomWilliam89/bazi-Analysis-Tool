@@ -205,6 +205,140 @@ const TEN_GOD_PROFILE = {
 };
 
 /**
+ * 经典神煞原典出处与深入追问词典（真实映射命局所带神煞，杜绝脱节）
+ */
+const SHENSHA_CLASSICS = {
+  '天乙贵人': {
+    source: '《三命通会·论天乙贵人》',
+    quote: '天乙者，乃天上之神，在紫微垣、阊阖门外，配合太乙。事天帝，交互万神，百恶不侵，最为第一吉神。',
+    inquiry: '天乙贵人之遇难成祥与社会贤达庇护，如何转化为实业开拓中的信誉护城河？'
+  },
+  '太极贵人': {
+    source: '《三命通会·论太极贵人》',
+    quote: '太极者，太初也，物造于初为太极，成也，收也。具聪明好学，为人端方，多得神灵护佑。',
+    inquiry: '太极贵人之哲思玄学天赋与深邃直觉，如何与现实专业技能深度融合？'
+  },
+  '天德贵人': {
+    source: '《子平真诠·论神煞》',
+    quote: '天月二德为至吉之神，逢凶化吉，化煞为权，一生少险难，凡有灾患皆得解救。',
+    inquiry: '天德吉星之祥和仁厚，如何在剧烈商业博弈中保持底线并赢得长期信赖？'
+  },
+  '月德贵人': {
+    source: '《渊海子平·论月德》',
+    quote: '月德者，阴阳调和之福神。人命带之，心慈好善，逢险化夷，多得福佑。',
+    inquiry: '月德吉神之阴阳调和之机，如何助力于人际合作与团队凝聚力？'
+  },
+  '华盖': {
+    source: '《三命通会·论华盖》',
+    quote: '华盖者，喻如宝盖，天重星也，常乘覆帝座。性孤高好道，聪明敏悟，艺术与哲思超群。',
+    inquiry: '华盖孤高之超然独见与学术造诣，如何避免孤芳自赏并落地为现实影响力？'
+  },
+  '文昌贵人': {
+    source: '《三命通会·论学堂词馆》',
+    quote: '文昌者，文府之宿也。主人聪明拔萃，文墨风流，利于考学、著述与研发功名。',
+    inquiry: '文昌才思与深度文墨创作力，如何高效转化为时代前沿的知识产权壁垒？'
+  },
+  '学堂': {
+    source: '《三命通会·论学堂词馆》',
+    quote: '学堂者，如人读书之在学堂；聪明拔萃，文翰特达。',
+    inquiry: '学堂吉宿之持续学习与认知迭代优势，如何在长周期职业生涯中发挥长板？'
+  },
+  '词馆': {
+    source: '《三命通会·论学堂词馆》',
+    quote: '词馆者，如翰林文词之馆。主人言辞华赡，文章锦绣，声名流布。',
+    inquiry: '词馆星宿之敏锐表达与舆论洞察力，如何为组织发声与品牌塑造赋能？'
+  },
+  '将星': {
+    source: '《三命通会·论将星》',
+    quote: '将星者，如将帅理政之神也。主人有威权，禄重权高，领导群伦，独当一面。',
+    inquiry: '将星掌权之领导决断魄力，如何在复杂多元利益格局中实现团队上下齐心？'
+  },
+  '驿马': {
+    source: '《三命通会·论驿马》',
+    quote: '驿马者，动变之枢纽，如舟车之往来。主人通达好动，志在四方，动则得财，多迁跃升迁之机。',
+    inquiry: '驿马奔波之空间迁徙与跨界机遇，如何在快节奏动变中保持核心基本盘的定力？'
+  },
+  '金舆': {
+    source: '《三命通会·论金舆》',
+    quote: '金舆者，为君子居官得禄乘舆之象。主人福禄丰盈，举止端严，得贤良之助，车马盈门。',
+    inquiry: '金舆福星之优渥资粮与体面身段，如何转化为更富利他精神的社会担当？'
+  },
+  '禄神': {
+    source: '《三命通会·论禄》',
+    quote: '禄者，爵禄也。当得势而享福，平生安稳，自力更生，衣食无忧。',
+    inquiry: '禄神建根之自力更生本领，如何在时代浪潮起伏中守住稳健现金流防线？'
+  },
+  '暗禄': {
+    source: '《三命通会·论暗禄》',
+    quote: '暗禄者，正禄之六合也。福禄暗藏，常得不虞之财与隐名贵人之私下庇护，险处逢生。',
+    inquiry: '暗禄潜沉之隐形庇护与贵人机缘，如何在关键战略转折期审慎借力？'
+  },
+  '阳刃': {
+    source: '《渊海子平·论阳刃》',
+    quote: '阳刃者，禄前一位，旺极之象。主气魄刚烈，临危不惧，若有杀制，威镇边疆。',
+    inquiry: '阳刃刚烈之破局霸气与坚毅心力，如何通过法制契约化暴戾为建设性执行力？'
+  },
+  '羊刃': {
+    source: '《渊海子平·论阳刃》',
+    quote: '阳刃者，禄前一位，旺极之象。主气魄刚烈，临危不惧，若有杀制，威镇边疆。',
+    inquiry: '阳刃刚烈之破局霸气与坚毅心力，如何通过法制契约化暴戾为建设性执行力？'
+  },
+  '亡神': {
+    source: '《三命通会·论劫煞亡神》',
+    quote: '亡神者，吉则机谋深算、谋略过人；凶则多忧多虑、涉险破败。宜守正防微，修心自律。',
+    inquiry: '亡神机敏之深谋韬略，如何恪守正道原则以防聪明反被聪明误？'
+  },
+  '劫煞': {
+    source: '《三命通会·论劫煞亡神》',
+    quote: '劫煞者，主刚暴勇锐、敢作敢当。吉则武职权柄，凶则波折争端。',
+    inquiry: '劫煞勇悍之攻坚魄力，如何配合理性风控以防孤注一掷之险？'
+  },
+  '空亡': {
+    source: '《三命通会·论空亡》',
+    quote: '空对实而言，有虚浮无依之意，亦有虚中成器之机。吉神落空减吉，凶煞落空反减凶。',
+    inquiry: '空亡虚灵之超然物外感悟，如何沉淀为艺术哲思或新赛道的破局洞察？'
+  }
+};
+
+/**
+ * 五行百分比归一化配平（双保险，确保五行相加严格等于 100.0%）
+ */
+function normalizeElementPercents(rawPct) {
+  const elems = ['木', '火', '土', '金', '水'];
+  const res = {};
+  let sum = 0;
+  let maxKey = '木';
+  let maxVal = -1;
+  for (const e of elems) {
+    const val = Number((rawPct?.[e] ?? 0).toFixed(1));
+    res[e] = val;
+    sum += val;
+    if (val > maxVal) {
+      maxVal = val;
+      maxKey = e;
+    }
+  }
+  const diff = Number((100 - sum).toFixed(1));
+  if (diff !== 0 && maxKey) {
+    res[maxKey] = Number((res[maxKey] + diff).toFixed(1));
+  }
+  return res;
+}
+
+/**
+ * 单源同党与异党百分比计算（全局唯一口径，确保 1.3、2.2 与 3.2 绝对一致）
+ */
+function calcTongYiDang(chart) {
+  const dmElem = chart.dayMaster?.element || (chart.pillars?.[2]?.stem ? STEM_ELEMENT[STEMS.indexOf(chart.pillars[2].stem)] : '木');
+  const rawPct = chart.strength?.percent || { '木': 20, '火': 20, '土': 20, '金': 20, '水': 20 };
+  const pct = normalizeElementPercents(rawPct);
+  const shengElem = { '木': '水', '火': '木', '土': '火', '金': '土', '水': '金' }[dmElem];
+  const tongPct = Number(((pct[dmElem] || 0) + (pct[shengElem] || 0)).toFixed(1));
+  const yiPct = Number((100 - tongPct).toFixed(1));
+  return { tongPct, yiPct, dmElem, shengElem, pct };
+}
+
+/**
  * 经典格局学理与名家古籍专论知识库（十正格、四大从格、五大专旺格全系收录）
  */
 const GEJU_KNOWLEDGE = {
@@ -2113,12 +2247,7 @@ function renderFactSection(chart) {
   lines.push('### 1.3 五行气象与能量结构量化\n');
 
   const strength = chart.strength || {};
-  const pct = strength.percent || { '木': 20, '火': 20, '土': 20, '金': 20, '水': 20 };
-
-  // 同党（生我、同我） vs 异党（克我、我生、我克）
-  const shengElem = { '木': '水', '火': '木', '土': '火', '金': '土', '水': '金' }[dmElem];
-  const tongPct = Number(((pct[dmElem] || 0) + (pct[shengElem] || 0)).toFixed(1));
-  const yiPct = Number((100 - tongPct).toFixed(1));
+  const { tongPct, yiPct, shengElem, pct } = calcTongYiDang(chart);
 
   function makeBar(ratio, totalBlocks = 20) {
     const filled = Math.round((ratio / 100) * totalBlocks);
@@ -2254,9 +2383,8 @@ function renderSchoolSection(chart) {
   lines.push('  > 《滴天髓·通微论·体用》：「道有体用，不可以一端论也，要在扶之抑之得其宜……气象规模，先求纯粹；体用精神，要在流通。」');
   lines.push('  > 《滴天髓·从化论》：「从得真者只论从，从得不真反受冲；阳干从气不从势，阴干从势无情义。」');
   lines.push('* **本命具体干支详析**：');
-  const tongPct = chart.strength?.tongDangPct ?? 20;
-  const yiPct = chart.strength?.yiDangPct ?? 80;
-  const sortedElems = chart.strength?.percent ? Object.entries(chart.strength.percent).sort((a, b) => b[1] - a[1]) : [['金', 30], ['水', 5]];
+  const { tongPct, yiPct, pct: normPct } = calcTongYiDang(chart);
+  const sortedElems = Object.entries(normPct).sort((a, b) => b[1] - a[1]);
   const maxElem = sortedElems[0] || ['金', 30];
   const minElem = sortedElems[sortedElems.length - 1] || ['水', 5];
 
@@ -2455,15 +2583,47 @@ function renderSchoolSection(chart) {
 
   // 2.6 神煞象义派
   lines.push('### 2.6 神煞象义派（以星宿干支互见为宗）\n');
-  lines.push('* **经典出处**：');
-  lines.push('  > 《三命通会·论诸家神煞》：「天乙贵人者，天上玉皇之神，百恶不侵；驿马主动，将星主权；华盖孤高，文昌掌笔墨。」');
-  lines.push('* **本命具体神煞详析**：');
+
   const ssList = Array.isArray(chart.shensha) ? chart.shensha : [];
+  const ssNames = ssList.map((s) => s.name || '').filter(Boolean);
+
+  // 动态检索匹配原典与追问
+  const matchedQuotes = [];
+  let dynamicInquiry = '';
+  for (const rawName of ssNames) {
+    const cleanName = rawName.replace(/（.*）/, '').trim();
+    const item = SHENSHA_CLASSICS[rawName] || SHENSHA_CLASSICS[cleanName];
+    if (item) {
+      if (!matchedQuotes.some((q) => q.source === item.source)) {
+        matchedQuotes.push(item);
+      }
+      if (!dynamicInquiry) {
+        dynamicInquiry = item.inquiry;
+      }
+    }
+  }
+
+  // 若无特定经典神煞匹配，则使用神煞总纲
+  if (matchedQuotes.length === 0) {
+    matchedQuotes.push({
+      source: '《三命通会·论诸家神煞》',
+      quote: '夫神煞者，随五行生克以定吉凶，不可专泥，亦不可偏废。生克为主，神煞为辅，相资而行。',
+      inquiry: '神煞星宿象义与五行生克推演如何辩证统合，以在长远生涯中趋吉避凶？'
+    });
+    dynamicInquiry = '神煞星宿象义与五行生克推演如何辩证统合，以在长远生涯中趋吉避凶？';
+  }
+
+  lines.push('* **经典出处**：');
+  matchedQuotes.slice(0, 2).forEach((cl) => {
+    lines.push(`  > ${cl.source}：「${cl.quote}」`);
+  });
+
+  lines.push('* **本命具体神煞详析**：');
   const topSs = ssList.slice(0, 8).map((s) => {
     const positions = Array.isArray(s?.positions) ? s.positions.join('/') : '';
     return `【${s?.name || ''}】（${positions || '局中'}，${s?.nature || '中'}神）`;
   }).join('、');
-  lines.push(`  * **命中所带核心神煞**：${topSs || '天乙贵人、将星、文昌贵人'}等。`);
+  lines.push(`  * **命中所带核心神煞**：${topSs || '原局神煞清吉，以正五行生克推演为主'}。`);
   lines.push('  * **贵人格局**：吉神护佑逢凶化吉，威权与智慧星宿互见，主人内省深刻、具备高阶技术洞察与组织威严。');
   lines.push('  * **警示神煞**：若带有孤辰寡宿、亡神劫煞或截路空亡等神煞，需在人际契约、团队合作与情绪管理上保持审慎。');
 
@@ -2475,7 +2635,7 @@ function renderSchoolSection(chart) {
     });
   }
   lines.push('* **深入追问切入点**：');
-  lines.push('  * 将星之威权与华盖之哲思如何统合于现实职业生涯的战略定位？\n');
+  lines.push(`  * ${dynamicInquiry}\n`);
 
   lines.push('---\n');
   return lines.join('\n');
@@ -2601,25 +2761,70 @@ function renderTiyongSection(chart, options = {}) {
   lines.push(`             | (日支【${chart.pillars[2].branch}】坐下承载)                 | (时支【${chart.pillars[3].branch}】归宿归垣)`);
   lines.push('```\n');
 
+  const { tongPct, yiPct, pct: normPct } = calcTongYiDang(chart);
+  const sortedElems = Object.entries(normPct).sort((a, b) => b[1] - a[1]);
+  const maxElem = sortedElems[0] || ['金', 30];
+  const secondElem = sortedElems[1] || ['火', 20];
+
   const mainConflict = ti.主要矛盾?.['二_主要矛盾'] || ti.主要矛盾?.矛盾 || '身弱克泄交加，急需生化通关';
   lines.push('#### 3.2.1 第一核心矛盾与体用取用定案');
   lines.push(`* **命局首要矛盾**：${mainConflict}。`);
   if (yongInfo.isDual) {
-    const guanShaElem = ti.主要矛盾?.官杀吉凶?.官杀五行 || '金';
-    lines.push(`* **日主担力研判**：日主【${dayStem}${dmElem}】经三维衰旺研判，同党占比微薄（仅 15.5%），处于【极弱不可任】状态。此时原局最旺之【${guanShaElem}】（占 41.1%）对日主直面为凶煞、为重压，不可硬抗！次要矛盾【火】（占 31.1%）天透地藏剧烈盗泄衰弱之日元，全盘克泄交加。`);
+    const guanShaElem = ti.主要矛盾?.官杀吉凶?.官杀五行 || yongInfo.jiElem || '金';
+    const danliState = tongPct < 25 ? '【极弱不可任】' : tongPct < 40 ? '【身弱难以任煞】' : tongPct < 55 ? '【中和偏弱】' : '【身旺有托】';
+
+    const maxRel = ELEM_REL[maxElem[0]]?.克 === dmElem ? '直面为凶煞重压、不可硬抗'
+      : ELEM_REL[dmElem]?.生 === maxElem[0] ? '剧烈盗泄身心、秀气过甚成患'
+      : ELEM_REL[dmElem]?.克 === maxElem[0] ? '耗竭日元精气、财重身困'
+      : ELEM_REL[maxElem[0]]?.生 === dmElem ? '生扶过重、反生壅滞'
+      : '比劫并旺、分夺财福';
+
+    const secondRel = ELEM_REL[secondElem[0]]?.克 === dmElem ? '克制日主成夹击'
+      : ELEM_REL[dmElem]?.生 === secondElem[0] ? '盗泄衰弱之日元'
+      : ELEM_REL[dmElem]?.克 === secondElem[0] ? '耗损日主之真气'
+      : ELEM_REL[secondElem[0]]?.生 === dmElem ? '微弱生身难抵凶势'
+      : '并肩争战激化矛盾';
+
+    lines.push(`* **日主担力研判**：日主【${dayStem}${dmElem}】经三维衰旺研判，同党占比为 ${tongPct.toFixed(1)}%，处于${danliState}状态。此时原局最旺之【${maxElem[0]}】（占 ${maxElem[1].toFixed(1)}%）${maxRel}！次要矛盾【${secondElem[0]}】（占 ${secondElem[1].toFixed(1)}%）${secondRel}，全局克泄并见。`);
     lines.push('* **体用路线法取用定案决策**：');
     lines.push('  依《体用路线法》根本宪法，官杀不可任则“官即是杀”，宜制化皆可，严格落实“逐路验可行、双路并陈明陈代价”之宪法法则：');
+
+    // 动态扫描原局印星透藏状态
+    const hiddenYinList = [];
+    const exposedYinList = [];
+    chart.pillars?.forEach((col) => {
+      if (STEM_ELEMENT[STEMS.indexOf(col.stem)] === yongInfo.mainYong) {
+        exposedYinList.push(`${col.position}干${col.stem}`);
+      }
+      col.hidden?.forEach((h) => {
+        if (STEM_ELEMENT[STEMS.indexOf(h.stem)] === yongInfo.mainYong) {
+          hiddenYinList.push(`${col.branch}中${h.stem}`);
+        }
+      });
+    });
+
+    let yinPresenceNote = '';
+    if (exposedYinList.length > 0) {
+      yinPresenceNote = `原局天干透出【${exposedYinList.join('、')}】引通生机，生化路线已立`;
+    } else if (hiddenYinList.length > 0) {
+      yinPresenceNote = `虽局中印星深藏支中（${hiddenYinList.join('、')}）未透干，但岁运天干一旦透出引通生机，便是最根本的安身立命之坦途`;
+    } else {
+      yinPresenceNote = `局中印星虽不显露，专待岁运透干通关化煞，以柔制刚`;
+    }
+
     lines.push(`  1. **【根本生扶通路（上乘通关神：${yongInfo.mainYong} · 正偏印）】**：`);
-    lines.push(`     * **作用机理**：金生水、水生木。以【${yongInfo.mainYong}】为通关枢纽化煞生身，兼能润泽局中烈火燥土。虽局中水印深藏支中（申中壬水、丑中癸水）未透干，但岁运天干一旦透水引通生机，便是最根本的安身立命、延年益寿之坦途。`);
+    lines.push(`     * **作用机理**：${guanShaElem}生${yongInfo.mainYong}、${yongInfo.mainYong}生${dmElem}。以【${yongInfo.mainYong}】为通关枢纽化煞生身。${yinPresenceNote}。`);
     lines.push('     * **现实战略**：依托国家平台与特许资质，注重读书深造、知识产权沉淀与合规庇护，以静制动，固本培元。');
     lines.push(`  2. **【攻坚博弈通路（做功手段神：${yongInfo.workElem} · 食神伤官）】**：`);
-    lines.push(`     * **作用机理**：以火克金，食神制杀、伤官合杀、伤官合制官星做大功。以卓越专业才华与高维博弈手腕威慑对手、夺取权柄。`);
-    lines.push('     * **现实代价**：局中食伤虽成党成势、做功能量极大，但日主身弱受烈火极度盗泄，行制路属于“心力交瘁、险中求胜”的苦战路线，必须依赖大运水木生扶方能持久承载。');
+    lines.push(`     * **作用机理**：以【${yongInfo.workElem}】克【${guanShaElem}】，食伤做功制伏官杀。以卓越专业才华与高维博弈手腕威慑对手、夺取权柄。`);
+    lines.push('     * **现实代价**：局中食伤虽能做功攻坚，但日主身弱受盗泄，行制路属于“心力交瘁、险中求胜”的苦战路线，必须依赖岁运印比生扶方能持久承载。');
+
+    const caiElem = ELEM_REL[dmElem]?.克 || '土';
     lines.push('  3. **【全景喜忌综合定性】**：');
-    lines.push(`     * **救命生身第一用神**：【${yongInfo.mainYong}】（正偏印，化杀生身、滋润禾稼）；`);
-    lines.push(`     * **生扶日主相助喜神**：【${yongInfo.xiElem}】（比肩劫财，同侪帮身、分担财杀）；`);
+    lines.push(`     * **救命生身第一用神**：【${yongInfo.mainYong}】（正偏印，化杀生身、滋润日元）；`);
+    lines.push(`     * **生扶日主相助喜神**：【${yongInfo.xiElem}】（比肩劫财，同侪帮身、分担压力）；`);
     lines.push(`     * **才华博弈手段用神**：【${yongInfo.workElem}】（食神伤官，做功攻坚，须防过劳盗泄）；`);
-    lines.push(`     * **命局最忌攻身凶神**：【${yongInfo.jiElem}】（官杀攻身）与【燥土】（财星克印生杀）。\n`);
+    lines.push(`     * **命局最忌攻身凶神**：【${yongInfo.jiElem}】（官杀攻身）与【${caiElem}】（财星克印坏局）。\n`);
   } else {
     lines.push(conflictRemedyNote(mainConflict, yongElem, chart) + '\n');
   }

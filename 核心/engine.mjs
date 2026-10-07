@@ -901,7 +901,26 @@ export function elementStrength(pillars, monthBranchName, silingEl) {
     total += adjusted[e];
   }
   const percent = {};
-  for (const e of ELEMENTS) percent[e] = total > 0 ? Number((adjusted[e] / total * 100).toFixed(1)) : 0;
+  if (total > 0) {
+    let pSum = 0;
+    let maxKey = ELEMENTS[0];
+    let maxVal = -1;
+    for (const e of ELEMENTS) {
+      const p = Number((adjusted[e] / total * 100).toFixed(1));
+      percent[e] = p;
+      pSum += p;
+      if (adjusted[e] > maxVal) {
+        maxVal = adjusted[e];
+        maxKey = e;
+      }
+    }
+    const diff = Number((100 - pSum).toFixed(1));
+    if (diff !== 0 && maxKey) {
+      percent[maxKey] = Number((percent[maxKey] + diff).toFixed(1));
+    }
+  } else {
+    for (const e of ELEMENTS) percent[e] = 0;
+  }
   const 令态 = {};
   for (const e of ELEMENTS) 令态[e] = seasonState(e, monthBranchName, silingEl);
   const 本气五行 = MONTH_BRANCH_SEASON[monthBranchName];

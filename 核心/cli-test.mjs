@@ -291,6 +291,71 @@ assert('看门狗17：伤官伤尽高阶口径（官无根一粒虚浮被强伤�
 );
 
 // -------------------------------------------------------------------
+// 审计专案回归：五盘全矩阵防伪防通稿看门狗（18～21）
+// -------------------------------------------------------------------
+const samples = [
+  ['辛巳', '丙申', '乙巳', '丁丑'], // ① 乙日元盘
+  ['甲子', '癸酉', '己巳', '丁卯'], // ② 己日元盘
+  ['丁卯', '丙午', '甲午', '丙寅'], // ③ 火伤官极旺盘
+  ['癸亥', '癸亥', '辛丑', '己丑'], // ④ 水伤官极旺盘
+  ['甲子', '丙寅', '甲子', '甲子'], // ⑤ 建禄身旺盘
+];
+const sampleReps = samples.map((s) => generateFullReport(s).markdown);
+
+// 看门狗 18：防 BUG-1 假兜底（2.2 节与 1.3.1 节同党/异党百分比单源绝对吻合）
+const watchdog18Passed = sampleReps.every((rep, idx) => {
+  const m1 = rep.match(/同党（生扶日元.*?）\*\*：\*\*([\d\.]+)%\*\*/);
+  const m2 = rep.match(/同党（比劫印星）占比 ([\d\.]+)%/);
+  if (!m1 || !m2) return false;
+  const p1 = Number(m1[1]);
+  const p2 = Number(m2[1]);
+  // 必须严格一致，且在身旺盘中绝不可为死兜底 20.0
+  return Math.abs(p1 - p2) < 0.001 && (idx !== 4 || p1 > 70);
+});
+assert('看门狗18：同党/异党占比单源化（2.2节与1.3.1节在全部五盘中数值100%绝对一致，根除20/80死兜底）',
+  watchdog18Passed
+);
+
+// 看门狗 19：防 BUG-2 写死文案（3.2.1 节日主担力与生克取用在全部盘中全动态化，严禁通稿抄袭）
+const watchdog19Passed = sampleReps.slice(1).every((rep) => {
+  return !rep.includes('同党占比微薄（仅 15.5%）') &&
+    !rep.includes('最旺之【金】（占 41.1%）') &&
+    !rep.includes('次要矛盾【火】（占 31.1%）') &&
+    !rep.includes('申中壬水、丑中癸水') &&
+    !rep.includes('以火克金，食神制杀') &&
+    !rep.includes('【燥土】（财星克印生杀）');
+});
+assert('看门狗19：3.2.1 节全动态化（除本盘外其余四盘绝无15.5%/41.1%/31.1%/申中壬水等写死文案）',
+  watchdog19Passed
+);
+
+// 看门狗 20：防 BUG-3 未配平（五行百分比五项求和在全部五盘中严格等于100.0%）
+const watchdog20Passed = sampleReps.every((rep) => {
+  const elemMatches = ['金', '木', '水', '火', '土'].map((e) => {
+    const m = rep.match(new RegExp(`\\* \\*\\*${e}\\*\\*：\\*\\*([\\d\\.]+)%\\*\\*`));
+    return m ? Number(m[1]) : 0;
+  });
+  const sum = Number(elemMatches.reduce((a, b) => a + b, 0).toFixed(1));
+  return Math.abs(sum - 100.0) < 0.001;
+});
+assert('看门狗20：五行百分比严格配平（全部五盘1.3.2节五行占比之和严格为100.0%，彻底消除99.9%舍入缺陷）',
+  watchdog20Passed
+);
+
+// 看门狗 21：防 BUG-4 神煞引文脱节（无将星/驿马盘绝不出将星/驿马引文与追问，严格契合原局神煞）
+const rep1_audit = sampleReps[0];
+const rep4_audit = sampleReps[3];
+const watchdog21Passed = !rep1_audit.includes('驿马主动，将星主权') &&
+  !rep4_audit.includes('驿马主动，将星主权') &&
+  !rep1_audit.includes('将星之威权与华盖之哲思') &&
+  !rep4_audit.includes('将星之威权与华盖之哲思') &&
+  rep1_audit.includes('《三命通会·论天乙贵人》') &&
+  rep1_audit.includes('天乙贵人之遇难成祥');
+assert('看门狗21：神煞引文与追问动态契合（无将星/驿马盘绝不出将星/驿马脱节文案，真实映射盘面所带神煞）',
+  watchdog21Passed
+);
+
+// -------------------------------------------------------------------
 // 统计汇总
 // -------------------------------------------------------------------
 console.log('\n----------------------------------------------------------------------');
