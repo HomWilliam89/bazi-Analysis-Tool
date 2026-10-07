@@ -129,6 +129,33 @@ const codeInvalid = await runCli(['invalid-arguments']);
 assert('CLI 非法参数返回非零状态码 1', codeInvalid === 1);
 
 // -------------------------------------------------------------------
+// 6. SKILL.md 技能规范与 sync-skill 镜像分发测试
+// -------------------------------------------------------------------
+console.log('\n▶ [测试组 6] SKILL.md 技能规范与 sync-skill 镜像分发测试');
+
+const skillPath = path.join(ROOT, 'SKILL.md');
+assert('根目录 SKILL.md 文件存在', fs.existsSync(skillPath));
+const skillContent = fs.readFileSync(skillPath, 'utf8');
+assert('SKILL.md 包含技能标识 name: bazi-analysis', skillContent.includes('name: bazi-analysis'));
+assert('SKILL.md 包含命令行调用示例', skillContent.includes('node 命令行/bazi.mjs'));
+
+const { syncSkill, SYNC_MANIFEST } = await import('../工具/sync-skill.mjs');
+assert('sync-skill 清单定义至少包含 19 个核心资产', SYNC_MANIFEST.length >= 19);
+
+const tempMirrorDir = path.join(ROOT, '命令行', 'temp-skill-mirror');
+const applyRes = syncSkill({ skillDir: tempMirrorDir, apply: true, silent: true });
+assert('sync-skill --apply 真分发执行成功且返回退出码 0', applyRes.exitCode === 0 && applyRes.copiedCount === SYNC_MANIFEST.length);
+assert('镜像目录 bazi.mjs 入口真实落地', fs.existsSync(path.join(tempMirrorDir, 'bazi.mjs')));
+
+const checkRes = syncSkill({ skillDir: tempMirrorDir, apply: false, silent: true });
+assert('sync-skill --check 二次复核 100% 一致且退出码 0', checkRes.exitCode === 0 && checkRes.consistentCount === SYNC_MANIFEST.length);
+
+if (fs.existsSync(tempMirrorDir)) {
+  fs.rmSync(tempMirrorDir, { recursive: true, force: true });
+}
+assert('测试临时镜像目录清理完毕', !fs.existsSync(tempMirrorDir));
+
+// -------------------------------------------------------------------
 // 统计汇总
 // -------------------------------------------------------------------
 console.log('\n----------------------------------------------------------------------');

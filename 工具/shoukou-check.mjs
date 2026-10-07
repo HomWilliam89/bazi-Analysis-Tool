@@ -10,7 +10,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // 禁词清单（本文件是唯一维护处；文档中不得出现这些词）
 const 禁词 = ['已过期', '旧口径', '待补', '待实现', '原文保留', '已作废', '历史件', '旧版此处'];
 // 检查范围
-const 检查目标 = ['文档', '规矩', '流派', 'README.md', 'AGENTS.md'];
+const 检查目标 = ['文档', '规矩', '流派', 'README.md', 'AGENTS.md', 'SKILL.md'];
 
 function walk(dir, out = []) {
   for (const name of fs.readdirSync(dir)) {
