@@ -96,6 +96,17 @@ export function formatTiyong(t) {
     L.push(`　流通归宿：${t.从儿分析.流通归宿}`);
     L.push(`　破格检验：印绶【${t.从儿分析.印绶判定.角色}】；官杀【${t.从儿分析.官杀判定.角色}】`);
   }
+  if (t.格局成破) {
+    const g = t.格局成破;
+    L.push('');
+    L.push('【子平八格成破救应】（P-021 · D-042 裁定）');
+    L.push(`　定格：${g.格局}（格神【${g.格神字}】${g.格神十神}，${g.透干 ? '天干透出' : '月令本气藏伏'}）`);
+    L.push(`　研判结论：**【${g.格局} · ${g.状态}】**`);
+    if (g.状态 === '成格') L.push(`　成格因：${g.成格因}`);
+    if (g.破格因) L.push(`　破格因：${g.破格因}`);
+    if (g.救应因) L.push(`　救应因：${g.救应因}`);
+    L.push(`　法理出处：${g.法理出处}`);
+  }
   const t1 = t.第一_财官威胁;
   const t2 = t.第二_印比有情;
   const t3 = t.第三_用神护卫;
@@ -3527,6 +3538,400 @@ export function congErAnalysisOf(chart, opts = {}) {
 }
 
 /**
+ * 获取地支藏干十神列表
+ */
+function branchHiddenWithTenGod(branchChar, dStem) {
+  const bi = BRANCHES.indexOf(branchChar);
+  if (bi < 0) return [];
+  const si = STEMS.indexOf(dStem);
+  const spec = HIDDEN_STEMS_SPEC[bi] || [];
+  return spec.map(([hStem, layer]) => {
+    const hsi = STEMS.indexOf(hStem);
+    const god = tenGod(si, hsi);
+    const elem = ELEMENTS[STEM_ELEMENT[hsi]];
+    return { 字: hStem, 层: layer === '本' ? '本气' : (layer === '中' ? '中气' : '余气'), 十神: god, 五行: elem };
+  });
+}
+
+/**
+ * 八格定格与格神提取
+ */
+function determineGeju(chart) {
+  const dStem = dayMasterOf(chart).stem;
+  const dsi = STEMS.indexOf(dStem);
+  const mb = branchAt(chart.pillars[1]);
+  const hidden = branchHiddenWithTenGod(mb, dStem);
+
+  // 天干透出的十神（年、月、时）
+  const openStems = [
+    { stem: stemAt(chart.pillars[0]), pos: '年干', tenGod: chart.pillars[0].tenGod ?? tenGod(dsi, STEMS.indexOf(stemAt(chart.pillars[0]))) },
+    { stem: stemAt(chart.pillars[1]), pos: '月干', tenGod: chart.pillars[1].tenGod ?? tenGod(dsi, STEMS.indexOf(stemAt(chart.pillars[1]))) },
+    { stem: stemAt(chart.pillars[3]), pos: '时干', tenGod: chart.pillars[3].tenGod ?? tenGod(dsi, STEMS.indexOf(stemAt(chart.pillars[3]))) },
+  ];
+
+  // 1. 检查月令藏干透出
+  const ben = hidden.find((h) => h.层 === '本气');
+  const touBen = ben && openStems.find((o) => o.stem === ben.字);
+  const otherHidden = hidden.filter((h) => h.层 !== '本气');
+  const touOther = otherHidden.map((h) => ({ hidden: h, open: openStems.find((o) => o.stem === h.字) })).filter((x) => x.open);
+
+  let 格神字 = null;
+  let 格神十神 = null;
+  let 透干 = false;
+
+  if (touBen) {
+    格神字 = ben.字;
+    格神十神 = ben.十神;
+    透干 = true;
+  } else if (touOther.length > 0) {
+    格神字 = touOther[0].hidden.字;
+    格神十神 = touOther[0].hidden.十神;
+    透干 = true;
+  } else if (ben) {
+    格神字 = ben.字;
+    格神十神 = ben.十神;
+    透干 = false;
+  }
+
+  // 映射到八格名称
+  let 格局 = '普通格';
+  if (格神十神 === '正官') 格局 = '正官格';
+  else if (格神十神 === '七杀') 格局 = '七杀格';
+  else if (格神十神 === '正财') 格局 = '正财格';
+  else if (格神十神 === '偏财') 格局 = '偏财格';
+  else if (格神十神 === '正印') 格局 = '正印格';
+  else if (格神十神 === '偏印') 格局 = '偏印格';
+  else if (格神十神 === '食神') 格局 = '食神格';
+  else if (格神十神 === '伤官') 格局 = '伤官格';
+  else if (格神十神 === '比肩') 格局 = '建禄格';
+  else if (格神十神 === '劫财') 格局 = '阳刃格';
+
+  return {
+    格局,
+    格神字,
+    格神十神,
+    透干,
+    月令本气: ben ? ben.字 : null,
+    月令地支: mb,
+    hidden,
+    openStems,
+  };
+}
+
+/**
+ * **子平八格成破救应全矩阵研判**（D-042 / 判据 P-021）。
+ *
+ * 典籍法理：《子平真诠·论用神成败》《子平真诠·论用神救应》
+ *   - 以月令为纲，格神透干优先；
+ *   - 矩阵输出：成格、破格、败中有救；
+ *   - 严格对应破格因与救应因。
+ *
+ * @param {object} chart
+ * @param {object} [opts]
+ * @returns {object}
+ */
+export function gejuChengPoOf(chart, opts = {}) {
+  const ge = determineGeju(chart);
+  const dStem = dayMasterOf(chart).stem;
+  const dElem = dayMasterOf(chart).element;
+  const pillars = chart.pillars;
+  const openStems = ge.openStems;
+
+  const 透出十神 = new Set(openStems.map((o) => o.tenGod));
+  const hasTou = (tg) => 透出十神.has(tg);
+
+  const branches = pillars.map(branchAt);
+  const rels = gzRelations(pillars, null);
+
+  const STEM_COMBINES = {
+    '甲': '己', '己': '甲',
+    '乙': '庚', '庚': '乙',
+    '丙': '辛', '辛': '丙',
+    '丁': '壬', '壬': '丁',
+    '戊': '癸', '癸': '戊',
+  };
+  const dsi = STEMS.indexOf(dStem);
+  const 天干合 = [];
+  for (let i = 0; i < 4; i++) {
+    for (let j = i + 1; j < 4; j++) {
+      const s1 = stemAt(pillars[i]);
+      const s2 = stemAt(pillars[j]);
+      if (STEM_COMBINES[s1] === s2) {
+        const tg1 = i === 2 ? '日主' : (pillars[i].tenGod ?? tenGod(dsi, STEMS.indexOf(s1)));
+        const tg2 = j === 2 ? '日主' : (pillars[j].tenGod ?? tenGod(dsi, STEMS.indexOf(s2)));
+        天干合.push({ s1, s2, i, j, tg1, tg2 });
+      }
+    }
+  }
+
+  const mb = ge.月令地支;
+  const monthClash = (rels['地支六冲'] ?? []).filter((c) => String(c.pair ?? c.positions ?? '').includes(`月支${mb}`) || String(c.pair ?? c.positions ?? '').includes(mb));
+  const monthHe = (rels['地支六合'] ?? []).filter((c) => String(c.pair ?? c.positions ?? '').includes(`月支${mb}`) || String(c.pair ?? c.positions ?? '').includes(mb));
+  const hasMonthClash = monthClash.length > 0;
+  const hasMonthHe = monthHe.length > 0;
+
+  const allBranchStr = branches.join('');
+  const hasWoodBureau = (allBranchStr.includes('卯') && (allBranchStr.includes('未') || allBranchStr.includes('亥')))
+    || (allBranchStr.includes('寅') && (allBranchStr.includes('午') || allBranchStr.includes('戌')));
+
+  const isJinShuiShangGuan = (dElem === '金' && (ge.格局 === '伤官格' || branches[1] === '子' || branches[1] === '亥'));
+
+  let 状态 = '成格';
+  let 成格因 = '';
+  let 破格因 = '';
+  let 救应因 = '';
+  const 法理出处 = '《子平真诠·论用神成败救应》';
+
+  switch (ge.格局) {
+    case '正官格': {
+      const 伤克官 = hasTou('伤官') || (dElem === '水' && hasWoodBureau);
+      const 官逢冲 = hasMonthClash;
+      const 官杀混 = hasTou('正官') && hasTou('七杀');
+
+      if (伤克官) {
+        const 透印 = hasTou('正印') || hasTou('偏印');
+        const 伤被合 = 天干合.some((h) => (h.tg1 === '伤官' || h.tg2 === '伤官') && h.tg1 !== '日主' && h.tg2 !== '日主');
+        破格因 = '官逢伤官克破';
+        if (透印) {
+          状态 = '败中有救';
+          救应因 = '天干透印制伤护官';
+        } else if (伤被合) {
+          状态 = '败中有救';
+          救应因 = '天干相合合去伤官存官';
+        } else {
+          状态 = '破格';
+        }
+      } else if (官逢冲) {
+        破格因 = '官星坐支逢地支刑冲';
+        if (hasMonthHe) {
+          状态 = '败中有救';
+          救应因 = '地支得六合贪合免冲以解刑冲';
+        } else {
+          状态 = '破格';
+        }
+      } else if (官杀混) {
+        破格因 = '官杀混杂';
+        const 合杀 = 天干合.some((h) => (h.tg1 === '七杀' || h.tg2 === '七杀'));
+        const 制杀 = hasTou('食神');
+        if (合杀 || 制杀) {
+          状态 = '败中有救';
+          救应因 = 合杀 ? '合杀留官取清' : '食神制杀留官取清';
+        } else {
+          状态 = '破格';
+        }
+      } else {
+        状态 = '成格';
+        成格因 = (hasTou('正财') || hasTou('偏财') || hasTou('正印') || hasTou('偏印'))
+          ? '官逢财印相资，无刑冲破害'
+          : '正官得禄当权，无刑冲破害成格';
+      }
+      break;
+    }
+
+    case '偏财格':
+    case '正财格': {
+      const 财透杀 = hasTou('七杀');
+      const 财逢劫 = hasTou('比肩') || hasTou('劫财');
+
+      if (财透杀) {
+        破格因 = '财带七杀泄财党杀';
+        const 透食 = hasTou('食神') || hasTou('伤官');
+        const 合杀 = 天干合.some((h) => (h.tg1 === '七杀' && (h.tg2 === '劫财' || h.tg2 === '比肩'))
+          || (h.tg2 === '七杀' && (h.tg1 === '劫财' || h.tg1 === '比肩')));
+        if (合杀) {
+          状态 = '败中有救';
+          救应因 = '劫刃合杀存财成格';
+        } else if (透食) {
+          状态 = '败中有救';
+          救应因 = '食神制杀护身存财';
+        } else {
+          状态 = '破格';
+        }
+      } else if (财逢劫) {
+        破格因 = '财轻比劫分夺';
+        const 透官 = hasTou('正官');
+        const 透食伤 = hasTou('食神') || hasTou('伤官');
+        if (透官) {
+          状态 = '败中有救';
+          救应因 = '透官制劫护财';
+        } else if (透食伤) {
+          状态 = '败中有救';
+          救应因 = '透食伤化劫生财';
+        } else {
+          状态 = '破格';
+        }
+      } else {
+        状态 = '成格';
+        成格因 = hasTou('正官') ? '财旺生官成格' : '财星通门户，无刑冲分夺成格';
+      }
+      break;
+    }
+
+    case '七杀格': {
+      const 杀逢财 = hasTou('正财') || hasTou('偏财');
+      const 杀逢食制 = hasTou('食神') || hasTou('伤官');
+      const 枭印夺食 = 杀逢食制 && hasTou('偏印');
+
+      if (枭印夺食) {
+        破格因 = '食神制杀逢枭神夺食';
+        const 透财制枭 = hasTou('正财') || hasTou('偏财');
+        if (透财制枭) {
+          状态 = '败中有救';
+          救应因 = '财星制枭护食以制杀';
+        } else {
+          状态 = '破格';
+        }
+      } else if (杀逢财 && !杀逢食制) {
+        破格因 = '杀重逢财党杀';
+        const 透印化杀 = hasTou('正印') || hasTou('偏印');
+        if (透印化杀) {
+          状态 = '败中有救';
+          救应因 = '透印化杀生身';
+        } else {
+          状态 = '破格';
+        }
+      } else if (!杀逢食制 && !(hasTou('正印') || hasTou('偏印'))) {
+        破格因 = '七杀无制无化';
+        状态 = '破格';
+      } else {
+        状态 = '成格';
+        成格因 = 杀逢食制 ? '身强七杀逢食神制伏成格' : '杀透印化，杀印相生成格';
+      }
+      break;
+    }
+
+    case '正印格':
+    case '偏印格': {
+      const 印逢财 = hasTou('正财') || hasTou('偏财');
+      if (印逢财) {
+        破格因 = '印轻逢财星克破（贪财坏印）';
+        const 透劫制财 = hasTou('劫财') || hasTou('比肩');
+        const 合财 = 天干合.some((h) => (h.tg1 === '正财' || h.tg1 === '偏财' || h.tg2 === '正财' || h.tg2 === '偏财'));
+        if (透劫制财) {
+          状态 = '败中有救';
+          救应因 = '天干透比劫制财护印';
+        } else if (合财) {
+          状态 = '败中有救';
+          救应因 = '天干相合合财存印';
+        } else {
+          状态 = '破格';
+        }
+      } else {
+        状态 = '成格';
+        成格因 = (hasTou('正官') || hasTou('七杀')) ? '官印双全（杀印相生）成格' : '印绶纯粹有气，得食伤泄秀成格';
+      }
+      break;
+    }
+
+    case '食神格': {
+      const 逢枭 = hasTou('偏印');
+      const 生财透杀 = (hasTou('正财') || hasTou('偏财')) && hasTou('七杀');
+
+      if (逢枭) {
+        破格因 = '食神逢枭神夺食';
+        const 透财制枭 = hasTou('正财') || hasTou('偏财');
+        if (透财制枭) {
+          状态 = '败中有救';
+          救应因 = '天干透财制枭护食成格';
+        } else {
+          状态 = '破格';
+        }
+      } else if (生财透杀) {
+        破格因 = '食神生财而透杀党杀';
+        const 合杀 = 天干合.some((h) => (h.tg1 === '七杀' || h.tg2 === '七杀'));
+        if (合杀) {
+          状态 = '败中有救';
+          救应因 = '天干合杀存财成格';
+        } else {
+          状态 = '破格';
+        }
+      } else {
+        状态 = '成格';
+        成格因 = (hasTou('正财') || hasTou('偏财')) ? '食神生财成格' : '食神吐秀制杀成格';
+      }
+      break;
+    }
+
+    case '伤官格': {
+      const 见官 = hasTou('正官') || branches.some((b, i) => i !== 1 && branchHiddenWithTenGod(b, dStem).some((h) => h.十神 === '正官'));
+      if (见官 && !isJinShuiShangGuan) {
+        破格因 = '伤官见官非金水破格';
+        const 透印制伤 = hasTou('正印') || hasTou('偏印');
+        const 财星通关 = hasTou('正财') || hasTou('偏财');
+        if (透印制伤) {
+          状态 = '败中有救';
+          救应因 = '天干透印制伤护官';
+        } else if (财星通关) {
+          状态 = '败中有救';
+          救应因 = '财星通关化伤生官';
+        } else {
+          状态 = '破格';
+        }
+      } else if (isJinShuiShangGuan && 见官) {
+        状态 = '成格';
+        成格因 = '金水伤官喜见官成格';
+      } else {
+        状态 = '成格';
+        成格因 = (hasTou('正印') || hasTou('偏印')) ? '伤官佩印成格' : '伤官生财成格';
+      }
+      break;
+    }
+
+    case '建禄格':
+    case '阳刃格': {
+      const 透官 = hasTou('正官');
+      const 透伤 = hasTou('伤官');
+      const 透杀 = hasTou('七杀');
+      if (透官 && 透伤) {
+        破格因 = '禄刃用官逢伤官克破';
+        const 透印 = hasTou('正印') || hasTou('偏印');
+        if (透印) {
+          状态 = '败中有救';
+          救应因 = '透印制伤护官成格';
+        } else {
+          状态 = '破格';
+        }
+      } else if (ge.格局 === '阳刃格' && !透官 && !透杀) {
+        破格因 = '阳刃无官杀驾驭';
+        const 透食伤 = hasTou('食神') || hasTou('伤官');
+        if (透食伤) {
+          状态 = '成格';
+          成格因 = '阳刃透食伤吐秀成格';
+        } else {
+          状态 = '破格';
+        }
+      } else {
+        状态 = '成格';
+        成格因 = ge.格局 === '阳刃格' ? '阳刃驾杀（逢官杀）成格' : '建禄逢财官成格';
+      }
+      break;
+    }
+
+    default: {
+      状态 = '成格';
+      成格因 = '气象纯粹成格';
+      break;
+    }
+  }
+
+  return {
+    格局: ge.格局,
+    格神字: ge.格神字,
+    格神十神: ge.格神十神,
+    月令本气: ge.月令本气,
+    透干: ge.透干,
+    状态,
+    成格因: 状态 === '成格' ? 成格因 : null,
+    破格因: 状态 !== '成格' ? 破格因 : null,
+    救应因: 状态 === '败中有救' ? 救应因 : null,
+    法理出处,
+    说明: `依据《子平真诠·论用神成败救应》：月令取【${ge.格局}】（格神${ge.格神字}·${ge.格神十神}），`
+      + `研判结论为【${ge.格局} · ${状态}】`
+      + (状态 === '败中有救' ? `（因${破格因}，赖${救应因}）` : (状态 === '破格' ? `（因${破格因}）` : `（${成格因}）`)),
+  };
+}
+
+/**
  * **体用路线四条的汇总入口** —— 一次算齐，供工具侧调用。
  *
  * @param {object} chart
@@ -4089,6 +4494,7 @@ export function tiyongRouteOf(chart, opts = {}) {
     主要矛盾,
     从格改判,
     从儿分析,
+    格局成破: gejuChengPoOf(chart),
     第一_财官威胁: 第一,
     第二_印比有情: 第二,
     第三_用神护卫: 第三,

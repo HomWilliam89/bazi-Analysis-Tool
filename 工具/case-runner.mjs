@@ -8,7 +8,7 @@ import { STEMS, BRANCHES, castChart, gzRelations, shenshaOf } from '../核心/en
 import {
   tiyongRouteOf, canControlOf, canTransformOf, canBindOf,
   protectionChainOf, youJiuOf, fanwangOf, xiangzhanOf, siXiangOf,
-  selfHiddenCombineOf, chengzaiReassess,
+  selfHiddenCombineOf, chengzaiReassess, gejuChengPoOf,
 } from '../核心/tiyong.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -626,6 +626,68 @@ for (const c of casesToRun) {
         failedAssertions += 1;
         console.log(`  ✗ [护卫衰竭警报] 期望: ${expObj.衰竭警报} != 实际: ${act}`);
         failureDetails.push({ id: c.id, item: '护卫衰竭警报', exp: expObj.衰竭警报, act, p: c.判据 });
+      }
+    }
+  }
+
+  // 26. 子平八格成破救应全矩阵研判（D-042 / P-021）
+  if (typeof c.期望.格局成破 !== 'undefined') {
+    const expObj = c.期望.格局成破;
+    const actObj = res.格局成破 ?? gejuChengPoOf(chart);
+
+    if (typeof expObj.格局 !== 'undefined') {
+      totalAssertions += 1;
+      const act = actObj?.格局 ?? '—';
+      const ok = act === expObj.格局;
+      if (ok) {
+        passedAssertions += 1;
+        console.log(`  ✓ [格局定格] 期望: ${expObj.格局} == 实际: ${act}`);
+      } else {
+        failedAssertions += 1;
+        console.log(`  ✗ [格局定格] 期望: ${expObj.格局} != 实际: ${act}`);
+        failureDetails.push({ id: c.id, item: '格局定格', exp: expObj.格局, act, p: c.判据 });
+      }
+    }
+
+    if (typeof expObj.状态 !== 'undefined') {
+      totalAssertions += 1;
+      const act = actObj?.状态 ?? '—';
+      const ok = act === expObj.状态;
+      if (ok) {
+        passedAssertions += 1;
+        console.log(`  ✓ [格局状态] 期望: ${expObj.状态} == 实际: ${act}`);
+      } else {
+        failedAssertions += 1;
+        console.log(`  ✗ [格局状态] 期望: ${expObj.状态} != 实际: ${act}`);
+        failureDetails.push({ id: c.id, item: '格局状态', exp: expObj.状态, act, p: c.判据 });
+      }
+    }
+
+    if (typeof expObj.破格因 !== 'undefined') {
+      totalAssertions += 1;
+      const act = actObj?.破格因 ?? '—';
+      const ok = act === expObj.破格因;
+      if (ok) {
+        passedAssertions += 1;
+        console.log(`  ✓ [破格因] 期望: ${expObj.破格因} == 实际: ${act}`);
+      } else {
+        failedAssertions += 1;
+        console.log(`  ✗ [破格因] 期望: ${expObj.破格因} != 实际: ${act}`);
+        failureDetails.push({ id: c.id, item: '破格因', exp: expObj.破格因, act, p: c.判据 });
+      }
+    }
+
+    if (typeof expObj.救应因 !== 'undefined') {
+      totalAssertions += 1;
+      const act = actObj?.救应因 ?? '—';
+      const ok = act === expObj.救应因;
+      if (ok) {
+        passedAssertions += 1;
+        console.log(`  ✓ [救应因] 期望: ${expObj.救应因} == 实际: ${act}`);
+      } else {
+        failedAssertions += 1;
+        console.log(`  ✗ [救应因] 期望: ${expObj.救应因} != 实际: ${act}`);
+        failureDetails.push({ id: c.id, item: '救应因', exp: expObj.救应因, act, p: c.判据 });
       }
     }
   }

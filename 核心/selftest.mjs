@@ -22,7 +22,7 @@ import {
   ANLU, ANLU_DAY_GZ, LUSHEN, shenshaNature,
   DUAL_IMAGE_LIBRARY, dualImageMatrixOf,
   arbitrateGanzhiForces, coverageOf, congErAnalysisOf,
-  chengzaiReassess,
+  chengzaiReassess, gejuChengPoOf,
 } from './engine.mjs';
 
 /** 由 "辛巳" 之类的干支串造出 engine 各原语所需的柱对象数组 */
@@ -2645,6 +2645,60 @@ console.log('=== 37. D-041 / P-020：护卫链受损替代解与剩余路数求�
   eq('衰竭盘替代解为无替代解', ch2.全景通路.替代解, '无替代解');
   eq('衰竭盘衰竭警报为true', ch2.衰竭警报, true);
   ok('衰竭警报说明包含警报文字', ch2.全景通路.警报说明.includes('护卫衰竭警报'), '');
+}
+
+// ====================================================================
+// 38. D-042 / P-021：子平八格成破救应全矩阵研判
+// ====================================================================
+console.log('=== 38. D-042 / P-021：子平八格成破救应全矩阵研判 ===');
+{
+  // ── 38.1 正官逢伤透印救应实测（《子平真诠》宣参国造） ──
+  // 己卯 辛未 壬寅 辛亥（未中己官透干，木局伤官克官，天干两辛贴身制伤护官）
+  const cXuan = {
+    pillars: pillarsOf('己卯', '辛未', '壬寅', '辛亥'),
+    dayMaster: { stem: '壬', element: '水', bornMonthBranch: '未' },
+  };
+  const g1 = gejuChengPoOf(cXuan);
+  eq('宣参国造定格为正官格', g1.格局, '正官格');
+  eq('格神为己正官', g1.格神字, '己');
+  eq('格神十神为正官', g1.格神十神, '正官');
+  eq('格神透干为true', g1.透干, true);
+  eq('状态判定为败中有救', g1.状态, '败中有救');
+  eq('破格因为官逢伤官克破', g1.破格因, '官逢伤官克破');
+  eq('救应因为天干透印制伤护官', g1.救应因, '天干透印制伤护官');
+  ok('法理出处注明子平真诠', g1.法理出处.includes('子平真诠'), '');
+
+  // ── 38.2 财格透杀劫刃合杀救应实测（《子平真诠》毛状元造） ──
+  // 乙酉 庚辰 甲午 戊辰（辰中戊财透，庚杀亦透，年干乙木劫财合杀存财）
+  const cMao = {
+    pillars: pillarsOf('乙酉', '庚辰', '甲午', '戊辰'),
+    dayMaster: { stem: '甲', element: '木', bornMonthBranch: '辰' },
+  };
+  const g2 = gejuChengPoOf(cMao);
+  eq('毛状元造定格为偏财格', g2.格局, '偏财格');
+  eq('格神为戊偏财', g2.格神字, '戊');
+  eq('格神十神为偏财', g2.格神十神, '偏财');
+  eq('格神透干为true', g2.透干, true);
+  eq('状态判定为败中有救', g2.状态, '败中有救');
+  eq('破格因为财带七杀泄财党杀', g2.破格因, '财带七杀泄财党杀');
+  eq('救应因为劫刃合杀存财成格', g2.救应因, '劫刃合杀存财成格');
+
+  // ── 38.3 伤官见官破格实测 ──
+  // 丁亥 丙午 甲午 辛未（甲生午月透丁伤官，时透辛官，无印制伤无财通关破格）
+  const cPo = {
+    pillars: pillarsOf('丁亥', '丙午', '甲午', '辛未'),
+    dayMaster: { stem: '甲', element: '木', bornMonthBranch: '午' },
+  };
+  const g3 = gejuChengPoOf(cPo);
+  eq('破格造定格为伤官格', g3.格局, '伤官格');
+  eq('状态判定为破格', g3.状态, '破格');
+  eq('破格因为伤官见官非金水破格', g3.破格因, '伤官见官非金水破格');
+  eq('救应因为null', g3.救应因, null);
+
+  // ── 38.4 tiyongRouteOf 整合验证 ──
+  const rXuan = tiyongRouteOf(cXuan);
+  ok('tiyongRouteOf 返回格局成破对象', !!rXuan.格局成破, '');
+  eq('tiyongRouteOf 格局成破状态为败中有救', rXuan.格局成破.状态, '败中有救');
 }
 
 console.log('');

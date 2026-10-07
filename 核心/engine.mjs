@@ -7793,5 +7793,6 @@ export {
   chengzaiReassess, xiangzhanOf, fanwangOf, selfHiddenCombineOf, tiyongRouteOf,
   DUAL_IMAGE_LIBRARY, dualImageMatrixOf,
   arbitrateGanzhiForces, coverageOf, congErAnalysisOf,
+  gejuChengPoOf,
   formatTiyong
 } from './tiyong.mjs';
