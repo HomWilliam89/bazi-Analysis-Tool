@@ -3284,7 +3284,9 @@ export function dualImageMatrixOf(chart, opts = {}) {
     judgeRelation('地支六冲', item.pair, item.note || '');
   }
   for (const item of (rels['地支相刑'] ?? [])) {
-    judgeRelation('地支相刑', item.pair, `${item.kind}（${item.type}）`);
+    const pairStr = item.pair ?? `${item.positions}（${item.members}）`;
+    const noteStr = `${item.刑 ?? item.kind ?? '相刑'}（${item.口径 ?? item.type ?? ''}）`;
+    judgeRelation('地支相刑', pairStr, noteStr);
   }
   for (const item of (rels['地支相害'] ?? [])) {
     judgeRelation('地支相害', item.pair, item.note || '');
