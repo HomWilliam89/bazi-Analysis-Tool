@@ -223,6 +223,25 @@ for (let i = 0; i < matrixSec3.length; i++) {
 
 assert('看门狗10：多盘对全矩阵（5盘10对组合）第三段实质解读相同率严格低于60%（实测峰值≤50%，彻底锁定千盘千面）', allPairsUnder60 && maxPairRatio < 0.50);
 
+// 看门狗 11：大局泛化与经世名局智能识别结构断言
+const chartSpecial = ['辛巳', '丙申', '乙巳', '丁丑'];
+const repSpecial = generateFullReport(chartSpecial).markdown;
+assert('看门狗11：经典盘（辛巳丙申乙巳丁丑）泛化识别三大经世名局且结构四项完整',
+  repSpecial.includes('【食神制杀局】') &&
+  repSpecial.includes('【伤官合杀局】') &&
+  repSpecial.includes('【伤官合制官星局（制官得官）】') &&
+  repSpecial.includes('什么是食神制杀局') &&
+  repSpecial.includes('代表什么意思') &&
+  repSpecial.includes('古籍名著论述')
+);
+
+// 看门狗 12：阳刃驾杀盘与大局算法千盘千面通用性
+const chartYangRen = ['壬子', '戊申', '丙午', '庚寅'];
+const repYangRen = generateFullReport(chartYangRen).markdown;
+assert('看门狗12：阳刃驾杀盘（壬子戊申丙午庚寅）通用算法命中【阳刃驾杀局】',
+  repYangRen.includes('【阳刃驾杀局】') && repYangRen.includes('威权赫奕 · 将帅折冲之局')
+);
+
 // -------------------------------------------------------------------
 // 统计汇总
 // -------------------------------------------------------------------

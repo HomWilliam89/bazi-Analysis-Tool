@@ -192,7 +192,7 @@ const TEN_GOD_PROFILE = {
 };
 
 /**
- * 八大正格经典学理与名家古籍专论知识库
+ * 经典格局学理与名家古籍专论知识库（十正格、四大从格、五大专旺格全系收录）
  */
 const GEJU_KNOWLEDGE = {
   '正官格': {
@@ -344,42 +344,209 @@ const GEJU_KNOWLEDGE = {
         quote: '阳刃者，旺极之神，必借七杀以御之。杀刃相停，威权显赫；经云：杀无刃不显，刃无杀不威。'
       }
     ]
+  },
+  '从杀格': {
+    name: '从杀格（从官杀格）',
+    definition: '日干衰弱无气，局中毫无微根印比生扶，满盘官杀星乘旺司权。日主不得不顺从官杀至刚克伐之势，弃命从杀，以杀为尊。',
+    meaning: '性格极具隐忍自持与时势洞察力，不计个人私利而顺从时代或体制巨浪；善于依附强大权威平台迅速崛起，抗压与危机处理手腕极其冷酷果断，成就封疆裂土之大富大贵。',
+    classics: [
+      {
+        source: '《滴天髓·论从格》',
+        quote: '从得真者只论从，从得不真反受冲。从杀格，满局皆杀，无印生身，无食克杀，顺其气势，位登公卿。'
+      },
+      {
+        source: '《渊海子平·弃命从杀格》',
+        quote: '弃命从杀，日干绝无点水毫木之微根，满盘官杀，只得顺杀之性……逢杀发福，位至公卿。'
+      },
+      {
+        source: '《子平真诠·论从格》',
+        quote: '从杀格以官杀为用，最喜财星生杀，忌见印绶生身破从，亦忌食神相攻犯旺。'
+      }
+    ]
+  },
+  '从财格': {
+    name: '从财格',
+    definition: '日主衰绝无根，局中无一点印绶比劫生扶，满盘正偏财星乘令或结党成势，气势偏聚于财。日主弃命顺从财星之旺气。',
+    meaning: '性格极具商业敏感度与现实审势能力，为人圆融机变、不拘泥教条；善于随顺市场大势与资本流动，拥有极其广博的商业资源调配魄力，富甲天下。',
+    classics: [
+      {
+        source: '《滴天髓·论从格》',
+        quote: '日干无气，满局皆财，顺财之势，富冠天下。从财最喜食伤顺生，官杀护卫，大忌比劫争夺。'
+      },
+      {
+        source: '《子平真诠·论从格》',
+        quote: '弃命从财，身无立锥之地，财气纯全，运行食伤财乡，发富不可胜言。'
+      },
+      {
+        source: '《渊海子平·弃命从财格》',
+        quote: '弃命从财，日干极弱，金木水火土各从其财神。顺行财运，其富莫测。'
+      }
+    ]
+  },
+  '从儿格': {
+    name: '从儿格（从食伤格）',
+    definition: '日主衰弱无根或仅余微根，满局食神伤官成党成局，秀气极度宣泄；局中无印星克食伤，见财星顺泄秀气，成“我儿又见儿”之大顺生格局。',
+    meaning: '才智天纵、敏锐灵动、极具前瞻性与艺术独创性；不从世俗规矩，追求精神探索与自我实现之极致，凭不可替代的技艺成果或开创性发明惊艳时代。',
+    classics: [
+      {
+        source: '《滴天髓·从儿论》',
+        quote: '一出门来只见儿，吾儿成气构门闾；从儿不管身强弱，只要我儿又见儿。'
+      },
+      {
+        source: '《子平真诠·论食伤》',
+        quote: '从儿格最喜财星引通食伤秀气，大忌印绶枭神夺食破格，官杀混战亦非所宜。'
+      },
+      {
+        source: '《千里命稿·从儿格》',
+        quote: '从儿之格，食伤重叠，日元虽弱，借食伤以吐秀，逢财生发，文贵商富两全。'
+      }
+    ]
+  },
+  '从势格': {
+    name: '从势格',
+    definition: '日干衰竭无依，局中食伤、财星、官杀三者并旺均停，日主无所专从，顺从三者相生相克之复合气势；局中必须以财星为通关和解枢纽，食伤生财、财生官杀，顺行流通。',
+    meaning: '情商与适应力极高、长袖善舞、极善于多方博弈与利益平衡；能在极其复杂的职场或商业生态中左右逢源，化解各方矛盾，成为各大势力的核心纽带操盘手。',
+    classics: [
+      {
+        source: '《滴天髓·从化论》',
+        quote: '日干无气，满局异党，食伤生财、财生官杀，气势流通，顺其势而行之，乃从势格也。'
+      },
+      {
+        source: '《三命通会·论从格》',
+        quote: '从势者，各得其用，和辑百神，富贵两全。财为关纽，去留从容。'
+      }
+    ]
+  },
+  '曲直格': {
+    name: '曲直格（曲直仁寿格）',
+    definition: '甲乙木日主生于春月（寅卯辰），地支全亥卯未木局或寅卯辰东方一气，局中绝无庚辛申酉金气破木，木气纯粹冲霄，为一行得气专旺之贵格。',
+    meaning: '心性质朴仁慈、博爱大度、德行高洁、富有君子长者之风；具备强大的精神号召力与思想感染力，立德树人、长寿安泰，为社会道德或文化领域领袖。',
+    classics: [
+      {
+        source: '《渊海子平·曲直格》',
+        quote: '甲乙生人寅卯辰，又逢亥卯未相亲；腾腾秀气冲霄汉，富贵荣华寿算增。'
+      },
+      {
+        source: '《三命通会·论曲直仁寿》',
+        quote: '木日得寅卯辰或亥卯未全，无庚辛申酉克破，名曲直仁寿格，主仁慈博厚，位极人臣。'
+      },
+      {
+        source: '《滴天髓·形象篇》',
+        quote: '独象喜行化地，而化神要旺；曲直得时，秀气纯粹，顺其木火之生，富贵不凡。'
+      }
+    ]
+  },
+  '炎上格': {
+    name: '炎上格',
+    definition: '丙丁火日主生于夏令（巳午未），地支全寅午戌火局或巳午未南方一气，无壬癸亥子水气伤克，局中火势炽烈升腾、纯粹光明，为火之一行得气专旺格。',
+    meaning: '心性热情开朗、磊落光明、崇尚文明礼法、极富前瞻远见与感染力；适合科技前沿、文化传媒、数字光电或聚光灯下的布道开拓，名满天下。',
+    classics: [
+      {
+        source: '《渊海子平·炎上格》',
+        quote: '丙丁得寅午戌全，火盛文明福寿全；不逢金水来伤克，必定荣华冠世传。'
+      },
+      {
+        source: '《神峰通考·炎上格》',
+        quote: '火性炎上，得局纯粹，主文章盖世，光明俊伟。'
+      },
+      {
+        source: '《三命通会·论炎上格》',
+        quote: '炎上者，火之本性也。得夏令火局，无水冲破，贵登台阁，声震中外。'
+      }
+    ]
+  },
+  '稼穑格': {
+    name: '稼穑格',
+    definition: '戊己土日主生于四季月（辰戌丑未），地支纯土无木克破，土气凝重浑厚、气象万千，为土之一行得气专旺大格。',
+    meaning: '心性诚信宽厚、容纳万物、稳重如山、信誉卓著；深谙财富与实体资管运营之道，善于构筑坚不可摧的长期基业，基业长青。',
+    classics: [
+      {
+        source: '《三命通会·论稼穑格》',
+        quote: '戊己生居四季中，辰戌丑未要全逢；无官无杀纯和气，位极公卿福寿隆。'
+      },
+      {
+        source: '《滴天髓·论独象》',
+        quote: '稼穑者，土之纯粹也。重厚载物，顺其金之流通，富冠乡里。'
+      }
+    ]
+  },
+  '从革格': {
+    name: '从革格',
+    definition: '庚辛金日主生于秋月（申酉戌），地支全巳酉丑金局或申酉戌西方一气，局无丙丁巳午烈火熔金，金气刚锐纯粹、坚硬无比，为金之一行得气专旺大格。',
+    meaning: '心性刚直果断、义字当头、临事能断、纪律严明；精通风控法制、精密制造或硬核攻坚，铁面无私、令行禁止，为制度执行与攻坚重臣。',
+    classics: [
+      {
+        source: '《渊海子平·从革格》',
+        quote: '金居申酉戌西方，巳酉丑全大吉昌；无火相刑声显赫，功名盖世佐朝纲。'
+      },
+      {
+        source: '《三命通会·论从革格》',
+        quote: '从革者，金之变革也。秋令金旺，得局纯清，武职显赫，名播殊俗。'
+      }
+    ]
+  },
+  '润下格': {
+    name: '润下格',
+    definition: '壬癸水日主生于冬月（亥子丑），地支全申子辰水局或亥子丑北方一气，无戊己辰戌丑未厚土浑浊水质，水势汪洋浩荡、奔流不息，为水之一行得气专旺格。',
+    meaning: '心性渊深智谋、胸襟如海、机变无穷、善于融通变通；擅长跨界创新、国际贸易、信息资本流通，顺势而为，达则兼济天下。',
+    classics: [
+      {
+        source: '《渊海子平·润下格》',
+        quote: '壬癸生人申子辰，北方亥子丑全真；局无戊己来相克，定是经纶济世人。'
+      },
+      {
+        source: '《三命通会·论润下格》',
+        quote: '润下者，水之润泽下行也。汪洋大度，智略过人，文章宏富，官居极品。'
+      }
+    ]
   }
 };
 
 /**
- * 智能识别命局四柱交涉所成的经典名“局”（食神制杀局、伤官合杀局等）
+ * 智能识别命局四柱交涉所成的经典名“局”（食神制杀局、伤官合杀局、阳刃驾杀局等）
+ * 严格按照通用十神生克、主宾宫位与干支生克作用网识别，坚决杜绝任何干支字硬编码！
  */
 function detectChartMajorConfigurations(chart) {
   const p = chart.pillars || [];
+  if (!p || p.length < 4) return [];
   const dayStem = p[2]?.stem || chart.dayMaster?.stem || '';
   const stems = p.map((x) => x.stem);
+  const branches = p.map((x) => x.branch);
   const tgs = stems.map((s) => getTenGod(dayStem, s));
   const rels = gzRelations(p);
+  const strength = chart.strength || {};
+  const pct = strength.percent || {};
+
+  // 提取四柱地支藏干
+  // 年柱(0): 宾位客位; 月柱(1): 宾位提纲; 日柱(2): 主位配偶宫/自坐; 时柱(3): 主位门户归宿
+  const branchMainTgs = p.map((item) => item.hidden?.[0]?.tenGod || '');
 
   const configs = [];
 
-  // 1. 食神制杀局
-  const hasShiShen = tgs.includes('食神');
-  const hasQiSha = tgs.includes('七杀');
-  if (hasShiShen && hasQiSha) {
+  // 1. 阳刃驾杀局（杀刃双全）
+  const isYangMaster = ['甲', '丙', '戊', '庚', '壬'].includes(dayStem);
+  const yangRenBranch = { 甲: '卯', 丙: '午', 戊: '午', 庚: '酉', 壬: '子' }[dayStem];
+  const hasYangRen = yangRenBranch && branches.includes(yangRenBranch);
+  const hasQiSha = tgs.includes('七杀') || branchMainTgs.includes('七杀');
+  if (isYangMaster && hasYangRen && hasQiSha) {
     configs.push({
-      name: '食神制杀局',
-      badge: '以智驭暴 · 化煞为权之局',
-      whatIs: '日主以我生之【食神】（才华智慧、专业技艺、沉着谋略），正面克制威胁自身之暴烈【七杀】（权威敌手、高压危机、制度险阻）。食神为福寿文雅之善神，七杀为凶猛刚烈之暴客；以智御暴、以柔克刚，凶神低头受制，暴烈之气化为命主掌中之威权。',
-      meaning: '性格上临危不乱、谋略深沉、擅长以四两拨千斤之智慧化解千钧一发之危机；面对外部高压竞争具有极强的战术攻坚与竞争博弈手腕，不惧艰险强敌，适合危机公关处置、尖端技术攻关、企业法务谈判、战略开拓帅才。古诀云「杀无制则伤身，杀有制则化权」，杀旺食强往往成就力压群雄、挽狂澜于既倒之功业。',
+      name: '阳刃驾杀局',
+      badge: '威权赫奕 · 将帅折冲之局',
+      weight: 100,
+      whatIs: '阳日干刚健勇烈，逢月令或坐下阳刃（帝旺极盛之神），又见天干透出【七杀】暴烈克制。以极旺之刃御暴烈之煞，宝刀配将星，杀刃双全，相互钳制、相辅相成，化暴虐为统帅群伦之赫赫威权。',
+      meaning: '性格刚猛沉雄、意志如铁、临危不乱、具非凡统帅力与抗压魄力；不惧惊涛骇浪，善于在危难破产、法制重典、军警刑宪或高难度行业竞争中冲锋陷阵、力挽狂澜，成统领千军之将帅帅才。',
       classics: [
         {
-          source: '《渊海子平·论食神制杀》',
-          quote: '食神制杀，英雄独压万人；一夫当关，万夫莫敌。食神有力，杀旺身强，位至公卿。经云：杀旺食强，日主有气，富贵双全。'
+          source: '《渊海子平·论阳刃》',
+          quote: '杀无刃不显，刃无杀不威；杀刃双全，功名显达。阳刃驾杀，兵权万里，威镇边疆。'
         },
         {
-          source: '《子平真诠·论食神》',
-          quote: '食神制杀，食神为主，七杀为用。杀旺食强，日元有气，贵不可言。最忌偏印夺食以破制神，又忌财星通关以党恶煞。'
+          source: '《子平真诠·论阳刃》',
+          quote: '阳刃者，旺极之神，必藉七杀以御之。杀旺刃旺，相制有情，大贵之格也。'
         },
         {
-          source: '《三命通会·论食神》',
-          quote: '食神带杀，英雄拔萃之流。杀本克身，以食神制之，使杀不敢为害而反为我用，乃化煞为权之神妙也。'
+          source: '《三命通会·论杀刃》',
+          quote: '刃为兵器，杀为将帅。有杀无刃不威，有刃无杀不立。杀刃两停，位登台阁。'
         }
       ]
     });
@@ -387,17 +554,18 @@ function detectChartMajorConfigurations(chart) {
 
   // 2. 伤官合杀局
   const shangHeSha = (rels['天干五合'] || []).some((c) => {
-    const s1 = c.pair[1];
-    const s2 = c.pair[6] || c.pair.slice(-1);
-    const tg1 = getTenGod(dayStem, s1);
-    const tg2 = getTenGod(dayStem, s2);
+    const pairStr = c.pair || '';
+    const m = pairStr.match(/([年月日時大运])([甲乙丙丁戊己庚辛壬癸])\s*—\s*([年月日時大运])([甲乙丙丁戊己庚辛壬癸])/);
+    if (!m) return false;
+    const tg1 = getTenGod(dayStem, m[2]);
+    const tg2 = getTenGod(dayStem, m[4]);
     return (tg1 === '伤官' && tg2 === '七杀') || (tg1 === '七杀' && tg2 === '伤官');
   });
-
   if (shangHeSha) {
     configs.push({
       name: '伤官合杀局',
       badge: '以柔克刚 · 巧智取权之局',
+      weight: 95,
       whatIs: '日主之【伤官】（才华英华、机谋应变、公关交涉）与外部【七杀】（强权权威、竞争对手、制度险阻）在天干作五合。不同于食神之刚猛硬制，伤官以情合之、以计诱之，去杀之暴烈、去伤之傲气，合干戈为玉帛，合煞为权。',
       meaning: '极具公关斡旋与资源统合智慧，善于借力打力、化敌为友；不走寻常路，能把最大的对手转化为最强的合伙盟友，在复杂博弈、外交磋商、商业并购与制度夹缝中游刃有余，属于典型的“巧智取权、化煞为柄”之上乘大格局。',
       classics: [
@@ -417,16 +585,71 @@ function detectChartMajorConfigurations(chart) {
     });
   }
 
-  // 3. 伤官合制官星局 / 伤官制官
-  const shangZhiGuan = (rels['地支六合'] || []).some((c) => {
-    return c.pair.includes('巳') && c.pair.includes('申') && dayStem === '乙';
+  // 3. 食神制杀局
+  const hasShiShen = tgs.includes('食神');
+  const hasQiShaStem = tgs.includes('七杀');
+  const shiZhiShaKe = (rels['天干相克'] || []).some((c) => {
+    const pairStr = c.pair || '';
+    const m = pairStr.match(/([年月日時大运])([甲乙丙丁戊己庚辛壬癸])\s*克\s*([年月日時大运])([甲乙丙丁戊己庚辛壬癸])/);
+    if (!m) return false;
+    const tg1 = getTenGod(dayStem, m[2]);
+    const tg2 = getTenGod(dayStem, m[4]);
+    return tg1 === '食神' && tg2 === '七杀';
   });
-  if (shangZhiGuan) {
+  if ((hasShiShen && hasQiShaStem) || shiZhiShaKe) {
+    configs.push({
+      name: '食神制杀局',
+      badge: '以智驭暴 · 化煞为权之局',
+      weight: 90,
+      whatIs: '日主以我生之【食神】（才华智慧、专业技艺、沉着谋略），正面克制威胁自身之暴烈【七杀】（权威敌手、高压危机、制度险阻）。食神为福寿文雅之善神，七杀为凶猛刚烈之暴客；以智御暴、以柔克刚，凶神低头受制，暴烈之气化为命主掌中之威权。',
+      meaning: '性格上临危不乱、谋略深沉、擅长以四两拨千斤之智慧化解千钧一发之危机；面对外部高压竞争具有极强的战术攻坚与竞争博弈手腕，不惧艰险强敌，适合危机公关处置、尖端技术攻关、企业法务谈判、战略开拓帅才。古诀云「杀无制则伤身，杀有制则化权」，杀旺食强往往成就力压群雄、挽狂澜于既倒之功业。',
+      classics: [
+        {
+          source: '《渊海子平·论食神制杀》',
+          quote: '食神制杀，英雄独压万人；一夫当关，万夫莫敌。食神有力，杀旺身强，位至公卿。经云：杀旺食强，日主有气，富贵双全。'
+        },
+        {
+          source: '《子平真诠·论食神》',
+          quote: '食神制杀，食神为主，七杀为用。杀旺食强，日元有气，贵不可言。最忌偏印夺食以破制神，又忌财星通关以党恶煞。'
+        },
+        {
+          source: '《三命通会·论食神》',
+          quote: '食神带杀，英雄拔萃之流。杀本克身，以食神制之，使杀不敢为害而反为我用，乃化煞为权之神妙也。'
+        }
+      ]
+    });
+  }
+
+  // 4. 伤官合制官星局（制官得官）
+  const hexCombines = rels['地支六合'] || [];
+  const xingList = rels['地支相刑'] || [];
+  const poList = rels['地支相破'] || [];
+
+  const checkShangZhiGuan = () => {
+    const hostIndices = [2, 3];
+    for (const hIdx of hostIndices) {
+      const hostBranch = p[hIdx].branch;
+      const monthBranch = p[1].branch;
+      const hostHasShang = (p[hIdx].hidden || []).some((h) => h.tenGod === '伤官');
+      const monthHasGuan = (p[1].hidden || []).some((h) => h.tenGod === '正官');
+
+      if (hostHasShang && monthHasGuan) {
+        const isHex = hexCombines.some((c) => c.pair.includes(hostBranch) && c.pair.includes(monthBranch));
+        const isXing = xingList.some((c) => (c.members || '').includes(hostBranch + monthBranch) || (c.members || '').includes(monthBranch + hostBranch));
+        const isPo = poList.some((c) => c.pair.includes(hostBranch) && c.pair.includes(monthBranch));
+        if (isHex || isXing || isPo) return true;
+      }
+    }
+    return false;
+  };
+
+  if (checkShangZhiGuan()) {
     configs.push({
       name: '伤官合制官星局（制官得官）',
       badge: '以技御法 · 夺权立威之局',
-      whatIs: '主位日支【巳】火伤官与月令提纲【申】金正官作六合兼相刑相破。在盲派与子平象法中，伤官旺盛直接合制月令官星，火金相炼，伤官制官，把公家体制之权力资产合入主位自身。',
-      meaning: '具有强烈的反权威精神与高维度的专业掌控力，不屑于平庸服从体制，而是以卓越的硬核技能与业务实操凌驾于规矩之上，在体制或市场中赢得高度独立的自主话语权。',
+      weight: 88,
+      whatIs: '主位（日支配偶宫或时支门户）之【伤官】旺相，直接合制、刑制月令提纲宾位之【正官】。在盲派命理与子平象法中，伤官为自身卓越技艺与破坏性开创力，月令官星为体制权力与公共资产；主位伤官合制月令官星，火金相炼（或木土相制、水火相济），成“制官得官、合官得权”之功。',
+      meaning: '具有强烈的反权威精神与高维度的专业掌控力；不甘于循规蹈矩接受官僚管束，而是凭借自身不可替代的硬核业务才能与技术壁垒，凌驾于条条框框之上，直接将体制内平台、公共牌照与行业资源揽入自身麾下，功大层次高。',
       classics: [
         {
           source: '《盲派命理·做功篇》',
@@ -435,62 +658,300 @@ function detectChartMajorConfigurations(chart) {
         {
           source: '《滴天髓·去留论》',
           quote: '去官留杀，格清自贵；伤官有力，反克为权。'
+        },
+        {
+          source: '《三命通会·论伤官》',
+          quote: '伤官见官，若伤官居主位而合制月官，反为奇格，以其有制伏之功也。'
         }
       ]
     });
   }
 
-  // 4. 杀印相生局
-  const hasYin = tgs.includes('正印') || tgs.includes('偏印');
-  if (hasQiSha && hasYin && !configs.some((x) => x.name.includes('杀'))) {
+  // 5. 杀印相生局
+  const hasYin = tgs.includes('正印') || tgs.includes('偏印') || branchMainTgs.includes('正印') || branchMainTgs.includes('偏印');
+  if (hasQiSha && hasYin && !configs.some((x) => x.name === '阳刃驾杀局')) {
     configs.push({
       name: '杀印相生局',
       badge: '化煞为印 · 贵德自持之局',
-      whatIs: '日主以【印星】引通化解【七杀】之暴烈之气，七杀生印、印生身，转凶为吉，化煞为权。',
-      meaning: '性格沉稳大气、重德行声誉、善于以文化学术、胸襟器量与卓越智慧化解敌意与危机，文武兼资、名利双全。',
+      weight: 85,
+      whatIs: '日主以【印星】（正印或偏印）引通化解【七杀】之暴烈克伐之气。杀生印、印生身，转凶煞为祥和瑞气，不制而化，以仁德学问与正统授权涵养威权，化敌为友。',
+      meaning: '性格沉稳大气、重德行声誉、深孚众望；善于以博大学识、崇高胸襟与卓越的制度合法性化解外部敌意与险阻挑战，文武兼资、名利双全，居官显赫而无凶祸。',
       classics: [
         {
           source: '《子平真诠·论偏官》',
-          quote: '杀透印生，杀化为印，大贵之格。杀旺印旺，不贵即富。'
+          quote: '杀透印生，杀化为印，大贵之格。杀旺印旺，不贵即富。印绶引化，杀不伤身而为福。'
+        },
+        {
+          source: '《渊海子平·论杀印》',
+          quote: '七杀化印，早登科甲；杀星有制印星随，定跨金鞍步凤池。'
+        },
+        {
+          source: '《三命通会·论印绶》',
+          quote: '杀生印，印生身，富贵双全之造。君子居之，忠诚正直，名播四方。'
         }
       ]
     });
   }
 
-  // 5. 伤官佩印局
-  if (tgs.includes('伤官') && hasYin && !shangHeSha) {
+  // 6. 官印相生局
+  const hasGuan = tgs.includes('正官') || branchMainTgs.includes('正官');
+  const hasZhengYin = tgs.includes('正印') || branchMainTgs.includes('正印');
+  if (hasGuan && hasZhengYin && !tgs.includes('七杀')) {
+    configs.push({
+      name: '官印相生局',
+      badge: '正气纯粹 · 显贵清华之局',
+      weight: 82,
+      whatIs: '天地正气之【正官】与慈爱生身之【正印】相辅相成。官能生印、印能护官，官印两清，清气灌顶，无刑冲破害侵蚀，乃子平正格中最稳固端方之上乘大格局。',
+      meaning: '性格端方严谨、品行高洁、恪守法度、深具公信力与体制归属感；具备天然的管理才能与学者风范，在主流组织、大型企事业单位或政府平台中按部就班、青云直上。',
+      classics: [
+        {
+          source: '《子平真诠·论正官》',
+          quote: '正官配印，官印双清，最为上格。印以护官，官以生印，身得所附，贵不可言。'
+        },
+        {
+          source: '《渊海子平·论正官》',
+          quote: '正官正印，居官显赫，名达天廷。为官清廉，受人钦仰。'
+        },
+        {
+          source: '《三命通会·论官印》',
+          quote: '夫官者管也，印者信也。官印相生，德才兼备，国之栋梁。'
+        }
+      ]
+    });
+  }
+
+  // 7. 伤官佩印局
+  const hasShang = tgs.includes('伤官');
+  const hasCai = tgs.includes('正财') || tgs.includes('偏财');
+  if (hasShang && hasYin && !shangHeSha) {
     configs.push({
       name: '伤官佩印局',
       badge: '才华敛抑 · 清贵文章之局',
-      whatIs: '伤官才华泄秀太过，赖印绶制伤护身、涵养心性。聪明绝顶而行有所止，才华与德行相辅相成。',
-      meaning: '才高八斗、治学严谨、兼具敏锐洞察与沉着理性，善于在学术、战略规划、文化创意领域取得崇高成就。',
+      weight: 80,
+      whatIs: '伤官英华发露，聪明绝顶而行事任性傲物，泄日元之气太过；赖【正印/偏印】贴身生身制伤，如烈马得辔、宝剑入鞘。才华受到德行与理性的淬炼，敛抑浮躁，文质彬彬。',
+      meaning: '才高八斗、治学严谨、兼具敏锐洞察与沉着理性；善于在尖端科研、学术著述、文化艺术、高级战略规划等领域取得崇高成就，才华名扬海内而深具学者清贵之风。',
       classics: [
         {
           source: '《子平真诠·论伤官》',
-          quote: '伤官佩印，贵不可言。印绶以制伤，官星以发福，文华冠世。'
+          quote: '伤官佩印，贵不可言。印绶以制伤，官星以发福。秀气尽发而行有所止，文学冠世。'
+        },
+        {
+          source: '《滴天髓·论伤官》',
+          quote: '伤官用印宜去财，伤官配印，文章盖世，儒雅清正。'
+        },
+        {
+          source: '《渊海子平·伤官》',
+          quote: '伤官佩印，文秀之极，功名远播，为人端肃有守。'
         }
       ]
     });
   }
 
-  // 6. 食伤生财局
-  const hasCai = tgs.includes('正财') || tgs.includes('偏财');
-  if ((hasShiShen || tgs.includes('伤官')) && hasCai && configs.length === 0) {
+  // 8. 食伤生财局
+  if ((hasShiShen || hasShang) && hasCai) {
     configs.push({
       name: '食伤生财局',
       badge: '财气通门 · 技艺变现之局',
-      whatIs: '日主以食伤才智技术作为源泉，顺生财星，构筑源源不断之盈利闭环。',
-      meaning: '商业洞察敏锐、极具实战变现才能，凭借核心手艺、产品或模式打造富甲一方的财富帝国。',
+      weight: 75,
+      whatIs: '日主以食神伤官之聪明才智、专业技艺与创新成果为源泉，顺势生助正偏财星。食伤为水源，财星为深潭，水流通畅，形成源源不断之盈利闭环，即古人所谓「财气通门户」。',
+      meaning: '商业洞察极其灵敏、极具实战变现才能与产品思维；凭借核心技术、自营品牌或商业模式打通财富链路，善于调动社会资源创造增量价值，白手起家成就丰厚家业。',
       classics: [
         {
           source: '《子平真诠·论财》',
-          quote: '食伤生财，财气通门户，日主健旺，巨富之造。'
+          quote: '食伤生财，财气通门户，日主健旺，巨富之造。财由技出，源远流长。'
+        },
+        {
+          source: '《滴天髓·论财》',
+          quote: '何知其人富？财气通门户。食伤生财，富自天来。'
+        },
+        {
+          source: '《渊海子平·论食神》',
+          quote: '食神生旺最喜生财，财旺生官，衣食丰隆，福泽悠长。'
         }
       ]
     });
   }
 
-  return configs;
+  // 9. 财旺生官局
+  if (hasCai && hasGuan && !tgs.includes('伤官')) {
+    configs.push({
+      name: '财旺生官局',
+      badge: '资通权门 · 富贵双全之局',
+      weight: 72,
+      whatIs: '财为官之源泉根基，财旺自然生官。财星充沛以奠定现实基业，正官尊贵以光大门楣名望；以财富资助名望，以名望守护资产，富贵相济，阶层跃迁之坦途。',
+      meaning: '兼具敏锐的商业头脑与正统的组织影响力；擅长以资本与资源撬动更高的平台特许与社会声望，擅长合规治理与政商合作，实现义利双收之宏伟格局。',
+      classics: [
+        {
+          source: '《子平真诠·论正官》',
+          quote: '财旺生官，富而且贵。财以生官，官以护财，两相配合，最为上乘。'
+        },
+        {
+          source: '《渊海子平·论财官》',
+          quote: '财生官者，得天独厚，官尊财旺，名利两全。'
+        },
+        {
+          source: '《三命通会·论财生官》',
+          quote: '财者养命之源，官者立身之本。财旺生官，君子利见大人，名垂青史。'
+        }
+      ]
+    });
+  }
+
+  // 10. 真官真禄局（禄官双全）
+  const luBranch = { 甲: '寅', 乙: '卯', 丙: '巳', 丁: '午', 戊: '巳', 己: '午', 庚: '申', 辛: '酉', 壬: '亥', 癸: '子' }[dayStem];
+  const hasLu = luBranch && branches.includes(luBranch);
+  if (hasLu && hasGuan && !tgs.includes('伤官')) {
+    configs.push({
+      name: '真官真禄局',
+      badge: '基石稳固 · 禄位崇隆之局',
+      weight: 70,
+      whatIs: '日主地支得日干之正禄（临官本气），气血充足、根本坚固；天干透出正官，清纯端正。身旺能胜官，官清能护禄，禄官相得益彰，基业极为扎实。',
+      meaning: '性格脚踏实地、极富稳健担当与实干本色；既有深厚自立自强的专业根基，又能承载国家体制或大型集团之公权信任，步步登高，福寿绵长。',
+      classics: [
+        {
+          source: '《渊海子平·论建禄》',
+          quote: '建禄生提月，财官喜透天；不宜身再旺，唯喜茂财源。禄官双全，显赫名门。'
+        },
+        {
+          source: '《三命通会·论真官真禄》',
+          quote: '真官真禄，福寿齐备。日坐正禄，天透纯官，无冲克者，定为廊庙之器。'
+        }
+      ]
+    });
+  }
+
+  // 11. 木火通明局
+  const isWoodMaster = ['甲', '乙'].includes(dayStem);
+  const woodFirePct = (pct['木'] || 0) + (pct['火'] || 0);
+  const metalPct = pct['金'] || 0;
+  if (isWoodMaster && woodFirePct >= 50 && metalPct <= 15 && !tgs.includes('七杀') && !tgs.includes('正官')) {
+    configs.push({
+      name: '木火通明局',
+      badge: '文明焕发 · 锦绣文章之局',
+      weight: 68,
+      whatIs: '甲乙木生于春夏之令，得火以泄秀发荣。木为春之仁德，火为夏之文明；木火相生，如草木逢春华发，如薪助火，满盘文明清秀之气，绝无金水浊局。',
+      meaning: '才华横溢、思想旷达、富有浪漫主义与人文关怀；在文化传播、理论建构、艺术创作或科技布道领域具有非凡的感染力与美誉度，文章盖世、声誉卓著。',
+      classics: [
+        {
+          source: '《滴天髓·木火通明》',
+          quote: '木火通明，其象最美。木火交融，文明之象，主人文秀多才，功名自显。'
+        },
+        {
+          source: '《渊海子平·论木火》',
+          quote: '木得火以发荣，火得木而益明。木火通明，文章冠世，天下景仰。'
+        }
+      ]
+    });
+  }
+
+  // 12. 金白水清局
+  const isMetalMaster = ['庚', '辛'].includes(dayStem);
+  const metalWaterPct = (pct['金'] || 0) + (pct['水'] || 0);
+  const earthPct = pct['土'] || 0;
+  if (isMetalMaster && metalWaterPct >= 50 && earthPct <= 15 && !tgs.includes('七杀') && !tgs.includes('正官')) {
+    configs.push({
+      name: '金白水清局',
+      badge: '澄澈灵透 · 旷世神明之局',
+      weight: 68,
+      whatIs: '庚辛金生于秋冬清寒之令，见壬癸水秀气引通，无厚土混淆水质，无烈火焦烁金性。金主义而坚毅，水主智而灵透；金水澄澈汪洋，冰清玉洁。',
+      meaning: '心思极其细腻缜密、智商超群、逻辑思维极为严谨；擅长精密算法、数理模型、司法逻辑与高阶战略研判，才智超迈绝伦，人格风清骨峻。',
+      classics: [
+        {
+          source: '《滴天髓·金白水清》',
+          quote: '金白水清，最忌土混。澄澈汪洋，主人神采奕奕，智谋深广，科甲连登。'
+        },
+        {
+          source: '《渊海子平·金水清奇》',
+          quote: '金水相涵，秀气非凡。金白水清，文坛领袖，福泽清流。'
+        }
+      ]
+    });
+  }
+
+  // 13. 贪合忘克局
+  const isTanHe = (rels['天干五合'] || []).some((c) => {
+    const pairStr = c.pair || '';
+    const m = pairStr.match(/([年月日時大运])([甲乙丙丁戊己庚辛壬癸])\s*—\s*([年月日時大运])([甲乙丙丁戊己庚辛壬癸])/);
+    if (!m) return false;
+    const tg1 = getTenGod(dayStem, m[2]);
+    const tg2 = getTenGod(dayStem, m[4]);
+    return ['七杀', '伤官', '劫财'].includes(tg1) || ['七杀', '伤官', '劫财'].includes(tg2);
+  });
+  if (isTanHe && !shangHeSha) {
+    configs.push({
+      name: '贪合忘克局',
+      badge: '合化干戈 · 祥和释难之局',
+      weight: 65,
+      whatIs: '局中本有金木交战、水火相射之生克烈性，因天干地支相合牵绊，凶暴克伐之神留恋合情而忘却克伐。五行化戾气为祥和，解杀伐于谈笑之间。',
+      meaning: '极具柔韧圆融的人际智慧与危机公关手腕；善于通过利益捆绑、情感沟通与战略结盟化解尖锐对立，化干戈为玉帛，在复杂局势中游刃有余。',
+      classics: [
+        {
+          source: '《渊海子平·论合化》',
+          quote: '贪合忘克，凶不为凶；天干相合，恩怨相消，祥和之象也。'
+        },
+        {
+          source: '《子平真诠·论救应》',
+          quote: '逢克得合以解之，两得其和，虽有煞气，亦化作春风。'
+        }
+      ]
+    });
+  }
+
+  // 14. 枭神夺食局
+  const hasPianYin = tgs.includes('偏印');
+  const xiaoDuoShi = (rels['天干相克'] || []).some((c) => {
+    const pairStr = c.pair || '';
+    const m = pairStr.match(/([年月日時大运])([甲乙丙丁戊己庚辛壬癸])\s*克\s*([年月日時大运])([甲乙丙丁戊己庚辛壬癸])/);
+    if (!m) return false;
+    const tg1 = getTenGod(dayStem, m[2]);
+    const tg2 = getTenGod(dayStem, m[4]);
+    return tg1 === '偏印' && tg2 === '食神';
+  });
+  if (hasPianYin && hasShiShen && xiaoDuoShi && !hasCai) {
+    configs.push({
+      name: '枭神夺食局',
+      badge: '警示之象 · 才华受抑与内耗之局',
+      weight: 60,
+      whatIs: '食神为天厨福寿之神，偏印（枭神）同透紧贴相克，局无财星制枭护食。枭神夺食，福禄受阻，才华发露之际易遭突发打压或心理内耗。',
+      meaning: '心思精微敏感、多思多虑，但偶有疑神疑鬼、临门退缩之弊；在事业推进中须防劳动成果被人截胡或合同节外生枝，宜注重心理调适与契约防线。',
+      classics: [
+        {
+          source: '《子平真诠·论偏印》',
+          quote: '偏印本非凶神，见食神则为枭，夺食之祸，不可不防。最喜见财制枭以全食神。'
+        },
+        {
+          source: '《三命通会·论倒食》',
+          quote: '倒食者，枭神也。夺我食禄，损我福寿。身旺逢之犹可，身弱逢之大忌。'
+        }
+      ]
+    });
+  }
+
+  // 15. 比劫夺财局
+  const biJieCount = tgs.filter((tg) => tg === '比肩' || tg === '劫财').length;
+  if (hasCai && biJieCount >= 2 && !hasGuan && !hasQiSha) {
+    configs.push({
+      name: '比劫夺财局',
+      badge: '警示之象 · 群贤竞逐与分润之局',
+      weight: 60,
+      whatIs: '财为养命之源，比肩劫财为同侪竞逐之客。财星孤透天干，而比劫结党成群，又无官杀严加看护，财星被分夺剥蚀，财源易生争夺分润。',
+      meaning: '为人热忱仗义、慷慨好施，但在商业合伙与资产管理中边界模糊；必须建立健全现代合伙契约机制，严防碍于情面违规担保借贷，以制度守护资产安全。',
+      classics: [
+        {
+          source: '《子平真诠·论财》',
+          quote: '财逢比劫，分夺之患；必须透官以制劫，或透食以通关，方能保其财利。'
+        },
+        {
+          source: '《渊海子平·比劫争财》',
+          quote: '比劫重重透财星，同侪竞逐不安宁。若无官杀来裁割，破耗资财叹薄冰。'
+        }
+      ]
+    });
+  }
+
+  // 排序与筛选：按重要性权重排序，取前 3 个最具代表性的大局
+  configs.sort((a, b) => b.weight - a.weight);
+  return configs.slice(0, 3);
 }
 
 /**
@@ -1439,7 +1900,11 @@ function renderSchoolSection(chart) {
   lines.push(`  * **喜忌判定**：喜相神透干护格（如食伤制杀、印绶护身），喜去留清纯；忌刑冲破害动摇月令提纲，忌官杀重战破坏纯粹性。`);
 
   // 格局专论
-  const gKnowledge = GEJU_KNOWLEDGE[gejuName] || GEJU_KNOWLEDGE['正官格'];
+  let gKnowledge = GEJU_KNOWLEDGE[gejuName];
+  if (!gKnowledge) {
+    const foundKey = Object.keys(GEJU_KNOWLEDGE).find((k) => gejuName.includes(k.replace('格', '')) || k.includes(gejuName.replace('格', '')));
+    gKnowledge = foundKey ? GEJU_KNOWLEDGE[foundKey] : (GEJU_KNOWLEDGE['正官格'] || Object.values(GEJU_KNOWLEDGE)[0]);
+  }
   lines.push('\n* **【深度专论一：本命所立格局释义与古籍考辨】**：');
   lines.push(`  * **格局释名与立格原理**：${gKnowledge.definition}`);
   lines.push(`  * **代表什么意思与人生心性**：${gKnowledge.meaning}`);
