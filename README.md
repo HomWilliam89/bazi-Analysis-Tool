@@ -31,22 +31,60 @@
 
 ---
 
-## 💻 快速使用（命令行 CLI 总装交付）
+## 💻 安装与使用指南
 
-本工具提供原生零依赖的命令行交互工具（`命令行/bazi.mjs`），支持生辰与四柱双输入模式，并可一键导出万字级全景决策咨询报告：
+本项目既支持作为 **DeepSeek Harness (dsh) 桌面版** 的智能 Agent 技能（Skill）一句话唤起调用，也支持作为**纯原生独立命令行 CLI** 直接运行。
+
+### 方式一：搭配 DeepSeek Harness (dsh) 桌面版使用（推荐）
+
+> **DeepSeek Harness (dsh) 现已推出桌面版客户端**，内置原生 Agent 智能体运行时，支持桌面对话与技能无缝调度。
+
+#### 1. 下载并安装 dsh 桌面版
+- **官方下载地址**：[DeepSeek Harness Desktop (Win-x64)](https://download.deepseek.com/dsh-desk/feeds/win-x64/)
+- **DeepSeek 官网**：[https://www.deepseek.com](https://www.deepseek.com)
+
+#### 2. 克隆本仓库到本地
+```bash
+git clone https://github.com/HomWilliam89/bazi-Analysis-Tool.git
+cd bazi-Analysis-Tool
+```
+
+#### 3. 一键分发安装技能到 dsh 技能库
+本项目内置了自动化镜像分发脚本，执行以下命令，即可将本项目的 19 项核心资产单向同步安装到 `~/.dsh/skills/bazi-myskill`：
+```bash
+# 执行真实分发复制并自动核验 SHA256 完整性
+node 工具/sync-skill.mjs --apply
+```
+*(注：执行 `node 工具/sync-skill.mjs --check` 可只读校验正本与技能库文件是否一致。)*
+
+#### 4. 在 dsh 桌面端直接对话调用
+启动 **DeepSeek Harness 桌面版**，在对话输入框中直接向 AI 发送自然语言指令：
+- *“帮我分析八字：1990-05-20 14:30 男”*
+- *“四柱排盘：庚午 辛巳 乙酉 癸未，请给出完整三段式深度命理分析”*
+
+AI 将自动识别意图并唤起 `bazi-analysis` 技能，通过内部命令行流水线为您生成万字级三段式全景解读报告！
+
+---
+
+### 方式二：纯原生独立命令行 CLI 运行
+
+无需依赖任何外部 npm 包（Node.js >= 18 原生零依赖），直接在终端执行：
 
 ```bash
 # 1. 公历生辰模式（支持指定性别）
 node 命令行/bazi.mjs --solar "1990-05-20 14:30" --gender 男
 
-# 2. 四柱干支模式
+# 2. 四柱干支模式（直接传入四柱）
 node 命令行/bazi.mjs 庚午 辛巳 乙酉 癸未
 
 # 3. 导出万字级全景 Markdown 决策咨询报告
 node 命令行/bazi.mjs 庚午 辛巳 乙酉 癸未 -o 命理解读报告.md
 
-# 4. 控制台查看完整报告
+# 4. 控制台直接查看完整报告
 node 命令行/bazi.mjs 庚午 辛巳 乙酉 癸未 --full
+
+# 5. 输出纯 JSON 原始数据
+node 命令行/bazi.mjs 庚午 辛巳 乙酉 癸未 -f json
 ```
 
 

@@ -44,6 +44,19 @@ description: 八字全景命理分析与决策咨询工具。给定公历生辰�
 4. **第四段：免责声明与科学认知导引**
    - 科学唯物认知导引、法律商业决策边界、自强不息人本哲学。
 
+## 🚀 技能安装与集成（支持 DeepSeek Harness 桌面版）
+
+本技能支持在 **DeepSeek Harness (dsh) 桌面版** 环境中作为 Agent Skill 插件原生运行：
+
+1. **下载 dsh 桌面版**：[DeepSeek Harness Desktop (Win-x64)](https://download.deepseek.com/dsh-desk/feeds/win-x64/)（官网：[https://www.deepseek.com](https://www.deepseek.com)）；
+2. **一键分发安装**：在仓库根目录执行镜像分发脚本，自动将技能安装至 `~/.dsh/skills/bazi-myskill`：
+   ```bash
+   node 工具/sync-skill.mjs --apply
+   ```
+3. **对话自然语言唤起**：在 DeepSeek Harness 桌面端直接输入：
+   - *“帮我分析八字：1990-05-20 14:30 男”*
+   - *“四柱排盘：庚午 辛巳 乙酉 癸未，请给出完整三段式深度命理分析”*
+
 ---
 
 ## 💻 驱动命令与调用指引
