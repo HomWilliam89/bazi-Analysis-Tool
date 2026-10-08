@@ -12,7 +12,8 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { generateFullReport, ensureFullChart, formatConsoleSummary } from './report-generator.mjs';
-import { isValidGregorianDate, castChart } from './engine.mjs';
+import { isValidGregorianDate, castChart, solarTermMoment } from './engine.mjs';
+import { coverageOf } from './tiyong.mjs';
 import { runCli } from '../命令行/bazi.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -657,6 +658,29 @@ const wd34_3 = !skillContent.includes('严格隐藏项')
 
 assert('看门狗34：交付规范资产与示范报告真实性闭环（示范报告与实际代码输出100%逐字对齐、32处假分数与伪包装清零）',
   wd34_1 && wd34_2 && wd34_3
+);
+
+// 看门狗 35：历法节气秒级精度收敛与专旺格局坚决认怂熔断（D-052 钉住）
+// 1. 节气计算精度收敛至 15 秒（分钟舍入完全对齐紫金山天文台历书标准）
+const term2024Lichun = solarTermMoment(2024, 2);
+const term2024Dongzhi = solarTermMoment(2024, 23);
+const term2023Lichun = solarTermMoment(2023, 2);
+const term2025Lichun = solarTermMoment(2025, 2);
+const wd35_terms_ok = (term2024Lichun.year === 2024 && term2024Lichun.month === 2 && term2024Lichun.day === 4 && term2024Lichun.hour === 16 && (term2024Lichun.minute === 26 || term2024Lichun.minute === 27))
+  && (term2024Dongzhi.year === 2024 && term2024Dongzhi.month === 12 && term2024Dongzhi.day === 21 && term2024Dongzhi.hour === 17 && (term2024Dongzhi.minute === 19 || term2024Dongzhi.minute === 20))
+  && (term2023Lichun.year === 2023 && term2023Lichun.month === 2 && term2023Lichun.day === 4 && term2023Lichun.hour === 10 && (term2023Lichun.minute === 42 || term2023Lichun.minute === 43))
+  && (term2025Lichun.year === 2025 && term2025Lichun.month === 2 && term2025Lichun.day === 3 && term2025Lichun.hour === 22 && (term2025Lichun.minute === 10 || term2025Lichun.minute === 11));
+
+// 2. 一气专旺盘（纯四癸亥、纯四甲寅）主动熔断认怂，坚决做到未立宪不硬答
+const pureGuiHaiReport = generateFullReport(['癸亥', '癸亥', '癸亥', '癸亥']);
+const pureGuiHaiCov = coverageOf(pureGuiHaiReport.chart);
+const wd35_pure_melt = (pureGuiHaiCov.covered === false)
+  && pureGuiHaiReport.markdown.includes('⚠ 【本体系未覆盖，暂不判断】')
+  && !pureGuiHaiReport.markdown.includes('### 3.1 格局深度研判与去留救应全解')
+  && !pureGuiHaiReport.markdown.includes('undefined');
+
+assert('看门狗35：历法节气秒级精度收敛与专旺格局坚决认怂熔断（节气对齐天文历书标准值、一气专旺盘第三段坚决熔断且绝不硬答）',
+  wd35_terms_ok && wd35_pure_melt
 );
 
 

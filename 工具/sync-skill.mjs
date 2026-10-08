@@ -41,6 +41,7 @@ export const SYNC_MANIFEST = [
 
   // 核心执行与推演大脑
   { src: '核心/engine.mjs', dest: '核心/engine.mjs' },
+  { src: '核心/astronomy.mjs', dest: '核心/astronomy.mjs' },
   { src: '核心/tiyong.mjs', dest: '核心/tiyong.mjs' },
   { src: '核心/school-matcher.mjs', dest: '核心/school-matcher.mjs' },
   { src: '核心/report-generator.mjs', dest: '核心/report-generator.mjs' },

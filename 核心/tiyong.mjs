@@ -3356,7 +3356,7 @@ export function coverageOf(chart, opts = {}) {
     };
   }
 
-  // 2. 极端死结相战
+  // 2. 极端死结相战（P-018 两神极战均停且无通关之神）
   const D = dayMasterOf(chart).element;
   const percent = elementStrength(chart.pillars, branchAt(chart.pillars[1]), kingOf(chart)).percent;
   const 旺序 = [...ELEMENTS].sort((a, b) => percent[b] - percent[a]);
@@ -3376,6 +3376,30 @@ export function coverageOf(chart, opts = {}) {
         依据: '《AGENTS.md》§0「乙体系未覆盖的局面 ⇒ 只并陈，明写『本体系未覆盖，暂不判断』，不硬答」；《规矩/宪法.md》',
       };
     }
+  }
+
+  // 3. 一气专旺格局（未立宪外格主动熔断）
+  // 乙体系《体用路线法》现行判据（P-001～P-021）仅覆盖正格与从儿格（P-016），
+  // 未对一气专旺格局（曲直/炎上/稼穑/从革/润下/纯四柱同干支）立宪。
+  // 当局中同党占绝对统治地位（>= 80%）且天干无任何异党（食伤/财星/官杀）透出流通引导，
+  // 或四柱天元一气纯同党干支时，正格体用路线无法确立用神，必须主动熔断认怂，坚决不硬答。
+  const 印五行 = 生我者(D);
+  const 同党比印占比 = (percent[D] || 0) + (percent[印五行] || 0);
+  const 天干异党透出 = chart.pillars.some((p) => {
+    const s = p.stem || STEMS[p.stemIndex];
+    const elem = ELEMENTS[STEM_ELEMENT[STEMS.indexOf(s)]];
+    return elem !== D && elem !== 印五行;
+  });
+  const 四柱纯同一同党干支 = chart.pillars.every((p) => (p.gz === chart.pillars[0].gz));
+
+  if ((同党比印占比 >= 80 && !天干异党透出) || (四柱纯同一同党干支 && !天干异党透出)) {
+    return {
+      covered: false,
+      判定: '本体系未覆盖，暂不判断',
+      结论: '本体系未覆盖，暂不判断',
+      原因: `命局属于一气专旺格局（同党比印占 ${同党比印占比.toFixed(1)}% 且天干无食伤财官流通引导），乙体系《体用路线法》现行判据（P-001～P-021）仅覆盖正格与从儿格，未对专旺格局立宪，依据宪法铁律「未覆盖不硬答」，本体系暂不作价值推演`,
+      依据: '《AGENTS.md》§0「乙体系未覆盖的局面 ⇒ 只并陈，明写『本体系未覆盖，暂不判断』，不硬答」；《规矩/宪法.md》',
+    };
   }
 
   return {
