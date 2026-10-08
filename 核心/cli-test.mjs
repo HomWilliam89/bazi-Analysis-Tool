@@ -564,6 +564,29 @@ assert('看门狗30：喜神与病神/忌神全局互斥铁律（喜神集绝对
   watchdog30Passed
 );
 
+// 看门狗 31：天罗地网神煞原典名实与成对相并铁律（D-049 钉住）
+// 1. 戌亥俱全（如 戊戌 癸亥 甲子 丙寅）→ 必须命中「天罗」，绝对不得误报「地网」
+// 2. 辰巳俱全（如 丙辰 癸巳 庚申 辛巳）→ 必须命中「地网」，绝对不得误报「天罗」
+// 3. 辰/巳/戌/亥单支孤露不成对（如 甲辰 丙寅 戊午 庚申、庚戌 戊子 壬午 辛丑）→ 绝对不得虚报「天罗」或「地网」
+const cTianLuo = ensureFullChart(['戊戌', '癸亥', '甲子', '丙寅']);
+const cDiWang = ensureFullChart(['丙辰', '癸巳', '庚申', '辛巳']);
+const cSingleChen = ensureFullChart(['甲辰', '丙寅', '戊午', '庚申']);
+const cSingleXu = ensureFullChart(['庚戌', '戊子', '壬午', '辛丑']);
+
+const tianLuoNames = cTianLuo.shensha.map((s) => s.name);
+const diWangNames = cDiWang.shensha.map((s) => s.name);
+const singleChenNames = cSingleChen.shensha.map((s) => s.name);
+const singleXuNames = cSingleXu.shensha.map((s) => s.name);
+
+const wd31_1 = tianLuoNames.includes('天罗') && !tianLuoNames.includes('地网');
+const wd31_2 = diWangNames.includes('地网') && !diWangNames.includes('天罗');
+const wd31_3 = !singleChenNames.includes('天罗') && !singleChenNames.includes('地网');
+const wd31_4 = !singleXuNames.includes('天罗') && !singleXuNames.includes('地网');
+
+assert('看门狗31：天罗地网原典名实与成对铁律（戌亥全必出天罗不出地网，辰巳全必出地网不出天罗，孤支绝不滥断）',
+  wd31_1 && wd31_2 && wd31_3 && wd31_4
+);
+
 
 // -------------------------------------------------------------------
 // 统计汇总

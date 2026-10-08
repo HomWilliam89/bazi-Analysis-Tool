@@ -2701,6 +2701,32 @@ console.log('=== 38. D-042 / P-021：子平八格成破救应全矩阵研判 ===
   eq('tiyongRouteOf 格局成破状态为败中有救', rXuan.格局成破.状态, '败中有救');
 }
 
+console.log('=== 39. 天罗地网神煞：成对相并与名实纠正自检（D-049 钉住） ===');
+{
+  // ── 39.1 戌亥成对相见 → 必出「天罗」，绝无「地网」 ──
+  const pXuHai = pillarsOf('戊戌', '癸亥', '甲子', '丙寅');
+  const ssXuHai = shenshaOf(pXuHai, STEMS.indexOf('甲'), STEMS.indexOf('戊'), '男');
+  eq('戌亥成对 → 命中天罗', ssXuHai.some((s) => s.name === '天罗'), true);
+  eq('戌亥成对 → 不得误出地网', ssXuHai.some((s) => s.name === '地网'), false);
+
+  // ── 39.2 辰巳成对相见 → 必出「地网」，绝无「天罗」 ──
+  const pChenSi = pillarsOf('丙辰', '癸巳', '庚申', '辛巳');
+  const ssChenSi = shenshaOf(pChenSi, STEMS.indexOf('庚'), STEMS.indexOf('丙'), '男');
+  eq('辰巳成对 → 命中地网', ssChenSi.some((s) => s.name === '地网'), true);
+  eq('辰巳成对 → 不得误出天罗', ssChenSi.some((s) => s.name === '天罗'), false);
+
+  // ── 39.3 单支孤露不成对 → 坚决不出天罗地网 ──
+  const pSingle = pillarsOf('甲辰', '丙寅', '戊午', '庚申');
+  const ssSingle = shenshaOf(pSingle, STEMS.indexOf('戊'), STEMS.indexOf('甲'), '男');
+  eq('辰支孤露无巳 → 不出天罗', ssSingle.some((s) => s.name === '天罗'), false);
+  eq('辰支孤露无巳 → 不出地网', ssSingle.some((s) => s.name === '地网'), false);
+
+  const pSingle2 = pillarsOf('庚戌', '戊子', '壬午', '辛丑');
+  const ssSingle2 = shenshaOf(pSingle2, STEMS.indexOf('壬'), STEMS.indexOf('庚'), '男');
+  eq('戌支孤露无亥 → 不出天罗', ssSingle2.some((s) => s.name === '天罗'), false);
+  eq('戌支孤露无亥 → 不出地网', ssSingle2.some((s) => s.name === '地网'), false);
+}
+
 console.log('');
 console.log(`\n通过 ${pass}，失败 ${fail}`);
 if (failures.length) {

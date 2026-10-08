@@ -675,11 +675,19 @@ function computeShenSha(pillars, dayStemIndex, yearStemIndex, monthBranchIndex, 
     if (YINCHAYANGCUO_GZ.includes(dayGz)) result.push({ name: '阴差阳错日', positions: ['日柱'], note: dayGz });
   }
 
-  /* --- 天罗地网（按年支） --- */
+  /* --- 天罗地网（依《三命通会》原典「戌亥为天罗，辰巳为地网」；须成对相并在位） --- */
   {
-    const yb = BRANCHES[yearBranchIndex];
-    if (['辰', '巳'].includes(yb)) add('天罗', posOf(['辰', '巳']));
-    if (['戌', '亥'].includes(yb)) add('地网', posOf(['戌', '亥']));
+    const hasXu = branches.includes('戌');
+    const hasHai = branches.includes('亥');
+    const hasChen = branches.includes('辰');
+    const hasSi = branches.includes('巳');
+
+    if (hasXu && hasHai) {
+      add('天罗', posOf(['戌', '亥']), '《三命通会》「戌亥为天罗……猪犬侵凌，每虑丈夫厄难」；局中戌亥成对相并在位');
+    }
+    if (hasChen && hasSi) {
+      add('地网', posOf(['辰', '巳']), '《三命通会》「辰巳为地网……龙蛇混杂，常防妇女忧危」；局中辰巳成对相并在位');
+    }
   }
 
   /* --- 小儿关煞 --- */
