@@ -10,6 +10,9 @@ import {
   protectionChainOf, youJiuOf, fanwangOf, xiangzhanOf, siXiangOf,
   selfHiddenCombineOf, chengzaiReassess, gejuChengPoOf,
 } from '../核心/tiyong.mjs';
+import {
+  resolveYongAndXiElements, describeActionMechanism
+} from '../核心/report-generator.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const 案例目录 = path.join(ROOT, '案例');
@@ -688,6 +691,70 @@ for (const c of casesToRun) {
         failedAssertions += 1;
         console.log(`  ✗ [救应因] 期望: ${expObj.救应因} != 实际: ${act}`);
         failureDetails.push({ id: c.id, item: '救应因', exp: expObj.救应因, act, p: c.判据 });
+      }
+    }
+  }
+
+  // 27. 体用公理化病忌喜角色与机理轨道（D-047 裁定）
+  if (typeof c.期望.主要矛盾定性 !== 'undefined') {
+    const expObj = c.期望.主要矛盾定性;
+    const yongInfo = resolveYongAndXiElements(chart, res);
+    const dmElem = chart.dayMaster?.element || '木';
+    const actMech = describeActionMechanism(yongInfo.primaryYong, yongInfo.bingElem, dmElem, '');
+
+    if (typeof expObj.病神五行 !== 'undefined') {
+      totalAssertions += 1;
+      const act = yongInfo.bingElem ?? '—';
+      const ok = act === expObj.病神五行;
+      if (ok) {
+        passedAssertions += 1;
+        console.log(`  ✓ [病神五行] 期望: ${expObj.病神五行} == 实际: ${act}`);
+      } else {
+        failedAssertions += 1;
+        console.log(`  ✗ [病神五行] 期望: ${expObj.病神五行} != 实际: ${act}`);
+        failureDetails.push({ id: c.id, item: '病神五行', exp: expObj.病神五行, act, p: c.判据 });
+      }
+    }
+
+    if (typeof expObj.大忌五行 !== 'undefined') {
+      totalAssertions += 1;
+      const act = yongInfo.mieToolElem ?? '—';
+      const ok = act === expObj.大忌五行;
+      if (ok) {
+        passedAssertions += 1;
+        console.log(`  ✓ [大忌五行] 期望: ${expObj.大忌五行} == 实际: ${act}`);
+      } else {
+        failedAssertions += 1;
+        console.log(`  ✗ [大忌五行] 期望: ${expObj.大忌五行} != 实际: ${act}`);
+        failureDetails.push({ id: c.id, item: '大忌五行', exp: expObj.大忌五行, act, p: c.判据 });
+      }
+    }
+
+    if (typeof expObj.喜神五行 !== 'undefined') {
+      totalAssertions += 1;
+      const act = yongInfo.huShenElem ?? '—';
+      const ok = act === expObj.喜神五行;
+      if (ok) {
+        passedAssertions += 1;
+        console.log(`  ✓ [喜神五行] 期望: ${expObj.喜神五行} == 实际: ${act}`);
+      } else {
+        failedAssertions += 1;
+        console.log(`  ✗ [喜神五行] 期望: ${expObj.喜神五行} != 实际: ${act}`);
+        failureDetails.push({ id: c.id, item: '喜神五行', exp: expObj.喜神五行, act, p: c.判据 });
+      }
+    }
+
+    if (typeof expObj.作用机理轨道 !== 'undefined') {
+      totalAssertions += 1;
+      const act = actMech.轨道 ?? '—';
+      const ok = act === expObj.作用机理轨道;
+      if (ok) {
+        passedAssertions += 1;
+        console.log(`  ✓ [作用机理轨道] 期望: ${expObj.作用机理轨道} == 实际: ${act}`);
+      } else {
+        failedAssertions += 1;
+        console.log(`  ✗ [作用机理轨道] 期望: ${expObj.作用机理轨道} != 实际: ${act}`);
+        failureDetails.push({ id: c.id, item: '作用机理轨道', exp: expObj.作用机理轨道, act, p: c.判据 });
       }
     }
   }

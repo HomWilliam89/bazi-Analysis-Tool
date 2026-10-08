@@ -494,6 +494,76 @@ assert('看门狗28：非法生辰历法严密防御（1990-02-30 校验拦截�
   castInvalidFailed
 );
 
+// 看门狗 29：用神与病神动态多轨物理自洽铁律（D-047 落地，根除 74.9% 假相克）
+const multiTrackCharts = [
+  { pillars: ['辛巳', '丙申', '乙巳', '丁丑'], expectedTrack: '正面克制' },
+  { pillars: ['庚申', '戊寅', '甲申', '壬申'], expectedTrack: '通关引化' },
+  { pillars: ['甲寅', '丙寅', '甲寅', '丁卯'], expectedTrack: '顺泄秀气' },
+  { pillars: ['丙午', '庚寅', '壬午', '丙午'], expectedTrack: '抗压生身' },
+  { pillars: ['壬子', '甲寅', '戊午', '丁巳'], expectedTrack: '强身任泄' }
+];
+
+const ELEM_REL_LOCAL = {
+  '木': { 生: '火', 克: '土', 被生: '水', 被克: '金', 同: '木' },
+  '火': { 生: '土', 克: '金', 被生: '木', 被克: '水', 同: '火' },
+  '土': { 生: '金', 克: '水', 被生: '火', 被克: '木', 同: '土' },
+  '金': { 生: '水', 克: '木', 被生: '土', 被克: '火', 同: '金' },
+  '水': { 生: '木', 克: '火', 被生: '金', 被克: '土', 同: '水' },
+};
+
+const watchdog29Passed = multiTrackCharts.every((item) => {
+  const rep = generateFullReport(item.pillars).markdown;
+  const m = rep.match(/作用机理（([^）]+)）\*+：(.+)/);
+  if (!m) return false;
+  const track = m[1];
+  const text = m[2];
+  if (track !== item.expectedTrack) return false;
+
+  // 严格杜绝生克倒置硬伤：绝不出现非克言克
+  if (text.includes('正面克制')) {
+    const ym = text.match(/以【([木火土金水])】正面克制裁抑原局主要矛盾【([木火土金水])】/);
+    if (!ym || ELEM_REL_LOCAL[ym[1]]?.克 !== ym[2]) return false;
+  }
+  return true;
+});
+assert('看门狗29：用神与病神动态多轨物理自洽铁律（克制/通关/顺泄/抗压/强身五轨精准触发，彻底清零假相克）',
+  watchdog29Passed
+);
+
+// 看门狗 30：喜神与病神/忌神全局互斥铁律（D-047 落地，根除角色重叠分裂）
+const allPatternForXiCheck = [
+  ['庚申', '戊寅', '甲申', '壬申'], // 杀重用印，金为病神，喜神必无金
+  ['辛巳', '丙申', '乙巳', '丁丑'], // 食伤制杀，火为用神，金为病神
+  ['甲子', '癸酉', '己巳', '丁卯'], // 财星为用
+  ['癸亥', '癸亥', '丁丑', '癸亥'], // 杀重用印
+  ['戊午', '戊午', '戊午', '壬戌']  // 强旺比劫
+];
+
+const watchdog30Passed = allPatternForXiCheck.every((p) => {
+  const rep = generateFullReport(p).markdown;
+  const xiMatch = rep.match(/护卫用神相助喜神\*\*：【([^】]+)】/);
+  const bingMatch = rep.match(/原局太旺病灶凶神\*\*：【([^】]+)】/);
+  const jiMatch = rep.match(/破局灭工具第一大忌神\*\*：【([^】]+)】/);
+  if (!xiMatch || !bingMatch || !jiMatch) return false;
+
+  const xi = xiMatch[1];
+  const bing = bingMatch[1];
+  const ji = jiMatch[1];
+
+  // 喜神绝对不与病神或大忌神相同
+  const xiNoConflict = (xi !== bing && xi !== ji);
+
+  // 庚申甲申杀重盘专项：病神必为金，喜神必为木
+  if (p[0] === '庚申' && p[2] === '甲申') {
+    if (bing !== '金' || xi !== '木') return false;
+  }
+
+  return xiNoConflict;
+});
+assert('看门狗30：喜神与病神/忌神全局互斥铁律（喜神集绝对排除病神与大忌神，杀重盘病神锁金喜神锁木零分裂）',
+  watchdog30Passed
+);
+
 
 // -------------------------------------------------------------------
 // 统计汇总
