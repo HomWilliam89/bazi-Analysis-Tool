@@ -2212,6 +2212,7 @@ export function ensureFullChart(input, options = {}) {
 
   // 若传入的是四柱数组 ['庚午', '辛巳', '乙酉', '癸未']
   if (Array.isArray(input) && input.length === 4) {
+    const targetYear = options.year || options.targetYear;
     try {
       const cands = dateCandidates(input, { fromYear: 1600, toYear: 2050 });
       if (cands && cands.候选 && cands.候选.length > 0) {
@@ -2219,24 +2220,65 @@ export function ensureFullChart(input, options = {}) {
           '子': 0, '丑': 2, '寅': 4, '卯': 6, '辰': 8, '巳': 10,
           '午': 12, '未': 14, '申': 16, '酉': 18, '戌': 20, '亥': 22
         };
-        const candidateList = [
-          ...cands.候选.filter(c => c.立春年 >= 1900 && c.立春年 <= 2050),
-          ...cands.候选.filter(c => c.立春年 < 1900 || c.立春年 > 2050)
-        ];
-        for (const cand of candidateList) {
+
+        const validCandidates = [];
+        for (const cand of cands.候选) {
           const [y, m, d] = cand.日期.split('-').map(Number);
           const h = branchHourMap[cand.时支] ?? 12;
           const chart = castChart({ year: y, month: m, day: d, hour: h, minute: 30, gender });
           // 严格校验排盘干支是否与传入四柱 100% 一致（彻底杜绝 Pillar Mutation 篡改盘面）！
           if (chart.pillars.every((p, idx) => p.gz === input[idx])) {
-            return chart;
+            validCandidates.push({
+              cand,
+              year: y,
+              chart,
+              solarDate: `${cand.日期} ${h.toString().padStart(2, '0')}:30`
+            });
           }
+        }
+
+        if (validCandidates.length > 0) {
+          let chosen;
+          if (targetYear) {
+            // 用户显式指定基准年份：优先完全一致，次选最接近者
+            chosen = validCandidates.find((c) => c.year === targetYear || c.cand.立春年 === targetYear)
+              || [...validCandidates].sort((a, b) => Math.abs(a.year - targetYear) - Math.abs(b.year - targetYear))[0];
+          } else {
+            // 未指定基准年份：按现代活跃年龄中位（1990 年）启发式排序，避免落入古人或百岁老人盘
+            const MODERN_ANCHOR_YEAR = 1990;
+            chosen = [...validCandidates].sort((a, b) => {
+              const diffA = Math.abs(a.year - MODERN_ANCHOR_YEAR);
+              const diffB = Math.abs(b.year - MODERN_ANCHOR_YEAR);
+              return diffA - diffB;
+            })[0];
+          }
+
+          const selectedChart = chosen.chart;
+          selectedChart.isFourPillarsMode = true;
+          selectedChart.dateCandidatesInfo = {
+            candidates: validCandidates.map((c) => ({
+              year: c.year,
+              solarDate: c.solarDate,
+              isChosen: c === chosen
+            })),
+            chosenYear: chosen.year,
+            chosenDate: chosen.solarDate,
+            userSpecifiedYear: !!targetYear
+          };
+          return selectedChart;
         }
       }
     } catch {}
 
     // 无法精准匹配公历或四柱自洽性异常时，走完备四柱结构构建器
-    return buildPillarsChart(input, { gender });
+    const fallbackChart = buildPillarsChart(input, { gender });
+    fallbackChart.isFourPillarsMode = true;
+    fallbackChart.dateCandidatesInfo = {
+      candidates: [],
+      chosenYear: null,
+      userSpecifiedYear: false
+    };
+    return fallbackChart;
   }
 
   throw new Error('ensureFullChart: 无法识别的输入格式（支持生日对象或四柱数组）');
@@ -2345,6 +2387,23 @@ function renderFactSection(chart) {
   lines.push(`* **生肖属相**：${p[0].zodiac ? `属${p[0].zodiac}` : '生肖相合'}`);
   lines.push(`* **日元属性**：${chart.dayMaster?.stem || p[2].stem}${dmElem}（${chart.dayMaster?.yinYang || '阴'}${dmElem}）`);
   lines.push(`* **旬空信息**：年柱空【${p[0].voidBranches?.join('') || ''}】· 月柱空【${p[1].voidBranches?.join('') || ''}】· 日柱空【${p[2].voidBranches?.join('') || ''}】· 时柱空【${p[3].voidBranches?.join('') || ''}】\n`);
+
+  if (chart.isFourPillarsMode && chart.dateCandidatesInfo) {
+    const info = chart.dateCandidatesInfo;
+    if (info.candidates && info.candidates.length > 0) {
+      lines.push('> **【公历反推多解性与基准年披露】**：');
+      lines.push(`> 本报告由四柱干支直推生成。六十甲子六十年一元循环，在 1600–2050 年区间内，共检索到 ${info.candidates.length} 个天体公历重合生辰：`);
+      info.candidates.forEach((c, idx) => {
+        lines.push(`> * 候选 ${idx + 1}：\`${c.solarDate}\`${c.isChosen ? ' ★【本次推演选定基准】' : ''}`);
+      });
+      const noteWhy = info.userSpecifiedYear
+        ? `依调用指令显式指定基准年（${info.chosenYear} 年）。`
+        : `未显式指定年份，系统默认锚定近代活跃年龄中位基准（${info.chosenYear} 年生，当前正值核心事业期）。`;
+      lines.push(`> ※ **时代基准说明**：${noteWhy}若实际命主出生于其他年代，大运绝对公历年份将整体平移 60 年的整数倍，可通过 \`--year <年份>\` 显式锁定基准。\n`);
+    } else {
+      lines.push('> **【四柱直推说明】**：本报告由四柱干支直接排定，未在 1600–2050 年区间内匹配得唯一样本，大运依流年逐年滚动。\n');
+    }
+  }
 
   lines.push('---\n');
 
@@ -3171,6 +3230,9 @@ function renderTiyongSection(chart, options = {}) {
 
   // 3.4 未来大运全景逐步详评
   lines.push('### 3.4 未来大运全景逐步详评（带生克定性与行运指南）\n');
+  if (chart.isFourPillarsMode && chart.dateCandidatesInfo?.chosenYear) {
+    lines.push(`> **[四柱时间轴基准提示]**：本大运序列以公历 **${chart.dateCandidatesInfo.chosenYear} 年**为基准时代排定。若命主属于其他花甲年代，起运虚岁与干支步数保持不变，绝对公历年份将整体平移 60 年的整数倍。\n`);
+  }
   const luckPillars = chart.luck?.pillars || [];
   if (luckPillars.length > 0) {
     lines.push('```text');

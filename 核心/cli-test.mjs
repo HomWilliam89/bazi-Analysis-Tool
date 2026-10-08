@@ -587,6 +587,27 @@ assert('看门狗31：天罗地网原典名实与成对铁律（戌亥全必出�
   wd31_1 && wd31_2 && wd31_3 && wd31_4
 );
 
+// 看门狗 32：四柱直推模式公历反推多解性披露与基准年机制（D-048 钉住）
+// 1. 默认未指定年份：锚定现代活跃中位基准（1990 年），披露多解列表，包含 ★【本次推演选定基准】
+// 2. 显式指定年份（如 --year 1930）：精准锁定 1930 年为基准
+// 3. Section 3.4 必须如实标注四柱时间轴基准提示，根除年代错位与打架
+const fourPillarsDefault = generateFullReport(['庚午', '辛巳', '乙酉', '癸未']).markdown;
+const fourPillarsSpecified = generateFullReport(['庚午', '辛巳', '乙酉', '癸未'], { year: 1930 }).markdown;
+
+const wd32_1 = fourPillarsDefault.includes('【公历反推多解性与基准年披露】')
+  && fourPillarsDefault.includes('1990')
+  && fourPillarsDefault.includes('★【本次推演选定基准】')
+  && fourPillarsDefault.includes('以公历 **1990 年**为基准时代排定');
+
+const wd32_2 = fourPillarsSpecified.includes('【公历反推多解性与基准年披露】')
+  && fourPillarsSpecified.includes('1930')
+  && fourPillarsSpecified.includes('★【本次推演选定基准】')
+  && fourPillarsSpecified.includes('以公历 **1930 年**为基准时代排定');
+
+assert('看门狗32：四柱直推公历反推多解性披露与基准年机制（1.2节多解透明呈现，默认现代活跃锚定1990，指定1930精准锁定，3.4节基准对齐）',
+  wd32_1 && wd32_2
+);
+
 
 // -------------------------------------------------------------------
 // 统计汇总

@@ -164,7 +164,7 @@ export async function runCli(argv = process.argv.slice(2)) {
 
   let report;
   try {
-    report = generateFullReport(input, { gender: opts.gender });
+    report = generateFullReport(input, { gender: opts.gender, year: opts.year });
   } catch (err) {
     console.error(`执行排盘推演失败：${err.message}`);
     return 1;
