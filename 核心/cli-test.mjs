@@ -95,12 +95,12 @@ const uncoveredReport = generateFullReport(['乙卯', '乙酉', '乙卯', '辛�
 assert('未覆盖盘正确输出认怂警示横幅「本体系未覆盖，暂不判断」', uncoveredReport.markdown.includes('本体系未覆盖，暂不判断'));
 
 // -------------------------------------------------------------------
-// 4. 严格合规检查：隐藏项未泄露
+// 4. 严格合规检查：不设宿命论等级断言与机械打分（D-051 规范校准）
 // -------------------------------------------------------------------
-console.log('\n▶ [测试组 4] 隐藏项合规自律测试');
+console.log('\n▶ [测试组 4] 人本自强与不评等级合规自律测试');
 
-assert('报告正文严禁出现「八字整体层次评估」字样（按 D-039 严格隐藏）', !md.includes('八字整体层次评估'));
-assert('未覆盖报告正文亦无「八字整体层次评估」', !uncoveredReport.markdown.includes('八字整体层次评估'));
+assert('报告正文严禁设立宿命论「富贵贫贱/层次评级」（D-051 立宪自律）', !md.includes('整体层次评估') && !md.includes('八字整体层次'));
+assert('报告正文坚决摒弃虚假机械打分与假折线图（D-051 规范落地）', !md.includes('财富指数 (0 - 100') && !/\d+分\s*\(20\d\d年/.test(md));
 
 // -------------------------------------------------------------------
 // 5. 命令行 runCli 参数解析与导出功能测试
@@ -637,6 +637,26 @@ const wd33Passed = (codeH === 0)
 
 assert('看门狗33：CLI交互参数健全化、真太阳时经度贯通与非法输入防御守卫（-H正常解析、经度真实校正与未校正如实呈现、非法干支/年份/经度严格拦截）',
   wd33Passed
+);
+
+// 看门狗 34：交付规范资产与示范报告真实性闭环（D-051 钉住）
+// 1. 《三段式全景命理解读深度示范报告.md》与当前代码真实输出 100% 逐字对齐
+// 2. 示范报告 32 处废弃假分数（如 92分、68分、假折线图）100% 彻底清零
+// 3. SKILL.md 彻底脱去“严格隐藏”伪包装，与自律红线 100% 吻合
+const sampleReportPath = path.join(ROOT, '三段式全景命理解读深度示范报告.md');
+const sampleReportDisk = fs.readFileSync(sampleReportPath, 'utf8');
+const liveSampleReport = generateFullReport({ year: 1990, month: 5, day: 20, hour: 14, minute: 30, gender: '男' }).markdown;
+
+const wd34_1 = (sampleReportDisk === liveSampleReport);
+const wd34_2 = !sampleReportDisk.includes('财富指数 (0 - 100')
+  && !sampleReportDisk.includes('68 分')
+  && !sampleReportDisk.includes('92分')
+  && !sampleReportDisk.includes('胎元命宫');
+const wd34_3 = !skillContent.includes('严格隐藏项')
+  && !skillContent.includes('层次隐藏');
+
+assert('看门狗34：交付规范资产与示范报告真实性闭环（示范报告与实际代码输出100%逐字对齐、32处假分数与伪包装清零）',
+  wd34_1 && wd34_2 && wd34_3
 );
 
 
