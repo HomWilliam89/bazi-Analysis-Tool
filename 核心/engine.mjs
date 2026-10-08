@@ -106,6 +106,13 @@ export function gzName(index) {
   const i = ((index % 60) + 60) % 60;
   return STEMS[i % 10] + BRANCHES[i % 12];
 }
+/** 六十甲子干支全表 */
+export const GANZHI = Array.from({ length: 60 }, (_, i) => gzName(i));
+/** 校验是否为合法六十甲子干支（阴阳相配且长度为2） */
+export function isValidGanzhi(gz) {
+  if (typeof gz !== 'string' || gz.length !== 2) return false;
+  return GANZHI.includes(gz);
+}
 /** 纳音 */
 export function nayinOf(index) {
   const i = ((index % 60) + 60) % 60;
@@ -1364,6 +1371,10 @@ export function monthsOfYear(gzYear) {
  * @param {number} [input.luckCount=10] 自动推演的大运步数
  * @returns {object} Chart
  */
+export function isValidYear(year) {
+  return Number.isInteger(year) && year >= 1000 && year <= 2500;
+}
+
 export function isValidGregorianDate(year, month, day) {
   if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return false;
   if (month < 1 || month > 12 || day < 1) return false;
@@ -1375,6 +1386,7 @@ export function isValidGregorianDate(year, month, day) {
 export function castChart(input) {
   const { year, month, day, hour, minute = 0, gender = '男' } = input;
   if (![year, month, day, hour].every((v) => Number.isFinite(v))) throw new Error('castChart: year/month/day/hour 必须为数字');
+  if (!isValidYear(year)) throw new Error(`castChart: 非法年份「${year}」，仅支持公元 1000 至 2500 年之间整数年份`);
   if (!isValidGregorianDate(year, month, day)) throw new Error(`castChart: 非法公历日期「${year}-${month}-${day}」，超出历法该月有效天数或月份非法`);
   if (hour < 0 || hour > 24) throw new Error(`castChart: 非法小时「${hour}」，必须在 0 至 24 之间`);
   if (minute < 0 || minute >= 60) throw new Error(`castChart: 非法分钟「${minute}」，必须在 0 至 59 之间`);

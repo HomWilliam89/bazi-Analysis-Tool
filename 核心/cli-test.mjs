@@ -608,6 +608,37 @@ assert('看门狗32：四柱直推公历反推多解性披露与基准年机制�
   wd32_1 && wd32_2
 );
 
+// 看门狗 33：CLI 交互参数健全化、真太阳时经度贯通与非法输入防御守卫（D-050 钉住）
+// 1. -H 小时参数正常解析排盘（退出码 0，且不被 -h 帮助拦截）
+const codeH = await runCli(['-y', '1990', '-m', '5', '-d', '20', '-H', '14', '-i', '30']);
+// 2. 经度真实校正与 1.2 节如实披露
+const repWithLon = generateFullReport({ year: 1990, month: 5, day: 20, hour: 14, minute: 30 }, { longitude: 113.3 }).markdown;
+const repNoLon = generateFullReport({ year: 1990, month: 5, day: 20, hour: 14, minute: 30 }).markdown;
+const wd33_lon_ok = repWithLon.includes('已依出生地经度（113.3°E）校正')
+  && repWithLon.includes('时差校正 -23.28 分钟')
+  && repWithLon.includes('1990-05-20 14:07');
+const wd33_no_lon_ok = repNoLon.includes('未指定经度校正（默认基准：北京时间/平太阳时 120°E')
+  && !repNoLon.includes('依出生地经度校正（基准：北京时间/真太阳时刻）');
+// 3. 非法干支守卫（如 甲丑 阴阳不配、单字干支、非六十甲子）严格拦截返回 1
+const codeInvalidGz1 = await runCli(['甲丑', '丙寅', '戊辰', '庚午']);
+const codeInvalidGz2 = await runCli(['甲', '丙寅', '戊辰', '庚午']);
+// 4. 非法年份守卫（小于 1000 或非数字）严格拦截返回 1
+const codeInvalidYear = await runCli(['-y', '999', '-m', '5', '-d', '20', '-H', '14']);
+// 5. 非法经度守卫（超出 [-180, 180]）严格拦截返回 1
+const codeInvalidLon = await runCli(['--solar', '1990-05-20 14:30', '-L', '200']);
+
+const wd33Passed = (codeH === 0)
+  && wd33_lon_ok
+  && wd33_no_lon_ok
+  && (codeInvalidGz1 === 1)
+  && (codeInvalidGz2 === 1)
+  && (codeInvalidYear === 1)
+  && (codeInvalidLon === 1);
+
+assert('看门狗33：CLI交互参数健全化、真太阳时经度贯通与非法输入防御守卫（-H正常解析、经度真实校正与未校正如实呈现、非法干支/年份/经度严格拦截）',
+  wd33Passed
+);
+
 
 // -------------------------------------------------------------------
 // 统计汇总

@@ -12,7 +12,7 @@ import {
   twelveStage, elementStrength, luckDirection, buildLuckPillars,
   castChart, gzRelations, shenshaOf, dateCandidates,
   BRANCH_CLASH, BRANCH_COMBINE, yearPillarOf, tenGod,
-  tiaohouAssessment
+  tiaohouAssessment, trueSolarTime
 } from './engine.mjs';
 
 const MONTH_BRANCH_SEASON = {
@@ -2194,6 +2194,11 @@ function buildPillarsChart(input, options = {}) {
  */
 export function ensureFullChart(input, options = {}) {
   const gender = options.gender || '男';
+  const longitude = (options.longitude !== undefined && options.longitude !== null && Number.isFinite(Number(options.longitude)))
+    ? Number(options.longitude)
+    : (input && input.longitude !== undefined && input.longitude !== null && Number.isFinite(Number(input.longitude)))
+    ? Number(input.longitude)
+    : null;
 
   if (input && input.pillars && input.dayMaster) {
     if (!input.relations) input.relations = gzRelations(input.pillars, null);
@@ -2202,12 +2207,40 @@ export function ensureFullChart(input, options = {}) {
       const yearStemIdx = STEMS.indexOf(input.pillars[0].stem);
       input.shensha = shenshaOf(input.pillars, dayStemIdx, yearStemIdx, input.input?.gender || gender);
     }
+    if (longitude !== null) {
+      input.calendar = input.calendar || {};
+      if (!input.calendar.trueSolar) input.calendar.trueSolar = { longitude };
+    }
     return input;
   }
 
   // 若传入的是生日对象 { year, month, day, hour, minute, gender }
   if (input && typeof input.year === 'number' && typeof input.month === 'number') {
-    return castChart({ ...input, gender: input.gender || gender });
+    let moment = {
+      year: input.year,
+      month: input.month,
+      day: input.day,
+      hour: input.hour ?? 12,
+      minute: input.minute ?? 0,
+    };
+    let trueSolar = null;
+    if (longitude !== null) {
+      const tst = trueSolarTime(moment, longitude);
+      trueSolar = {
+        longitude,
+        longitudeMinutes: tst.longitudeMinutes,
+        eotMinutes: tst.eotMinutes,
+        totalMinutes: tst.totalMinutes,
+        original: `${moment.year}-${String(moment.month).padStart(2, '0')}-${String(moment.day).padStart(2, '0')} ${String(moment.hour).padStart(2, '0')}:${String(moment.minute).padStart(2, '0')}`,
+        corrected: `${tst.corrected.year}-${String(tst.corrected.month).padStart(2, '0')}-${String(tst.corrected.day).padStart(2, '0')} ${String(tst.corrected.hour).padStart(2, '0')}:${String(tst.corrected.minute).padStart(2, '0')}`,
+      };
+      moment = tst.corrected;
+    }
+    const chart = castChart({ ...moment, gender: input.gender || gender });
+    if (trueSolar) {
+      chart.calendar.trueSolar = trueSolar;
+    }
+    return chart;
   }
 
   // 若传入的是四柱数组 ['庚午', '辛巳', '乙酉', '癸未']
@@ -2255,6 +2288,10 @@ export function ensureFullChart(input, options = {}) {
 
           const selectedChart = chosen.chart;
           selectedChart.isFourPillarsMode = true;
+          if (longitude !== null) {
+            selectedChart.calendar = selectedChart.calendar || {};
+            if (!selectedChart.calendar.trueSolar) selectedChart.calendar.trueSolar = { longitude };
+          }
           selectedChart.dateCandidatesInfo = {
             candidates: validCandidates.map((c) => ({
               year: c.year,
@@ -2273,6 +2310,10 @@ export function ensureFullChart(input, options = {}) {
     // 无法精准匹配公历或四柱自洽性异常时，走完备四柱结构构建器
     const fallbackChart = buildPillarsChart(input, { gender });
     fallbackChart.isFourPillarsMode = true;
+    if (longitude !== null) {
+      fallbackChart.calendar = fallbackChart.calendar || {};
+      if (!fallbackChart.calendar.trueSolar) fallbackChart.calendar.trueSolar = { longitude };
+    }
     fallbackChart.dateCandidatesInfo = {
       candidates: [],
       chosenYear: null,
@@ -2380,7 +2421,15 @@ function renderFactSection(chart) {
   const cal = chart.calendar || {};
   lines.push(`* **公历生辰**：${cal.solar || '未提供公历日期（四柱推算）'}`);
   lines.push(`* **农历生辰**：${p[0].gz}年 ${p[1].gz}月 ${p[2].gz}日 ${p[3].gz}时`);
-  lines.push(`* **真太阳时**：依出生地经度校正（基准：北京时间/真太阳时刻）`);
+  const ts = chart.calendar?.trueSolar;
+  if (ts && ts.longitude !== undefined && ts.longitude !== null) {
+    const lonSign = ts.longitude >= 0 ? `${ts.longitude}°E` : `${Math.abs(ts.longitude)}°W`;
+    const diffMin = ts.totalMinutes !== undefined ? `，时差校正 ${ts.totalMinutes >= 0 ? '+' : ''}${ts.totalMinutes} 分钟` : '';
+    const detail = ts.corrected ? `，真太阳时刻：\`${ts.corrected}\`` : '';
+    lines.push(`* **真太阳时**：已依出生地经度（${lonSign}）校正${diffMin}${detail}`);
+  } else {
+    lines.push(`* **真太阳时**：未指定经度校正（默认基准：北京时间/平太阳时 120°E，可通过 CLI 参数 --longitude <经度> 进行真太阳时校正）`);
+  }
   if (cal.solarTermMonth) {
     lines.push(`* **节气划分**：${cal.solarTermMonth.term}令，${chart.dayMaster?.司令?.司令 || '司令'}司权司事`);
   }

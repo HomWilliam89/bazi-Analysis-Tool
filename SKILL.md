@@ -66,14 +66,15 @@ description: 八字全景命理分析与决策咨询工具。给定公历生辰�
 
 ### 1. 公历生辰模式
 ```bash
-# 格式：--solar "YYYY-MM-DD HH:mm" [--gender 男|女]
-node 命令行/bazi.mjs --solar "1990-05-20 14:30" --gender 男
+# 格式：--solar "YYYY-MM-DD HH:mm" [--gender 男|女] [--longitude <经度>]
+node 命令行/bazi.mjs --solar "1990-05-20 14:30" --gender 男 --longitude 113.3
+node 命令行/bazi.mjs -y 1990 -m 5 -d 20 -H 14 -i 30 -g 男 -L 113.3
 ```
 
 ### 2. 四柱干支模式
 ```bash
-# 格式：四个干支按 年 月 日 时 排列
-node 命令行/bazi.mjs 庚午 辛巳 乙酉 癸未
+# 格式：四个干支按 年 月 日 时 排列 [-y <基准年份>] [--gender 男|女]
+node 命令行/bazi.mjs 庚午 辛巳 乙酉 癸未 -y 1990 --gender 男
 ```
 
 ### 3. 导出万字级全景 Markdown 决策咨询报告

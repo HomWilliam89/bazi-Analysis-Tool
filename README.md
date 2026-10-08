@@ -71,11 +71,12 @@ AI 将自动识别意图并唤起 `bazi-analysis` 技能，通过内部命令行
 无需依赖任何外部 npm 包（Node.js >= 18 原生零依赖），直接在终端执行：
 
 ```bash
-# 1. 公历生辰模式（支持指定性别）
-node 命令行/bazi.mjs --solar "1990-05-20 14:30" --gender 男
+# 1. 公历生辰模式（支持指定性别、真太阳时经度校正）
+node 命令行/bazi.mjs --solar "1990-05-20 14:30" --gender 男 --longitude 113.3
+node 命令行/bazi.mjs -y 1990 -m 5 -d 20 -H 14 -i 30 -g 男 -L 113.3
 
-# 2. 四柱干支模式（直接传入四柱）
-node 命令行/bazi.mjs 庚午 辛巳 乙酉 癸未
+# 2. 四柱干支模式（直接传入四柱，支持指定推演时代基准年与性别）
+node 命令行/bazi.mjs 庚午 辛巳 乙酉 癸未 -y 1990 --gender 男
 
 # 3. 导出万字级全景 Markdown 决策咨询报告
 node 命令行/bazi.mjs 庚午 辛巳 乙酉 癸未 -o 命理解读报告.md
@@ -85,6 +86,9 @@ node 命令行/bazi.mjs 庚午 辛巳 乙酉 癸未 --full
 
 # 5. 输出纯 JSON 原始数据
 node 命令行/bazi.mjs 庚午 辛巳 乙酉 癸未 -f json
+
+# 6. 查看完整命令行帮助与参数速查
+node 命令行/bazi.mjs -h
 ```
 
 
