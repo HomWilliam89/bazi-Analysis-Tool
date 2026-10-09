@@ -4,7 +4,7 @@
 //   1. report-generator 模块接口与双输入格式解析
 //   2. 三段式全景报告内容完整性（四段式齐全、结构无缺漏）
 //   3. 乙体系未覆盖（认怂出口）在总装报告中的横幅呈现
-//   4. 严格合规检查：默认严禁泄露「八字整体层次评估」隐藏项
+//   4. 严格合规检查：不设宿命论等级断言与机械打分（D-051 规范校准）
 //   5. CLI 命令行参数解析、标准退出码与文件导出功能验证
 
 import fs from 'node:fs';
@@ -67,12 +67,13 @@ assert('第一段包含 1.3.2 五行能量细分', md.includes('#### 1.3.2 五�
 assert('第一段包含 1.3.3 日主旺衰三维研判', md.includes('#### 1.3.3 日主旺衰三维研判'));
 
 assert('包含第二段丙层各派学说并陈标题', md.includes('## 第二段：丙层各派学说并陈'));
-assert('第二段包含 2.1 格局派', md.includes('### 2.1 格局派'));
-assert('第二段包含 2.2 用神气势派', md.includes('### 2.2 用神气势派'));
-assert('第二段包含 2.3 调候派', md.includes('### 2.3 调候派'));
-assert('第二段包含 2.4 盲派命理', md.includes('### 2.4 盲派命理'));
-assert('第二段包含 2.5 新派命理', md.includes('### 2.5 新派命理'));
-assert('第二段包含 2.6 神煞象义派', md.includes('### 2.6 神煞象义派'));
+assert('第二段包含 2.1 格局派（以《子平真诠》为宗）', md.includes('### 2.1 格局派（以《子平真诠》为宗）'));
+assert('第二段包含 2.2 旺衰平衡派（以《滴天髓阐微》为宗）', md.includes('### 2.2 旺衰平衡派（以《滴天髓阐微》为宗）'));
+assert('第二段包含 2.3 调候穷通派（以《穷通宝鉴》为宗）', md.includes('### 2.3 调候穷通派（以《穷通宝鉴》为宗）'));
+assert('第二段包含 2.4 盲派象法（以《盲派与象法》为宗）', md.includes('### 2.4 盲派象法（以《盲派与象法》为宗）'));
+assert('第二段包含 2.5 古法三命（以《李虚中命书》《三命通会·论纳音》为宗）', md.includes('### 2.5 古法三命（以《李虚中命书》《三命通会·论纳音》为宗）'));
+assert('第二段包含 2.6 神煞象义派（以《三命通会》为宗）', md.includes('### 2.6 神煞象义派（以《三命通会》为宗）'));
+assert('第二段包含 2.7 现代新派延伸视点', md.includes('### 2.7 现代新派'));
 
 assert('包含第三段乙体系体用路线法推演标题', md.includes('## 第三段：乙体系体用路线法深度推演'));
 assert('第三段包含 3.1 格局深度研判与去留救应', md.includes('### 3.1 格局深度研判与去留救应全解'));
@@ -749,6 +750,40 @@ const wd37_dm_objective = c004Report.markdown.includes('比劫不自动等于喜
 
 assert('看门狗37：乙层体用推演文案转录损耗纠偏（食伤不冒称印星、流年无null、专旺与天元一气原因分流、日主克用客观化）',
   wd37_shishang_role && wd37_flow_null_free && wd37_melt_reason && wd37_dm_objective
+);
+
+// 看门狗 38：丙层六派归位、文献追溯链闭环与环境治理（D-055 钉住）
+// 1. 古法三命独立成节且包含纳音三命分析（N-5 纠正）
+const wd38_sanming_present = md.includes('### 2.5 古法三命（以《李虚中命书》《三命通会·论纳音》为宗）')
+  && md.includes('四柱纳音排布')
+  && md.includes('三命气数分析')
+  && md.includes('天元干禄')
+  && md.includes('人元纳音身');
+
+// 2. 六大流派全景小节规范对齐
+const wd38_six_schools_aligned = md.includes('### 2.1 格局派（以《子平真诠》为宗）')
+  && md.includes('### 2.2 旺衰平衡派（以《滴天髓阐微》为宗）')
+  && md.includes('### 2.3 调候穷通派（以《穷通宝鉴》为宗）')
+  && md.includes('### 2.4 盲派象法（以《盲派与象法》为宗）')
+  && md.includes('### 2.5 古法三命（以《李虚中命书》《三命通会·论纳音》为宗）')
+  && md.includes('### 2.6 神煞象义派（以《三命通会》为宗）');
+
+// 3. 报告正文必须带出 S-XX-NNN 规范学说锚点，严禁虚构篇名（N-11 纠正）
+const wd38_anchors_present = /【学说要义 · S-[A-Z]+-[0-9]{3}】/.test(md);
+const wd38_no_fake_chapters = !md.includes('论月令格局')
+  && !md.includes('通微论')
+  && !md.includes('盲派命理·宾主与做功')
+  && !md.includes('从化论')
+  && !md.includes('论正官配伤官')
+  && !md.includes('论正官/偏官');
+
+// 4. 根目录 .gitignore 必须存在且覆盖临时镜像目录
+const gitignorePath = path.join(ROOT, '.gitignore');
+const wd38_gitignore_ok = fs.existsSync(gitignorePath)
+  && fs.readFileSync(gitignorePath, 'utf8').includes('命令行/temp-skill-mirror');
+
+assert('看门狗38：丙层六派归位、文献追溯链闭环与环境治理（六派名实统一、纳音三命完备、S-XX-NNN锚点闭环、无虚构篇名、.gitignore完备）',
+  wd38_sanming_present && wd38_six_schools_aligned && wd38_anchors_present && wd38_no_fake_chapters && wd38_gitignore_ok
 );
 
 

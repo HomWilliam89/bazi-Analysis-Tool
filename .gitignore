@@ -1,0 +1,10 @@
+# 运行期临时测试镜像产物
+命令行/temp-skill-mirror/
+temp-skill-mirror/
+
+# 临时与缓存文件
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+node_modules/

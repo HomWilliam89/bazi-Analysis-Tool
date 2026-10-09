@@ -189,6 +189,124 @@ function checkSource(row) {
   return { status: 'VERIFIED', note: `在《${bookName}》中逐字对账核验通过` };
 }
 
+const FORBIDDEN_CHAPTERS = [
+  '论月令格局',
+  '通微论',
+  '盲派命理·宾主与做功',
+  '盲派命理·宾主',
+  '从化论',
+  '论学堂词馆',
+  '论正官配伤官',
+  '论正官/偏官'
+];
+
+function checkReportFile(reportPath, validClaimIds) {
+  if (!fs.existsSync(reportPath)) {
+    return { ok: false, issues: [`报告文件不存在: ${reportPath}`] };
+  }
+  const content = fs.readFileSync(reportPath, 'utf8');
+  const lines = content.split(/\r?\n/);
+  const issues = [];
+
+  // 1. 检查虚构篇名黑名单
+  for (const f of FORBIDDEN_CHAPTERS) {
+    if (content.includes(f)) {
+      issues.push(`报告正文包含已知虚构篇名黑名单字眼「${f}」`);
+    }
+  }
+
+  // 2. 检查六大流派小节标题
+  const requiredSections = [
+    '### 2.1 格局派（以《子平真诠》为宗）',
+    '### 2.2 旺衰平衡派（以《滴天髓阐微》为宗）',
+    '### 2.3 调候穷通派（以《穷通宝鉴》为宗）',
+    '### 2.4 盲派象法（以《盲派与象法》为宗）',
+    '### 2.5 古法三命（以《李虚中命书》《三命通会·论纳音》为宗）',
+    '### 2.6 神煞象义派（以《三命通会》为宗）',
+  ];
+  for (const s of requiredSections) {
+    if (!content.includes(s)) {
+      issues.push(`报告正文缺失规范小节标题「${s}」`);
+    }
+  }
+
+  // 3. 检查引用的主张编号 S-XX-NNN
+  const claimMatches = content.matchAll(/S-([A-Z]+)-([0-9]{3})/g);
+  let checkedClaims = 0;
+  for (const m of claimMatches) {
+    const id = m[0];
+    checkedClaims++;
+    if (!validClaimIds.has(id)) {
+      issues.push(`报告正文中引用了未在主张库收录的虚构主张编号「${id}」`);
+    }
+  }
+  if (checkedClaims === 0) {
+    issues.push(`报告正文中未检测到任何 S-XX-NNN 规范学说锚点`);
+  }
+
+  // 4. 逐行扫描古籍出处与原典引文
+  const EXCLUDE_BOOKS = ['体用路线法', 'AGENTS', '易经', '新派命理评注', '宪法', '决策台账'];
+  const strip = (str) => str.replace(/[\s\r\n，。；：！？、“”‘’（）《》`*#|—…\.\-]/g, '');
+
+  let checkedQuotes = 0;
+  lines.forEach((l, idx) => {
+    const lineNo = idx + 1;
+    const m = l.match(/《([^》]+)》(?:[·•\s]*([^\s：「\n，。]+))?[^「“\n]*[「“]([^”」\n]+)[”」]/);
+    if (m) {
+      const rawBook = m[1].trim();
+      if (EXCLUDE_BOOKS.some((ex) => rawBook.includes(ex))) return;
+
+      let bookName = rawBook;
+      let chapterName = (m[2] || '').trim();
+      if (rawBook.includes('·') || rawBook.includes('•')) {
+        const parts = rawBook.split(/[·•]/);
+        bookName = parts[0].trim();
+        chapterName = parts[1].trim();
+      }
+
+      const quote = m[3].trim();
+      const bookFile = findBookFile(bookName);
+      if (!bookFile) {
+        issues.push(`[Line ${lineNo}] 本地典籍库中未找到书目《${bookName}》对应底本`);
+        return;
+      }
+      const bookText = fs.readFileSync(bookFile, 'utf8');
+      const cleanBookText = strip(bookText);
+
+      // 验证篇名
+      if (chapterName && chapterName.length >= 2) {
+        let cleanCh = chapterName.split(/\[原文\]|\[未检得|「/)[0].trim();
+        cleanCh = cleanCh.replace(/^卷[一二三四五六七八九十上下0-9]+\s*/, '').replace(/[·•]/g, '').trim();
+        const strippedCh = strip(cleanCh);
+        if (strippedCh && strippedCh.length >= 2) {
+          if (!cleanBookText.includes(strippedCh) && !bookText.includes(cleanCh)) {
+            issues.push(`[Line ${lineNo}] 所标篇名「${chapterName}」在《${bookName}》底本中完全不存在`);
+          }
+        }
+      }
+
+      // 验证引文逐字命中
+      const segs = quote.split(/……|\.\.\./).map((s) => strip(s)).filter((s) => s.length >= 3);
+      if (segs.length > 0) {
+        checkedQuotes++;
+        for (const seg of segs) {
+          if (!cleanBookText.includes(seg)) {
+            issues.push(`[Line ${lineNo}] 引文片段「${seg}」在《${bookName}》底本中不存在`);
+            break;
+          }
+        }
+      }
+    }
+  });
+
+  return {
+    ok: issues.length === 0,
+    issues,
+    checkedClaims,
+    checkedQuotes
+  };
+}
+
 function main() {
   console.log('======================================================================');
   console.log('八字分析工具 · 丙层引文文献真伪严查看门狗 (CI 拦截闸门)');
@@ -196,6 +314,9 @@ function main() {
 
   const targetArg = process.argv.find((a, i) => process.argv[i - 1] === '--file' || a.startsWith('--file='));
   const fileFilter = targetArg ? targetArg.replace(/^--file=/, '') : (process.argv.includes('--file') ? process.argv[process.argv.indexOf('--file') + 1] : null);
+
+  const reportArg = process.argv.find((a, i) => process.argv[i - 1] === '--report' || a.startsWith('--report='));
+  const reportPath = reportArg ? reportArg.replace(/^--report=/, '') : (process.argv.includes('--report') ? process.argv[process.argv.indexOf('--report') + 1] : path.join(ROOT, '三段式全景命理解读深度示范报告.md'));
 
   let files = fs.readdirSync(LIUPAI_DIR).filter((f) => f.endsWith('.md') && f !== 'README.md');
   if (fileFilter) {
@@ -205,10 +326,12 @@ function main() {
   let totalVerified = 0;
   let totalUnverified = 0;
   let totalViolations = 0;
+  const validClaimIds = new Set();
 
   for (const f of files) {
     const filePath = path.join(LIUPAI_DIR, f);
     const rows = parseMarkdownTable(filePath);
+    rows.forEach((r) => validClaimIds.add(r.id));
     console.log(`📑 正在审查: 流派/${f}（共 ${rows.length} 条主张）`);
 
     let fileViolations = 0;
@@ -237,8 +360,26 @@ function main() {
     }
   }
 
+  // -------------------------------------------------------------
+  // 审查总装报告正文（核验 S-XX-NNN 锚点合法性与正文引文真实性）
+  // -------------------------------------------------------------
+  if (fs.existsSync(reportPath)) {
+    console.log(`📑 正在审查报告正文: ${path.relative(ROOT, reportPath)}`);
+    const reportRes = checkReportFile(reportPath, validClaimIds);
+    if (reportRes.ok) {
+      console.log(`  ✅ 报告正文核验通过：检测到 ${reportRes.checkedClaims} 处主张锚点全部合法，${reportRes.checkedQuotes} 处古典引文逐字核验通过，0 项违规。\n`);
+    } else {
+      console.log(`  ⚠ 报告正文存在 ${reportRes.issues.length} 项违规！`);
+      for (const iss of reportRes.issues) {
+        console.error(`     - ${iss}`);
+        totalViolations++;
+      }
+      console.log('');
+    }
+  }
+
   console.log('----------------------------------------------------------------------');
-  console.log(`🏁 审查汇总：共审查 ${totalRows} 条主张`);
+  console.log(`🏁 审查汇总：共审查 ${totalRows} 条主张库条目`);
   console.log(`   - 逐字真原典核验通过: ${totalVerified} 条`);
   console.log(`   - 诚实标注未检得原典: ${totalUnverified} 条`);
   console.log(`   - 违规假引文/虚构篇名: ${totalViolations} 条`);
@@ -249,7 +390,7 @@ function main() {
     console.error('请遵循三大铁律：使用 `find-quote.mjs` 提取真原句，或按规范标注 [未检得逐字原典]！');
     process.exit(1);
   } else {
-    console.log(`\n🎉 严查看门狗全绿通过！六大流派引文与出处 100% 真实合规！`);
+    console.log(`\n🎉 严查看门狗全绿通过！六大流派主张库与报告正文引文 100% 真实合规！`);
     process.exit(0);
   }
 }

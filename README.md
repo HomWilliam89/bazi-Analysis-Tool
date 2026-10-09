@@ -50,7 +50,7 @@ cd bazi-Analysis-Tool
 ```
 
 #### 3. 一键分发安装技能到 dsh 技能库
-本项目内置了自动化镜像分发脚本，执行以下命令，即可将本项目的 22 项核心资产单向同步安装到 `~/.dsh/skills/bazi-myskill`：
+本项目内置了自动化镜像分发脚本，执行以下命令，即可将本项目的 23 项核心资产单向同步安装到 `~/.dsh/skills/bazi-myskill`：
 ```bash
 # 执行真实分发复制并自动核验 SHA256 完整性
 node 工具/sync-skill.mjs --apply
@@ -207,3 +207,6 @@ bazi-Analysis-Tool/
 * **您必须遵守**：
   * **署名 (Attribution)**：必须给出适当的署名，提供指向本许可证的链接，并注明是否作出了修改；
   * **非商业性使用 (NonCommercial)**：**不得将本材料用于任何商业目的**。
+
+### 📦 第三方依赖与署名声明 (Third-Party Attribution)
+* **`核心/astronomy.mjs`**：本项目包含从 [Astronomy Engine](https://github.com/cosinekitty/astronomy) (Copyright (c) Don Cross) 独立提取适配之单文件 ESM 纯原生天文算法模块，遵循 **MIT License** 开源。用于太阳黄经与二十四节气之亚角秒级高精度求根推算。
