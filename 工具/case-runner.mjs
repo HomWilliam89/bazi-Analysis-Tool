@@ -18,6 +18,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const 案例目录 = path.join(ROOT, '案例');
 const isStrict = process.argv.includes('--strict');
 const formatOnly = process.argv.includes('--format-only');
+const JIAZI = new Set(Array.from({ length: 60 }, (_, i) => STEMS[i % 10] + BRANCHES[i % 12]));
 
 function pillarsOf(gzList) {
   const pos = ['年柱', '月柱', '日柱', '时柱'];
@@ -59,6 +60,16 @@ for (const f of fs.readdirSync(案例目录)) {
       if (!Array.isArray(o.判据) || o.判据.length === 0) errs.push('判据 须是非空数组');
       if (!o.盘 || (typeof o.盘.ganzhi === 'undefined' && typeof o.盘.birth === 'undefined')) {
         errs.push('盘 须含 ganzhi 或 birth');
+      } else if (o.盘.ganzhi) {
+        if (!Array.isArray(o.盘.ganzhi) || o.盘.ganzhi.length !== 4) {
+          errs.push('盘.ganzhi 须为长度为 4 的四柱干支数组');
+        } else {
+          for (const gz of o.盘.ganzhi) {
+            if (!JIAZI.has(gz)) {
+              errs.push(`盘.ganzhi 包含非法六十甲子干支组合: ${gz}`);
+            }
+          }
+        }
       }
       if (typeof o.期望 === 'undefined') {
         errs.push('期望 字段缺失');
