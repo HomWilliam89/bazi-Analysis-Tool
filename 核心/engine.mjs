@@ -5774,7 +5774,8 @@ export function dayMasterSupport(chart) {
   }
 
   const strength = elementStrength(pillars, monthBranch, kingOf(chart));
-  const 同党 = Number((strength.percent[dayEl] + strength.percent[SHENG_MAP[dayEl]]).toFixed(1));
+  const 印五行 = ELEMENTS.find((e) => SHENG_MAP[e] === dayEl) ?? dayEl;
+  const 同党 = Number((strength.percent[dayEl] + (strength.percent[印五行] || 0)).toFixed(1));
   const 异党 = Number((100 - 同党).toFixed(1));
 
   const 提示 = [];

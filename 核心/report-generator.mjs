@@ -1650,8 +1650,8 @@ function gejuRescueRoutes(geju, chart, yongElem) {
   const gZi = geju.格神字 || '';
   const gShen = geju.格神十神 || '格神';
   const dayBranch = chart?.pillars?.[2]?.branch || '日支';
-  const gElem = STEMS.includes(gZi) ? STEM_ELEMENT[STEMS.indexOf(gZi)]
-    : BRANCHES.includes(gZi) ? BRANCH_ELEMENT[BRANCHES.indexOf(gZi)] : null;
+  const gElem = STEMS.includes(gZi) ? ELEMENTS[STEM_ELEMENT[STEMS.indexOf(gZi)]]
+    : BRANCHES.includes(gZi) ? ELEMENTS[BRANCH_ELEMENT[BRANCHES.indexOf(gZi)]] : null;
   const shengGeElem = gElem ? (ELEM_REL[gElem]?.被生 || gElem) : (yongElem || '生扶');
 
   return [
@@ -2961,7 +2961,7 @@ function resolveDiseaseElement(chart, ti, primaryYong) {
     const yiElems = Object.keys(pct)
       .filter(e => e !== dm && e !== yin)
       .sort((a, b) => (pct[b] || 0) - (pct[a] || 0));
-    const cand = yiElems.find(e => e !== primaryYong) || yiElems[0];
+    const cand = yiElems.find(e => e !== primaryYong);
     if (cand) return cand;
   }
 
@@ -2969,12 +2969,12 @@ function resolveDiseaseElement(chart, ti, primaryYong) {
   const sorted = Object.entries(pct).sort((a, b) => b[1] - a[1]);
   const tongElems = [dm, yin].filter(Boolean).sort((a, b) => (pct[b] || 0) - (pct[a] || 0));
   if (tongPct >= 50 && tongElems.length > 0) {
-    const cand = tongElems.find(e => e !== primaryYong) || tongElems[0];
+    const cand = tongElems.find(e => e !== primaryYong);
     if (cand && (pct[cand] || 0) > 25) return cand;
   }
 
-  // 兜底：全盘最旺且非用神者
-  const cand = sorted.find(([e]) => e !== primaryYong)?.[0] || sorted[0]?.[0] || '金';
+  // 兜底：全盘最旺且非用神者（病药严格互斥）
+  const cand = sorted.find(([e]) => e !== primaryYong)?.[0] || Object.keys(pct).find(e => e !== primaryYong) || '金';
   return cand;
 }
 
@@ -3330,7 +3330,7 @@ function renderTiyongSection(chart, options = {}) {
     lines.push(luckStr);
     lines.push('```\n');
 
-    luckPillars.slice(0, 5).forEach((lp, idx) => {
+    luckPillars.slice(0, 6).forEach((lp, idx) => {
       const stemElem = ['木', '火', '土', '金', '水'][STEM_ELEMENT[STEMS.indexOf(lp.gz[0])]];
       let stance = '';
       if (yongInfo) {
