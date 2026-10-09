@@ -9810,4 +9810,4 @@ class GravSimEndpoint {
 }
 
 export default exports;
-export { SunPosition, Seasons, MakeTime };
+export { SunPosition, Seasons, MakeTime, SearchSunLongitude };

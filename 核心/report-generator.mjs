@@ -2272,10 +2272,17 @@ export function ensureFullChart(input, options = {}) {
 
         if (validCandidates.length > 0) {
           let chosen;
+          let exactMatched = false;
           if (targetYear) {
             // 用户显式指定基准年份：优先完全一致，次选最接近者
-            chosen = validCandidates.find((c) => c.year === targetYear || c.cand.立春年 === targetYear)
-              || [...validCandidates].sort((a, b) => Math.abs(a.year - targetYear) - Math.abs(b.year - targetYear))[0];
+            const match = validCandidates.find((c) => c.year === targetYear || c.cand.立春年 === targetYear);
+            if (match) {
+              chosen = match;
+              exactMatched = true;
+            } else {
+              chosen = [...validCandidates].sort((a, b) => Math.abs(a.year - targetYear) - Math.abs(b.year - targetYear))[0];
+              exactMatched = false;
+            }
           } else {
             // 未指定基准年份：按现代活跃年龄中位（1990 年）启发式排序，避免落入古人或百岁老人盘
             const MODERN_ANCHOR_YEAR = 1990;
@@ -2300,6 +2307,8 @@ export function ensureFullChart(input, options = {}) {
             })),
             chosenYear: chosen.year,
             chosenDate: chosen.solarDate,
+            targetYear: targetYear ?? null,
+            exactMatched,
             userSpecifiedYear: !!targetYear
           };
           return selectedChart;
@@ -2445,9 +2454,17 @@ function renderFactSection(chart) {
       info.candidates.forEach((c, idx) => {
         lines.push(`> * 候选 ${idx + 1}：\`${c.solarDate}\`${c.isChosen ? ' ★【本次推演选定基准】' : ''}`);
       });
-      const noteWhy = info.userSpecifiedYear
-        ? `依调用指令显式指定基准年（${info.chosenYear} 年）。`
-        : `未显式指定年份，系统默认锚定近代活跃年龄中位基准（${info.chosenYear} 年生，当前正值核心事业期）。`;
+      let noteWhy = '';
+      if (info.userSpecifiedYear) {
+        if (info.exactMatched) {
+          noteWhy = `依调用指令显式指定基准年（${info.chosenYear} 年）。`;
+        } else {
+          noteWhy = `调用指令尝试指定基准年（${info.targetYear} 年），但在 1600–2050 年区间内该四柱未在 ${info.targetYear} 年出现，已依最小时间距离原则匹配回退至最临近样本（${info.chosenYear} 年）。`;
+        }
+      } else {
+        const isFuture = info.chosenYear > 2026;
+        noteWhy = `未显式指定年份，系统默认锚定近代活跃年龄中位基准（${info.chosenYear} 年生${isFuture ? '，属于未来时代命造' : '，当前正值核心事业期'}）。`;
+      }
       lines.push(`> ※ **时代基准说明**：${noteWhy}若实际命主出生于其他年代，大运绝对公历年份将整体平移 60 年的整数倍，可通过 \`--year <年份>\` 显式锁定基准。\n`);
     } else {
       lines.push('> **【四柱直推说明】**：本报告由四柱干支直接排定，未在 1600–2050 年区间内匹配得唯一样本，大运依流年逐年滚动。\n');

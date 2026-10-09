@@ -157,7 +157,25 @@ export async function runCli(argv = process.argv.slice(2)) {
       minute: min,
       gender: opts.gender,
     };
-  } else if (opts.year && opts.month && opts.day) {
+  } else if (opts.pillars && opts.pillars.length === 4) {
+    const posNames = ['年柱', '月柱', '日柱', '时柱'];
+    for (let idx = 0; idx < opts.pillars.length; idx++) {
+      const gz = opts.pillars[idx];
+      if (!isValidGanzhi(gz)) {
+        console.error(`错误：${posNames[idx]}「${gz}」不是合法六十甲子干支（须为两字天干地支，且阴阳相配）`);
+        return 1;
+      }
+    }
+    if (opts.year !== null && !isValidYear(opts.year)) {
+      console.error(`错误：基准年份「${opts.year}」不合法，仅支持公元 1000 至 2500 年之间整数年份`);
+      return 1;
+    }
+    input = opts.pillars;
+  } else if (opts.year !== null || opts.month !== null || opts.day !== null) {
+    if (opts.year === null || opts.month === null || opts.day === null) {
+      console.error('错误：指定年/月/日生辰时，必须同时提供 --year、--month 与 --day 参数');
+      return 1;
+    }
     const y = opts.year;
     const m = opts.month;
     const d = opts.day;
@@ -179,20 +197,6 @@ export async function runCli(argv = process.argv.slice(2)) {
       minute: min,
       gender: opts.gender,
     };
-  } else if (opts.pillars && opts.pillars.length === 4) {
-    const posNames = ['年柱', '月柱', '日柱', '时柱'];
-    for (let idx = 0; idx < opts.pillars.length; idx++) {
-      const gz = opts.pillars[idx];
-      if (!isValidGanzhi(gz)) {
-        console.error(`错误：${posNames[idx]}「${gz}」不是合法六十甲子干支（须为两字天干地支，且阴阳相配）`);
-        return 1;
-      }
-    }
-    if (opts.year !== null && !isValidYear(opts.year)) {
-      console.error(`错误：基准年份「${opts.year}」不合法，仅支持公元 1000 至 2500 年之间整数年份`);
-      return 1;
-    }
-    input = opts.pillars;
   } else {
     console.error('错误：必须指定生辰（--solar "YYYY-MM-DD HH:mm"）或四柱（年柱 月柱 日柱 时柱）。输入 -h 查看帮助。');
     return 1;

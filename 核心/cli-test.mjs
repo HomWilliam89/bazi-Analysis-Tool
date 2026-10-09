@@ -146,30 +146,34 @@ const { syncSkill, SYNC_MANIFEST } = await import('../工具/sync-skill.mjs');
 assert('sync-skill 清单定义至少包含 20 个核心资产', SYNC_MANIFEST.length >= 20);
 
 const tempMirrorDir = path.join(ROOT, '命令行', 'temp-skill-mirror');
-const applyRes = syncSkill({ skillDir: tempMirrorDir, apply: true, silent: true });
-assert('sync-skill --apply 真分发执行成功且返回退出码 0', applyRes.exitCode === 0 && applyRes.copiedCount === SYNC_MANIFEST.length);
-assert('镜像目录 命令行/bazi.mjs 入口真实落地', fs.existsSync(path.join(tempMirrorDir, '命令行', 'bazi.mjs')));
-assert('镜像目录 bazi.mjs 根级跳板真实落地', fs.existsSync(path.join(tempMirrorDir, 'bazi.mjs')));
+try {
+  const applyRes = syncSkill({ skillDir: tempMirrorDir, apply: true, silent: true });
+  assert('sync-skill --apply 真分发执行成功且返回退出码 0', applyRes.exitCode === 0 && applyRes.copiedCount === SYNC_MANIFEST.length);
+  assert('镜像目录 命令行/bazi.mjs 入口真实落地', fs.existsSync(path.join(tempMirrorDir, '命令行', 'bazi.mjs')));
+  assert('镜像目录 bazi.mjs 根级跳板真实落地', fs.existsSync(path.join(tempMirrorDir, 'bazi.mjs')));
 
-// 真跑断言 1：从镜像目录真实运行 node 命令行/bazi.mjs
-const mirrorOut1 = execFileSync(process.execPath, [path.join(tempMirrorDir, '命令行', 'bazi.mjs'), '庚午', '辛巳', '乙酉', '癸未'], {
-  cwd: tempMirrorDir,
-  encoding: 'utf8',
-});
-assert('镜像内 命令行/bazi.mjs 真实运行成功且输出正常', mirrorOut1.includes('日元：【乙】') && mirrorOut1.includes('第一段：排盘事实'));
+  // 真跑断言 1：从镜像目录真实运行 node 命令行/bazi.mjs
+  const mirrorOut1 = execFileSync(process.execPath, [path.join(tempMirrorDir, '命令行', 'bazi.mjs'), '庚午', '辛巳', '乙酉', '癸未'], {
+    cwd: tempMirrorDir,
+    encoding: 'utf8',
+    stdio: ['pipe', 'pipe', 'pipe'],
+  });
+  assert('镜像内 命令行/bazi.mjs 真实运行成功且输出正常', mirrorOut1.includes('日元：【乙】') && mirrorOut1.includes('第一段：排盘事实'));
 
-// 真跑断言 2：从镜像目录真实运行 node bazi.mjs
-const mirrorOut2 = execFileSync(process.execPath, [path.join(tempMirrorDir, 'bazi.mjs'), '庚午', '辛巳', '乙酉', '癸未'], {
-  cwd: tempMirrorDir,
-  encoding: 'utf8',
-});
-assert('镜像内 根级 bazi.mjs 真实运行成功且输出正常', mirrorOut2.includes('日元：【乙】') && mirrorOut2.includes('第一段：排盘事实'));
+  // 真跑断言 2：从镜像目录真实运行 node bazi.mjs
+  const mirrorOut2 = execFileSync(process.execPath, [path.join(tempMirrorDir, 'bazi.mjs'), '庚午', '辛巳', '乙酉', '癸未'], {
+    cwd: tempMirrorDir,
+    encoding: 'utf8',
+    stdio: ['pipe', 'pipe', 'pipe'],
+  });
+  assert('镜像内 根级 bazi.mjs 真实运行成功且输出正常', mirrorOut2.includes('日元：【乙】') && mirrorOut2.includes('第一段：排盘事实'));
 
-const checkRes = syncSkill({ skillDir: tempMirrorDir, apply: false, silent: true });
-assert('sync-skill --check 二次复核 100% 一致且退出码 0', checkRes.exitCode === 0 && checkRes.consistentCount === SYNC_MANIFEST.length);
-
-if (fs.existsSync(tempMirrorDir)) {
-  fs.rmSync(tempMirrorDir, { recursive: true, force: true });
+  const checkRes = syncSkill({ skillDir: tempMirrorDir, apply: false, silent: true });
+  assert('sync-skill --check 二次复核 100% 一致且退出码 0', checkRes.exitCode === 0 && checkRes.consistentCount === SYNC_MANIFEST.length);
+} finally {
+  if (fs.existsSync(tempMirrorDir)) {
+    fs.rmSync(tempMirrorDir, { recursive: true, force: true });
+  }
 }
 assert('测试临时镜像目录清理完毕', !fs.existsSync(tempMirrorDir));
 
@@ -681,6 +685,41 @@ const wd35_pure_melt = (pureGuiHaiCov.covered === false)
 
 assert('看门狗35：历法节气秒级精度收敛与专旺格局坚决认怂熔断（节气对齐天文历书标准值、一气专旺盘第三段坚决熔断且绝不硬答）',
   wd35_terms_ok && wd35_pure_melt
+);
+
+// 看门狗 36：节气自适应黄经求根精度与基准年诚实回退（D-053 钉住）
+// 1. 彻底根除 N-2 节气二分出窗 19.2 小时回归与 N-4 假进位缺陷
+const term1901Qiufen = solarTermMoment(1901, 17);
+const term1902Qiufen = solarTermMoment(1902, 17);
+const wd36_solarterm_adaptive = (term1901Qiufen.year === 1901 && term1901Qiufen.month === 9 && term1901Qiufen.day === 24 && term1901Qiufen.hour === 2 && term1901Qiufen.minute === 8)
+  && (term1902Qiufen.year === 1902 && term1902Qiufen.month === 9 && term1902Qiufen.day === 24 && term1902Qiufen.hour === 7 && term1902Qiufen.minute === 55)
+  && (term2024Lichun.minute === 26 && term2024Lichun.second === 50); // 2024 立春分钟严格为 26，秒为 50，绝不再出现 +60s 虚假进位
+
+// 2. 四柱 --year 未命中候选时如实披露回退机制，未出生者大运如实标注未来时代（N-1 & P0-3 修复）
+const p5UnmatchedYearReport = generateFullReport(['壬子', '戊申', '丙午', '庚寅'], { year: 1990, gender: '男' });
+const p5DefaultYearReport = generateFullReport(['壬子', '戊申', '丙午', '庚寅'], { gender: '男' });
+const wd36_year_honesty = p5UnmatchedYearReport.markdown.includes('调用指令尝试指定基准年（1990 年）')
+  && p5UnmatchedYearReport.markdown.includes('回退至最临近样本（2032 年）')
+  && !p5UnmatchedYearReport.markdown.includes('依调用指令显式指定基准年（2032 年）')
+  && p5DefaultYearReport.markdown.includes('属于未来时代命造')
+  && !p5DefaultYearReport.markdown.includes('2032 年生，当前正值核心事业期');
+
+// 3. CLI 假值拦截修复（N-10 修复）
+let wd36_falsy_trap = false;
+try {
+  execFileSync(process.execPath, [path.join(ROOT, '命令行', 'bazi.mjs'), '-y', '1000', '-m', '0', '-d', '1'], {
+    encoding: 'utf8',
+    stdio: ['pipe', 'pipe', 'pipe'],
+  });
+} catch (err) {
+  const stderr = String(err.stderr || err.message);
+  wd36_falsy_trap = (err.status === 1)
+    && stderr.includes('超出公历历法有效范围')
+    && !stderr.includes('必须指定生辰');
+}
+
+assert('看门狗36：节气自适应黄经求根精度与基准年诚实回退（根除出窗与进位错位、--year未命中如实披露回退、假值拦截精准报错）',
+  wd36_solarterm_adaptive && wd36_year_honesty && wd36_falsy_trap
 );
 
 
