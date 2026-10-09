@@ -141,6 +141,10 @@ export async function runCli(argv = process.argv.slice(2)) {
     const d = Number(matched[3]);
     const h = matched[4] ? Number(matched[4]) : 12;
     const min = matched[5] ? Number(matched[5]) : 0;
+    if (opts.year !== null && opts.year !== y) {
+      console.error(`错误：同时指定了生辰公历「${opts.solar}」与年份参数「-y ${opts.year}」，两者年份冲突，请勿传入不一致年份`);
+      return 1;
+    }
     if (!isValidYear(y)) {
       console.error(`错误：年份「${y}」不合法，仅支持公元 1000 至 2500 年之间整数年份`);
       return 1;

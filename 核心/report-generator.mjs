@@ -3468,11 +3468,16 @@ export function formatConsoleSummary(chart) {
   L.push('======================================================================');
   L.push('八字分析工具 · 三段式全景命理解读 (CLI 总装交付)');
   L.push('======================================================================');
-  L.push(`四柱干支：【${p.map((x) => x.gz).join(' ')}】  日元：【${chart.dayMaster?.stem || p[2].stem}】  生辰：${chart.calendar?.solar || '四柱推演'}`);
+  const solarDesc = chart.calendar?.solar || (chart.dateCandidatesInfo?.chosenYear ? `四柱推演（锚定基准年：${chart.dateCandidatesInfo.chosenYear} 年）` : '四柱推演');
+  L.push(`四柱干支：【${p.map((x) => x.gz).join(' ')}】  日元：【${chart.dayMaster?.stem || p[2].stem}】  生辰：${solarDesc}`);
   L.push('----------------------------------------------------------------------');
   L.push('【第一段：排盘事实】四柱竖排卡片、五行力量对比条已生成完毕');
   L.push('【第二段：各派并陈】格局派、旺衰平衡派、调候穷通派、盲派象法、古法三命、神煞象义六派全列');
-  L.push('【第三段：体用推演】子平成破救应、去留路线、主要矛盾全景双通路、财富流年已推演');
+  if (chart.coverage?.covered === false) {
+    L.push(`⚠️ 【第三段：本体系未覆盖，暂不判断】（${chart.coverage?.原因 || '特殊未立宪格局，依据宪法铁律坚决不硬答'}）`);
+  } else {
+    L.push('【第三段：体用推演】子平成破救应、去留路线、主要矛盾全景双通路、财富流年已推演');
+  }
   L.push('【第四段：合规免责】科学认知导引、法律商业决策边界与自强不息哲学已齐备');
   L.push('----------------------------------------------------------------------');
   L.push('提示：可使用 --output <filepath.md> 导出万字级深度 Markdown 决策咨询报告');

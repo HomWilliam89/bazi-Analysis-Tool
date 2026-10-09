@@ -1670,7 +1670,7 @@ export function formatChart(chart) {
   L.push('|---|---|---|---|---|---|---|---|---|---|');
   for (const c of p) {
     const hid = c.hidden.map((h) => `${h.stem}(${h.role}·${h.tenGod})`).join(' ');
-    L.push(`| ${c.position} | **${c.gz}** | ${c.tenGod} | ${c.branch} | ${hid} | ${c.nayin.name} | ${c.selfStage} | ${c.dayStemStage} | ${c.voidBranches.join('')} | ${c.zodiac} |`);
+    L.push(`| ${c.position} | **${c.gz}** | ${c.tenGod} | ${c.branch} | ${hid} | ${c.nayin.name} | ${c.dayStemStage} | ${c.selfStage} | ${c.voidBranches.join('')} | ${c.zodiac} |`);
   }
   L.push('');
   L.push(`**日主**：${chart.dayMaster.stem}（${chart.dayMaster.yinYang}${chart.dayMaster.element}），生于${chart.dayMaster.bornMonthBranch}月，月令为「${chart.dayMaster.stageInMonth}」，当令之气为${chart.dayMaster.season}。`);
@@ -7574,7 +7574,7 @@ export function formatFacts(chart) {
   L.push('');
   L.push('柱位 | 干十神 | 藏干(十神/角色) | 纳音 | 星运 | 自坐 | 空亡');
   for (const p of chart.pillars) {
-    L.push(`${p.position} | ${p.tenGod} | ${p.hidden.map((h) => `${h.stem}(${h.tenGod}·${h.role})`).join(' ')} | ${p.nayin.name} | ${p.selfStage} | ${p.dayStemStage} | ${p.voidBranches.join('')}`);
+    L.push(`${p.position} | ${p.tenGod} | ${p.hidden.map((h) => `${h.stem}(${h.tenGod}·${h.role})`).join(' ')} | ${p.nayin.name} | ${p.dayStemStage} | ${p.selfStage} | ${p.voidBranches.join('')}`);
   }
   L.push('');
   L.push('五行力量（加权占比）：' + ELEMENTS.map((e) => `${e}${chart.strength.percent[e]}%`).join('　'));

@@ -223,6 +223,7 @@ function checkReportFile(reportPath, validClaimIds) {
     '### 2.4 盲派象法（以《盲派与象法》为宗）',
     '### 2.5 古法三命（以《李虚中命书》《三命通会·论纳音》为宗）',
     '### 2.6 神煞象义派（以《三命通会》为宗）',
+    '### 2.7 现代新派（延伸视点：旺衰极端量化与隔轴生克）',
   ];
   for (const s of requiredSections) {
     if (!content.includes(s)) {
