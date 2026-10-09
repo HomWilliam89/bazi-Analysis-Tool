@@ -1729,7 +1729,9 @@ function futureTenYears(chart, options = {}) {
     let advice = '';
 
     if (yongInfo) {
-      const isHelper = (sElem === yongInfo.primaryYong || bElem === yongInfo.primaryYong || sElem === yongInfo.huShenElem || bElem === yongInfo.huShenElem || sElem === yongInfo.shengYongElem || bElem === yongInfo.shengYongElem);
+      const isHelper = (sElem === yongInfo.primaryYong || bElem === yongInfo.primaryYong
+        || sElem === yongInfo.huShenElem || bElem === yongInfo.huShenElem
+        || (yongInfo.shengYongElem && (sElem === yongInfo.shengYongElem || bElem === yongInfo.shengYongElem)));
       const isWork = (sElem === yongInfo.primaryYong || bElem === yongInfo.primaryYong);
       const isChallenger = (sElem === yongInfo.mieToolElem || bElem === yongInfo.mieToolElem || sElem === yongInfo.bingElem || bElem === yongInfo.bingElem);
 
@@ -1738,7 +1740,12 @@ function futureTenYears(chart, options = {}) {
         advice = `岁运引通${yongInfo.primaryYong}气做功之神，才华发露、利于技术攻关与业务开创；顺势而为，建立核心壁垒。`;
       } else if (isHelper) {
         stance = '助身生发 · 顺畅拓展';
-        advice = `岁运引通${sElem === yongInfo.huShenElem ? yongInfo.huShenElem + '气护卫喜神' : yongInfo.shengYongElem + '气生扶喜神'}，得外部贵人与同侪生助，利于稳健作为。`;
+        const hitHu = (sElem === yongInfo.huShenElem || bElem === yongInfo.huShenElem);
+        const hitSheng = yongInfo.shengYongElem && (sElem === yongInfo.shengYongElem || bElem === yongInfo.shengYongElem);
+        const helperText = hitHu ? `${yongInfo.huShenElem}气护卫喜神`
+          : hitSheng ? `${yongInfo.shengYongElem}气生扶喜神`
+          : `${yongInfo.primaryYong}气相助喜神`;
+        advice = `岁运引通${helperText}，得外部贵人与同侪生助，利于稳健作为。`;
       } else if (isChallenger) {
         stance = '克用磨砺 · 防御持重';
         advice = `岁运逢${sElem === yongInfo.mieToolElem ? yongInfo.mieToolElem + '气克伐用神' : yongInfo.bingElem + '气激化病灶'}，宜韬光养晦、严控合规与财务风险，坚守底线。`;
@@ -3208,9 +3215,16 @@ function renderTiyongSection(chart, options = {}) {
   lines.push(`     * **现实战略**：${actMech.战略}`);
 
   lines.push(`  2. **【破局第一大忌（灭用克神：${yongInfo.mieToolElem} · ${mieTenGod}）】**：`);
-  const mieExplanation = yongInfo.mieToolElem === ELEM_REL[dmElem]?.生
-    ? `虽常理以【${yongInfo.mieToolElem}】（印星）能生扶日主，但在本局中，【${yongInfo.mieToolElem}】会直接克灭命主解决主要矛盾的核心工具【${yongInfo.primaryYong}】（${yongTenGod}），且激化原局太旺之势（犯旺）。故依《体用路线法》宪法原则，“生我不自动等于喜”，【${yongInfo.mieToolElem}】坚决定性为**破局灭工具之第一大忌神**！`
-    : `以【${yongInfo.mieToolElem}】直接克伐第一用神【${yongInfo.primaryYong}】，毁坏命主立足之工具枢纽，属于动摇全局命脉之头号凶神。`;
+  let mieExplanation;
+  if (yongInfo.mieToolElem === ELEM_REL[dmElem]?.被生) {
+    mieExplanation = `虽常理以【${yongInfo.mieToolElem}】（印星）能生扶日主，但在本局中，【${yongInfo.mieToolElem}】会直接克灭命主解决主要矛盾的核心工具【${yongInfo.primaryYong}】（${yongTenGod}），且激化原局太旺之势（犯旺）。故依《体用路线法》宪法原则，“生我不自动等于喜”，【${yongInfo.mieToolElem}】坚决定性为**破局灭工具之第一大忌神**！`;
+  } else if (yongInfo.mieToolElem === dmElem) {
+    mieExplanation = `【${yongInfo.mieToolElem}】（比劫）与日主同气，虽常理能帮身任事，但在本局中，【${yongInfo.mieToolElem}】会直接克伐第一用神【${yongInfo.primaryYong}】（${yongTenGod}）（如比劫争财夺用或自身主观任性攻伐用神）。故依《体用路线法》规则，“比劫不自动等于喜”，岁运最忌比劫过旺争夺破坏立身工具，坚决定性为**破局灭用之大忌**！`;
+  } else if (yongInfo.mieToolElem === ELEM_REL[dmElem]?.生) {
+    mieExplanation = `虽常理以【${yongInfo.mieToolElem}】（食伤）为才华吐秀之神，但在本局中，【${yongInfo.mieToolElem}】直接克伐第一用神【${yongInfo.primaryYong}】（${yongTenGod}）（如伤官见官破格灭用），剧烈动摇立足根本。故依《体用路线法》原则，【${yongInfo.mieToolElem}】坚决定性为**破局灭工具之第一大忌神**！`;
+  } else {
+    mieExplanation = `以【${yongInfo.mieToolElem}】（${mieTenGod}）直接克伐第一用神【${yongInfo.primaryYong}】，毁坏命主立足之工具枢纽，属于动摇全局命脉之破局大忌。`;
+  }
   lines.push(`     * **破坏机理**：${mieExplanation}`);
   lines.push(`     * **现实防范**：凡岁运遇【${yongInfo.mieToolElem}】气强旺之时，切忌盲目依赖外部教条或轻举妄动，务必固守底层核心工具防线。`);
 
@@ -3224,7 +3238,10 @@ function renderTiyongSection(chart, options = {}) {
 
   lines.push('  4. **【全景喜忌综合定性】**：');
   lines.push(`     * **解决主要矛盾第一核心用神**：【${yongInfo.primaryYong}】（${yongTenGod}，立命做功之工具枢纽）；`);
-  lines.push(`     * **破局灭工具第一大忌神**：【${yongInfo.mieToolElem}】（${mieTenGod}，克害用神灭工具，纵能生身亦是大凶！）；`);
+  const mieTail = yongInfo.mieToolElem === ELEM_REL[dmElem]?.被生 ? '，纵能生身亦是大凶！'
+    : yongInfo.mieToolElem === dmElem ? '，同党争夺亦为大患！'
+    : '！';
+  lines.push(`     * **破局灭工具第一大忌神**：【${yongInfo.mieToolElem}】（${mieTenGod}，克害用神灭工具${mieTail}）；`);
   const xiListText = (yongInfo.huShenElem === yongInfo.shengYongElem)
     ? `【${yongInfo.huShenElem}】（${huTenGod}，护卫用神）`
     : `【${yongInfo.huShenElem}】（${huTenGod}，制克神护卫）与【${yongInfo.shengYongElem}】（${shengTenGod}，生助用神）`;

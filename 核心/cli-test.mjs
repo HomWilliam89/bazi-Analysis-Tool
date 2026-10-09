@@ -722,6 +722,35 @@ assert('看门狗36：节气自适应黄经求根精度与基准年诚实回退�
   wd36_solarterm_adaptive && wd36_year_honesty && wd36_falsy_trap
 );
 
+// 看门狗 37：乙层体用推演文案转录损耗纠偏（D-054 钉住）
+// 1. 破坏机理角色名真实对应（N-6 纠正）：36 盘食伤灭用盘绝不再误称为印星，以 C-006 为代表；印星灭用以 C-005 为代表
+const c006Report = generateFullReport(['壬子', '甲辰', '甲寅', '丙寅'], { gender: '男' });
+const c005Report = generateFullReport(['辛巳', '丙申', '乙巳', '丁丑'], { gender: '男' });
+const wd37_shishang_role = c006Report.markdown.includes('虽常理以【火】（食伤）为才华吐秀之神')
+  && !c006Report.markdown.includes('（印星）能生扶日主')
+  && c005Report.markdown.includes('虽常理以【水】（印星）能生扶日主');
+
+// 2. 流年 3.5 节生神空安全（N-7 纠正）：单通路盘严禁出现 null 伪文案
+const c218Report = generateFullReport(['壬子', '壬子', '丙子', '己丑'], { gender: '男' });
+const wd37_flow_null_free = !c218Report.markdown.includes('null')
+  && !c006Report.markdown.includes('null');
+
+// 3. 熔断原因区分专旺 vs 天元一气纯同干支（N-9 纠正）
+const c099Cov = coverageOf(generateFullReport(['甲戌', '甲戌', '甲戌', '甲戌']).chart);
+const wd37_melt_reason = (c099Cov.covered === false)
+  && c099Cov.原因.includes('四柱天元一气纯同干支格局')
+  && !c099Cov.原因.includes('一气专旺格局')
+  && pureGuiHaiCov.原因.includes('一气专旺格局');
+
+// 4. C-004 日主比劫夺用客观化（N-8 纠正）：绝不称日主为头号凶神
+const c004Report = generateFullReport(['壬子', '甲寅', '戊午', '丁巳'], { gender: '男' });
+const wd37_dm_objective = c004Report.markdown.includes('比劫不自动等于喜')
+  && !c004Report.markdown.includes('动摇全局命脉之头号凶神');
+
+assert('看门狗37：乙层体用推演文案转录损耗纠偏（食伤不冒称印星、流年无null、专旺与天元一气原因分流、日主克用客观化）',
+  wd37_shishang_role && wd37_flow_null_free && wd37_melt_reason && wd37_dm_objective
+);
+
 
 // -------------------------------------------------------------------
 // 统计汇总
