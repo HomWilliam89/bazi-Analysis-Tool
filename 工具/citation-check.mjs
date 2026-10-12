@@ -252,6 +252,8 @@ function checkReportFile(reportPath, validClaimIds) {
   let checkedQuotes = 0;
   lines.forEach((l, idx) => {
     const lineNo = idx + 1;
+    // 若本行属于显式诚实声明之 [未检得] 学理提要，则跳过逐字原典核验（与 checkSource 规则对齐）
+    if (l.includes('[未检得') || l.includes('[学理提要]')) return;
     const m = l.match(/《([^》]+)》(?:[·•\s]*([^\s：「\n，。]+))?[^「“\n]*[「“]([^”」\n]+)[”」]/);
     if (m) {
       const rawBook = m[1].trim();

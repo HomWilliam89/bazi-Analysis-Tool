@@ -10,6 +10,7 @@ import {
   extractChartFeatures,
   matchSchoolClaims,
   formatSchoolMatches,
+  safeTenGod,
 } from './school-matcher.mjs';
 
 let passedCount = 0;
@@ -89,6 +90,24 @@ test('支持四柱干支数组输入并正确解析十神与地支特征', () =>
   assert.equal(features.dayElement, '木');
   assert.equal(features.hasLu, true, '甲见寅应识别为禄');
   assert.ok(features.chongPairs.length > 0, '寅申相冲应识别到冲');
+  // D-061 锁死：透干十神必须准确计算，严禁假比肩缺陷与假绿测试
+  assert.deepEqual(
+    features.exposedTenGods,
+    ['七杀', '偏财', '偏印'],
+    '甲见年庚(七杀)、月戊(偏财)、时壬(偏印)透干十神必须准确，严禁比肩假类型'
+  );
+});
+
+test('safeTenGod 支持天干字符与数字索引多态调用且严密防御非法类型', () => {
+  assert.equal(safeTenGod(0, 6), '七杀', '甲(0)见庚(6)应为七杀');
+  assert.equal(safeTenGod('甲', '庚'), '七杀', '甲字符见庚字符应自适应解析为七杀，严禁返回比肩');
+  assert.equal(safeTenGod('乙', '辛'), '七杀', '乙见辛应为七杀');
+  assert.equal(safeTenGod('丙', '癸'), '正官', '丙见癸应为正官');
+  assert.equal(safeTenGod('丁', '壬'), '正官', '丁见壬应为正官');
+  assert.equal(safeTenGod('戊', '甲'), '七杀', '戊见甲应为七杀');
+  assert.equal(safeTenGod('甲', '甲'), '比肩', '同干同阳为比肩');
+  assert.equal(safeTenGod('甲', '乙'), '劫财', '同干异阴为劫财');
+  assert.equal(safeTenGod('未知', '庚'), '', '非法干支返回空');
 });
 
 test('神煞列表与干支互涉关系正确关联提取', () => {
@@ -108,16 +127,20 @@ test('案例 1（冲战破刃盘：庚申 戊寅 甲申 壬申）命中与排除
   const res = matchSchoolClaims(['庚申', '戊寅', '甲申', '壬申']);
   const matchedIds = res.matched.map((x) => x.id);
 
-  // 命中断言
+  // 命中断言：D-061 激活格局派杀印相生与建禄用煞
+  assert.ok(matchedIds.includes('S-GJ-003'), '甲生寅月透杀透印，格局派必须真实命中杀印相生 S-GJ-003');
+  assert.ok(matchedIds.includes('S-GJ-009'), '建禄格透杀，格局派必须真实命中建禄用煞 S-GJ-009');
   assert.ok(matchedIds.includes('S-TH-004'), '应命中初春甲木调候主张 S-TH-004');
-  assert.ok(matchedIds.includes('S-MP-001'), '应命中盲派禄受穿冲主张 S-MP-001');
+  assert.ok(matchedIds.includes('S-MP-001'), '应命中盲派主宾冲制主张 S-MP-001');
   assert.ok(matchedIds.includes('S-WS-005'), '应命中旺衰金木相战主张 S-WS-005');
   assert.ok(matchedIds.includes('S-SS-006'), '应命中神煞驿马逢冲主张 S-SS-006');
+  assert.ok(matchedIds.includes('S-WS-030'), '冲战地支破刃盘，必须命中五行偏枯 S-WS-030');
 
   // 排除断言（严禁误命中）
   assert.ok(!matchedIds.includes('S-SS-004'), '非魁罡日，严禁误命中魁罡 S-SS-004');
   assert.ok(!matchedIds.includes('S-TH-001'), '非仲冬癸水，严禁误命中冬水调候 S-TH-001');
   assert.ok(!matchedIds.includes('S-WS-002'), '非润下专旺，严禁误命中专旺格 S-WS-002');
+  assert.ok(!matchedIds.includes('S-WS-015'), '冲战破刃偏枯盘，严禁误命中中和纯粹 S-WS-015');
 });
 
 test('案例 2（魁罡日造：戊戌 辛酉 庚辰 丙戌）命中与排除', () => {
@@ -141,10 +164,12 @@ test('案例 3（纯阴润下极寒盘：癸亥 癸亥 癸亥 癸亥）命中与
   // 命中断言
   assert.ok(matchedIds.includes('S-TH-001'), '仲冬癸水急需调候，必须命中 S-TH-001');
   assert.ok(matchedIds.includes('S-WS-002'), '满局皆水旺极，必须命中润下专旺 S-WS-002');
+  assert.ok(matchedIds.includes('S-WS-030'), '一气专旺偏亢极寒盘，必须命中五行偏枯 S-WS-030');
 
   // 排除断言
   assert.ok(!matchedIds.includes('S-SS-004'), '癸亥非魁罡，严禁误命中魁罡 S-SS-004');
   assert.ok(!matchedIds.includes('S-GJ-001'), '局无官星印绶，严禁误命中官印格 S-GJ-001');
+  assert.ok(!matchedIds.includes('S-WS-015'), '一气极偏盘，严禁误命中中和纯粹 S-WS-015');
 });
 
 test('案例 4（金水伤官冬金盘：庚子 戊子 辛亥 壬辰）命中与排除', () => {
@@ -168,6 +193,20 @@ test('案例 5（盲派相穿倒禄盘：乙丑 己丑 癸丑 戊午）命中与
 
   // 排除断言
   assert.ok(!matchedIds.includes('S-TH-004'), '非初春甲木，严禁误命中初春甲木 S-TH-004');
+});
+
+test('案例 6（中和纯粹与五行偏枯学理互斥测试）', () => {
+  // 极端偏枯盘：癸亥四柱
+  const resPianKu = matchSchoolClaims(['癸亥', '癸亥', '癸亥', '癸亥']);
+  const idsPianKu = resPianKu.matched.map((x) => x.id);
+  assert.ok(idsPianKu.includes('S-WS-030'), '极偏盘必须命中五行偏枯 S-WS-030');
+  assert.ok(!idsPianKu.includes('S-WS-015'), '极偏盘严禁命中中和纯粹 S-WS-015');
+
+  // 和平无冲盘：甲寅 丙寅 己巳 辛未
+  const resPeace = matchSchoolClaims(['甲寅', '丙寅', '己巳', '辛未']);
+  const idsPeace = resPeace.matched.map((x) => x.id);
+  assert.ok(idsPeace.includes('S-WS-015'), '四柱无刑冲且五行不亢盘应命中中和纯粹 S-WS-015');
+  assert.ok(!idsPeace.includes('S-WS-030'), '和平中和盘严禁误命中五行偏枯 S-WS-030');
 });
 
 // --------------------------------------------------------------------

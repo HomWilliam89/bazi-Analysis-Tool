@@ -14,6 +14,7 @@ import { fileURLToPath } from 'node:url';
 import { generateFullReport, ensureFullChart, formatConsoleSummary } from './report-generator.mjs';
 import { isValidGregorianDate, castChart, solarTermMoment } from './engine.mjs';
 import { coverageOf } from './tiyong.mjs';
+import { matchSchoolClaims } from './school-matcher.mjs';
 import { runCli } from '../命令行/bazi.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -811,6 +812,28 @@ const wd39_4_history_linked = repHistory.includes('| **1900 年** | 庚子 | 壁
 
 assert('看门狗39：控制台熔断真实呈现、流年时间轴基准联动与死轨口径收口（D-060 钉住：控制台熔断真警示、基准年忠实呈现、流年时代基准联动、历史名造时代自洽）',
   wd39_1_console_meltdown && wd39_2_console_year && wd39_3_timeline_linked && wd39_4_history_linked
+);
+
+// 看门狗 40：流派匹配十神透干类型纠正与格局派主张真实命中（D-061 钉住）
+// 1. 典型七杀格命造（庚申 戊寅 甲申 壬申）在万字报告第 2.1 节必须真实命中格局派经典条目，杜绝静默跳过
+const repGjSha = generateFullReport(['庚申', '戊寅', '甲申', '壬申']).markdown;
+const wd40_1_geju_matched = repGjSha.includes('2.1 格局派（以《子平真诠》为宗）')
+  && (repGjSha.includes('S-GJ-003') || repGjSha.includes('S-GJ-009'))
+  && !repGjSha.includes('暂无格局派强特征命中');
+
+// 2. 官杀齐备命造（庚午 辛巳 乙酉 癸未）第 2.1 节必须命中对应格局条目（如 S-GJ-003 杀用印化、S-GJ-016 官印双清）
+const repGjGuan = generateFullReport(['庚午', '辛巳', '乙酉', '癸未']).markdown;
+const wd40_2_guan_matched = repGjGuan.includes('2.1 格局派（以《子平真诠》为宗）')
+  && (repGjGuan.includes('S-GJ-003') || repGjGuan.includes('S-GJ-016'));
+
+// 3. 中和纯粹与五行偏枯学理互斥性在流派主张输出中真实生效
+const matchPeace = matchSchoolClaims(['甲寅', '丙寅', '己巳', '辛未']).matched.map((x) => x.id);
+const matchExtreme = matchSchoolClaims(['癸亥', '癸亥', '癸亥', '癸亥']).matched.map((x) => x.id);
+const wd40_3_mutual_exclusion = matchPeace.includes('S-WS-015') && !matchPeace.includes('S-WS-030')
+  && matchExtreme.includes('S-WS-030') && !matchExtreme.includes('S-WS-015');
+
+assert('看门狗40：流派匹配十神透干类型纠偏、格局派主张真实命中与粗放谓词细化（D-061 钉住：格局派真实命中、正官七杀主张齐备、中和与偏枯学理互斥）',
+  wd40_1_geju_matched && wd40_2_guan_matched && wd40_3_mutual_exclusion
 );
 
 

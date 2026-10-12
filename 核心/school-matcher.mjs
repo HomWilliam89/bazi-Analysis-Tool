@@ -21,6 +21,32 @@ export const BRANCH_TO_ELEMENT = Object.fromEntries(
   BRANCHES.map((b, i) => [b, ELEMENTS[BRANCH_ELEMENT[i]]])
 );
 
+// 五行生克关系基础映射
+export const SHENG_ELEM = { 木: '火', 火: '土', 土: '金', 金: '水', 水: '木' };
+export const KE_ELEM = { 木: '土', 土: '水', 水: '火', 火: '金', 金: '木' };
+
+/**
+ * 健壮的十神推导函数：支持天干字符或数字索引自适应解析（防范字符传参缺陷）
+ */
+export function safeTenGod(a, b) {
+  const idxA = typeof a === 'number' ? a : STEMS.indexOf(a);
+  const idxB = typeof b === 'number' ? b : STEMS.indexOf(b);
+  if (idxA < 0 || idxA > 9 || idxB < 0 || idxB > 9) return '';
+  return tenGod(idxA, idxB);
+}
+
+/**
+ * 干支旬空推导：返回该干支所在旬轮空之两个地支
+ */
+export function getKongWang(gz) {
+  if (!gz || gz.length < 2) return [];
+  const sIdx = STEMS.indexOf(gz[0]);
+  const bIdx = BRANCHES.indexOf(gz[1]);
+  if (sIdx < 0 || bIdx < 0) return [];
+  const xunShou = (bIdx - sIdx + 12) % 12;
+  return [BRANCHES[(xunShou + 10) % 12], BRANCHES[(xunShou + 11) % 12]];
+}
+
 const SCHOOL_FILES = [
   { key: 'geju', file: '格局.md', name: '格局派' },
   { key: 'tiaohou', file: '调候.md', name: '调候派' },
@@ -111,9 +137,9 @@ export function extractChartFeatures(chartInput) {
 
   // 1. 十神透干（年月时）
   const exposedTenGods = [
-    tenGod(dayStem, stems[0]),
-    tenGod(dayStem, stems[1]),
-    tenGod(dayStem, stems[3]),
+    safeTenGod(dayStemIdx, STEMS.indexOf(stems[0])),
+    safeTenGod(dayStemIdx, STEMS.indexOf(stems[1])),
+    safeTenGod(dayStemIdx, STEMS.indexOf(stems[3])),
   ].filter(Boolean);
 
   // 月令藏干与本气透干
@@ -122,7 +148,7 @@ export function extractChartFeatures(chartInput) {
     : [];
   const mainEntry = monthHiddenList.find((h) => h.role === '本气') || monthHiddenList[0];
   const monthMainStem = mainEntry?.stem || '';
-  const monthMainTenGod = mainEntry?.tenGod || tenGod(dayStem, monthMainStem);
+  const monthMainTenGod = mainEntry?.tenGod || safeTenGod(dayStem, monthMainStem);
   const monthMainStemExposed = stems.slice(0, 2).includes(monthMainStem) || stems[3] === monthMainStem;
 
   // 2. 地支相冲与相穿
@@ -261,7 +287,7 @@ const MATCH_PREDICATES = {
   'S-GJ-024': (f) => f.hasYangRen && f.yangRenChong,
   'S-GJ-025': (f) => f.branches[3] === f.luBranch,
   'S-GJ-026': (f) => f.exposedTenGods.includes('伤官') && (f.exposedTenGods.includes('正印') || f.exposedTenGods.includes('偏印')),
-  'S-GJ-028': (f) => tenGod(f.dayStem, f.stems[3]) === '七杀',
+  'S-GJ-028': (f) => safeTenGod(f.dayStem, f.stems[3]) === '七杀',
   'S-GJ-029': (f) => ['壬午', '癸巳', '甲午'].includes(f.dayGz),
   'S-GJ-030': (f) => f.exposedTenGods.includes('正官') && f.exposedTenGods.includes('七杀'),
 
@@ -295,13 +321,25 @@ const MATCH_PREDICATES = {
   'S-TH-027': (f) => ['庚', '辛'].includes(f.dayStem) && f.isWinter,
   'S-TH-028': (f) => f.dayStem === '壬' && f.isSummer,
   'S-TH-029': (f) => f.dayStem === '戊' && f.monthBranch === '戌',
-  'S-TH-030': (f) => true,
+  'S-TH-030': (f) => (
+    (f.isWinter && (f.stems.includes('丙') || f.stems.includes('丁')) && f.branches.some((b) => ['巳', '午', '寅'].includes(b)))
+    || (f.isSummer && (f.stems.includes('壬') || f.stems.includes('癸')) && f.branches.some((b) => ['亥', '子', '申', '辰'].includes(b)))
+  ),
 
   // 旺衰扶抑派
   'S-WS-001': (f) => f.exposedTenGods.includes('七杀'),
   'S-WS-002': (f) => ['乙', '丁', '己', '辛', '癸'].includes(f.dayStem),
   'S-WS-003': (f) => f.chongPairs.length > 0,
-  'S-WS-004': (f) => true,
+  'S-WS-004': (f) => {
+    const pcts = Object.values(f.elemStrength?.percent || f.elemStrength?.percentages || {});
+    if (pcts.length > 0) {
+      return pcts.some((pct) => pct >= 50);
+    }
+    const branchElems = f.branches.map((b) => BRANCH_TO_ELEMENT[b]);
+    const counts = {};
+    for (const e of branchElems) counts[e] = (counts[e] || 0) + 1;
+    return Object.values(counts).some((c) => c >= 3);
+  },
   'S-WS-005': (f) => f.hasLu || f.hasYangRen,
   'S-WS-006': (f) => f.exposedTenGods.filter((t) => t.includes('印')).length >= 2,
   'S-WS-009': (f) => (f.exposedTenGods.includes('食神') || f.exposedTenGods.includes('伤官')) && (f.exposedTenGods.includes('正财') || f.exposedTenGods.includes('偏财')),
@@ -309,31 +347,58 @@ const MATCH_PREDICATES = {
   'S-WS-011': (f) => ['庚', '辛'].includes(f.dayStem) && f.branches.filter((b) => BRANCH_TO_ELEMENT[b] === '土').length >= 2,
   'S-WS-012': (f) => f.exposedTenGods.includes('七杀') && (f.exposedTenGods.includes('食神') || f.exposedTenGods.includes('伤官')),
   'S-WS-014': (f) => ['甲', '乙'].includes(f.dayStem) && f.exposedTenGods.some((t) => t.includes('官') || t.includes('杀')),
-  'S-WS-015': (f) => true,
-  'S-WS-016': (f) => true,
+  'S-WS-015': (f) => {
+    const pcts = Object.values(f.elemStrength?.percent || f.elemStrength?.percentages || {});
+    if (pcts.length > 0) {
+      const maxPct = Math.max(...pcts);
+      return maxPct <= 45 && f.chongPairs.length === 0;
+    }
+    return f.chongPairs.length === 0 && f.chuanPairs.length === 0;
+  },
+  'S-WS-016': (f) => {
+    const monthElem = BRANCH_TO_ELEMENT[f.monthBranch];
+    const notLing = monthElem !== f.dayElement;
+    const deDiOrDang = (f.hasLu || f.hasYangRen) || (f.stems.filter((s) => STEM_TO_ELEMENT[s] === f.dayElement).length >= 2);
+    return notLing && deDiOrDang;
+  },
   'S-WS-017': (f) => ['丙', '丁'].includes(f.dayStem) && f.branches.filter((b) => BRANCH_TO_ELEMENT[b] === '木').length >= 2,
   'S-WS-018': (f) => ['戊', '己'].includes(f.dayStem) && f.branches.filter((b) => BRANCH_TO_ELEMENT[b] === '水').length >= 2,
   'S-WS-019': (f) => ['丙', '丁'].includes(f.dayStem) && f.branches.filter((b) => BRANCH_TO_ELEMENT[b] === '金').length >= 2,
-  'S-WS-020': (f) => true,
+  'S-WS-020': (f) => (
+    (f.exposedTenGods.includes('七杀') && (f.exposedTenGods.includes('食神') || f.exposedTenGods.includes('正印') || f.exposedTenGods.includes('偏印')))
+    || (f.exposedTenGods.includes('伤官') && f.exposedTenGods.includes('正官') && (f.exposedTenGods.includes('正印') || f.exposedTenGods.includes('偏印')))
+  ),
   'S-WS-027': (f) => f.exposedTenGods.includes('正官') && f.exposedTenGods.includes('七杀'),
   'S-WS-028': (f) => f.exposedTenGods.some((t) => t.includes('印')) && f.exposedTenGods.some((t) => t.includes('财')),
-  'S-WS-030': (f) => true,
+  'S-WS-030': (f) => {
+    const pcts = Object.values(f.elemStrength?.percent || f.elemStrength?.percentages || {});
+    if (pcts.length > 0) {
+      const maxPct = Math.max(...pcts);
+      const zeros = pcts.filter((p) => p === 0).length;
+      return maxPct >= 50 || zeros >= 2 || f.chongPairs.length >= 2;
+    }
+    return f.chongPairs.length >= 2;
+  },
 
   // 盲派与象法
-  'S-MP-001': (f) => true,
+  'S-MP-001': (f) => f.chongPairs.some(([i, j]) => (i < 2 && j >= 2) || (i >= 2 && j < 2))
+    || f.chuanPairs.some(([i, j]) => (i < 2 && j >= 2) || (i >= 2 && j < 2)),
   'S-MP-002': (f) => f.chuanPairs.length > 0,
   'S-MP-003': (f) => f.branches.some((b) => ['辰', '戌', '丑', '未'].includes(b)) && f.chongPairs.length > 0,
-  'S-MP-004': (f) => true,
+  'S-MP-004': (f) => {
+    const branchElems = f.branches.map((b) => BRANCH_TO_ELEMENT[b]);
+    return f.stems.some((s, idx) => idx !== 2 && !branchElems.includes(STEM_TO_ELEMENT[s]));
+  },
   'S-MP-005': (f) => f.hasLu && (f.luChong || f.luChuan),
   'S-MP-006': (f) => f.exposedTenGods.includes('七杀') && (f.exposedTenGods.includes('食神') || f.exposedTenGods.includes('伤官')),
   'S-MP-008': (f) => f.chongPairs.length > 0,
   'S-MP-011': (f) => f.hasLu && f.luChuan,
-  'S-MP-013': (f) => true,
+  'S-MP-013': (f) => f.chuanPairs.some(([i, j]) => (i < 2 && j >= 2) || (i >= 2 && j < 2)),
   'S-MP-014': (f) => f.exposedTenGods.includes('伤官') && f.exposedTenGods.includes('七杀'),
   'S-MP-015': (f) => (f.monthMainTenGod?.includes('财') || f.exposedTenGods.includes('正财') || f.exposedTenGods.includes('偏财')),
   'S-MP-016': (f) => (f.exposedTenGods.includes('七杀') || f.exposedTenGods.includes('偏财')) && (f.exposedTenGods.includes('伤官') || f.exposedTenGods.includes('食神')),
   'S-MP-017': (f) => f.exposedTenGods.includes('正官') && f.exposedTenGods.includes('伤官'),
-  'S-MP-018': (f) => f.stems.some((s, idx) => tenGod(f.dayStem, s) === '正印' && tenGod(f.dayStem, f.stems[idx === 0 ? 1 : 0]) === '正官'),
+  'S-MP-018': (f) => f.stems.some((s, idx) => safeTenGod(f.dayStem, s) === '正印' && safeTenGod(f.dayStem, f.stems[idx === 0 ? 1 : 0]) === '正官'),
   'S-MP-022': (f) => f.hasLu && f.luChuan,
   'S-MP-025': (f) => f.hasYangRen && (f.exposedTenGods.includes('正财') || f.exposedTenGods.includes('偏财')),
   'S-MP-028': (f) => f.branches.some((b) => ['辰', '戌', '丑', '未'].includes(b)),
@@ -341,8 +406,19 @@ const MATCH_PREDICATES = {
   'S-MP-030': (f) => f.chuanPairs.length > 0,
 
   // 古法三命
-  'S-SM-001': (f) => true,
-  'S-SM-002': (f) => true,
+  'S-SM-001': (f) => {
+    if (!f.nayins || f.nayins.length < 3) return false;
+    const yearNayinEl = f.nayins[0]?.slice(-1);
+    const dayNayinEl = f.nayins[2]?.slice(-1);
+    return Boolean(yearNayinEl && dayNayinEl && yearNayinEl !== dayNayinEl);
+  },
+  'S-SM-002': (f) => {
+    if (!f.nayins || f.nayins.length < 3) return false;
+    const yearEl = f.nayins[0]?.slice(-1);
+    const dayEl = f.nayins[2]?.slice(-1);
+    const sheng = SHENG_ELEM[yearEl] === dayEl || SHENG_ELEM[dayEl] === yearEl;
+    return sheng && f.hasLu;
+  },
   'S-SM-007': (f) => f.hasTianYiHuHuan || f.shenshaList.includes('天乙贵人'),
   'S-SM-009': (f) => (f.branches.includes('辰') && f.branches.includes('巳')) || (f.branches.includes('戌') && f.branches.includes('亥')),
   'S-SM-011': (f) => (f.stems.includes('乙') && f.stems.includes('丙') && f.stems.includes('丁'))
@@ -350,11 +426,20 @@ const MATCH_PREDICATES = {
     || (f.stems.includes('辛') && f.stems.includes('壬') && f.stems.includes('癸')),
   'S-SM-012': (f) => ['壬午', '癸巳'].includes(f.dayGz) || ['壬午', '癸巳'].includes(f.yearGz),
   'S-SM-016': (f) => f.hasTianYiHuHuan,
-  'S-SM-017': (f) => true,
+  'S-SM-017': (f) => {
+    if (!f.nayins || f.nayins.length < 3) return false;
+    const yearEl = f.nayins[0]?.slice(-1);
+    const dayEl = f.nayins[2]?.slice(-1);
+    return KE_ELEM[yearEl] === dayEl || KE_ELEM[dayEl] === yearEl;
+  },
   'S-SM-019': (f) => f.nayins.some((n) => n.includes('水')) && f.nayins.some((n) => n.includes('火')),
   'S-SM-021': (f) => f.chongPairs.some(([i, j]) => (i === 0 && j === 1) || (i === 2 && j === 3)),
   'S-SM-022': (f) => f.chongPairs.length > 0,
-  'S-SM-024': (f) => true,
+  'S-SM-024': (f) => {
+    if (!f.nayins || f.nayins.length < 4) return false;
+    const [y, m, d, h] = f.nayins.map((n) => n?.slice(-1));
+    return (SHENG_ELEM[y] === m && SHENG_ELEM[m] === d) || (SHENG_ELEM[m] === d && SHENG_ELEM[d] === h);
+  },
   'S-SM-028': (f) => f.chongPairs.some(([i, j]) => i === 2 || j === 2 || i === 3 || j === 3),
   'S-SM-030': (f) => f.shenshaList.includes('天乙贵人'),
 
@@ -368,7 +453,10 @@ const MATCH_PREDICATES = {
   'S-SS-007': (f) => f.shenshaList.includes('文昌') || f.shenshaList.includes('学堂'),
   'S-SS-008': (f) => f.shenshaList.includes('桃花') || f.shenshaList.includes('咸池'),
   'S-SS-009': (f) => ['甲辰', '乙巳', '丙申', '丁亥', '戊戌', '己丑', '庚辰', '辛巳', '壬申', '癸亥'].includes(f.dayGz),
-  'S-SS-010': (f) => true,
+  'S-SS-010': (f) => {
+    const kw = getKongWang(f.dayGz);
+    return [f.branches[0], f.branches[1], f.branches[3]].some((b) => kw.includes(b));
+  },
   'S-SS-011': (f) => ['甲', '己'].includes(f.dayStem) && ['乙丑', '己巳', '癸酉'].includes(f.hourGz),
   'S-SS-012': (f) => f.shenshaList.includes('天德') || f.shenshaList.includes('月德'),
   'S-SS-013': (f) => f.shenshaList.includes('孤辰') || f.shenshaList.includes('寡宿'),
@@ -382,7 +470,12 @@ const MATCH_PREDICATES = {
   'S-SS-022': (f) => ['丙子', '丁丑', '戊寅', '辛卯', '壬辰', '癸巳', '丙午', '丁未', '戊申', '辛酉', '壬戌', '癸亥'].includes(f.dayGz),
   'S-SS-023': (f) => (f.branches.includes('辰') && f.branches.includes('巳')) || (f.branches.includes('戌') && f.branches.includes('亥')),
   'S-SS-026': (f) => f.hasLu && f.shenshaList.includes('驿马'),
-  'S-SS-030': (f) => true,
+  'S-SS-030': (f) => {
+    if (!Array.isArray(f.shenshaList) || f.shenshaList.length === 0) return false;
+    const monthElem = BRANCH_TO_ELEMENT[f.monthBranch];
+    return f.shenshaList.some((s) => ['天乙贵人', '将星', '文昌贵人', '禄神'].includes(s))
+      && (f.hasLu || f.hasYangRen || f.branches.some((b) => BRANCH_TO_ELEMENT[b] === monthElem));
+  },
 };
 
 /**
@@ -447,7 +540,7 @@ export function formatSchoolMatches(result) {
   lines.push('======================================================================');
   lines.push(`八字各派主张并陈（丙层动态匹配引擎 · 扫描 ${result.totalEntriesScanned} 条标准条目）`);
   lines.push('======================================================================');
-  lines.push(`命盘四柱：${result.features.gzList.join(' ')}  (日元：${result.features.dayStem}木/火/土/金/水)`);
+  lines.push(`命盘四柱：${result.features.gzList.join(' ')}  (日元：${result.features.dayStem}${result.features.dayElement})`);
   lines.push(`命中主张总计：${result.totalMatched} 条\n`);
 
   for (const s of SCHOOL_FILES) {
