@@ -11,6 +11,7 @@ import {
   matchSchoolClaims,
   formatSchoolMatches,
   safeTenGod,
+  MATCH_PREDICATES,
 } from './school-matcher.mjs';
 
 let passedCount = 0;
@@ -41,6 +42,19 @@ test('单源条目总数必须严格等于 180 条整', () => {
   const { map, list } = loadAllSchoolEntries(true);
   assert.equal(list.length, 180, `期望 180 条，实际解析得到 ${list.length} 条`);
   assert.equal(map.size, 180, `期望 Map 容量 180，实际得到 ${map.size}`);
+});
+
+test('MATCH_PREDICATES 必须 100% 覆盖全量 180 条标准条目（零死条目门禁）', () => {
+  const { list } = loadAllSchoolEntries();
+  const predicateKeys = Object.keys(MATCH_PREDICATES);
+  assert.equal(predicateKeys.length, 180, `谓词字典必须恰好 180 个键，实际得到 ${predicateKeys.length}`);
+  for (const entry of list) {
+    assert.equal(
+      typeof MATCH_PREDICATES[entry.id],
+      'function',
+      `条目 ${entry.id} (${entry.schoolName} · ${entry.claim}) 缺少匹配谓词实现`
+    );
+  }
 });
 
 test('六大主流学派条目数量必须均衡，各派恰好 30 条', () => {
@@ -207,6 +221,23 @@ test('案例 6（中和纯粹与五行偏枯学理互斥测试）', () => {
   const idsPeace = resPeace.matched.map((x) => x.id);
   assert.ok(idsPeace.includes('S-WS-015'), '四柱无刑冲且五行不亢盘应命中中和纯粹 S-WS-015');
   assert.ok(!idsPeace.includes('S-WS-030'), '和平中和盘严禁误命中五行偏枯 S-WS-030');
+});
+
+test('案例 7（新实装流派规则命中验证：从杀格、悬针煞、红鸾天喜）', () => {
+  // 从杀格命中：戊戌 辛酉 乙酉 辛巳 (乙木绝无印比生扶，满盘官杀财星)
+  const resCongSha = matchSchoolClaims(['戊戌', '辛酉', '乙酉', '辛巳']);
+  const idsCongSha = resCongSha.matched.map((x) => x.id);
+  assert.ok(idsCongSha.includes('S-GJ-010'), '满盘官杀无印比生扶必须命中从煞格 S-GJ-010');
+
+  // 悬针煞重叠命中：甲午 辛酉 辛卯 甲午 (甲、辛、卯、午重见)
+  const resXuanZhen = matchSchoolClaims(['甲午', '辛酉', '辛卯', '甲午']);
+  const idsXuanZhen = resXuanZhen.matched.map((x) => x.id);
+  assert.ok(idsXuanZhen.includes('S-SS-029'), '悬针重见必须命中悬针煞 S-SS-029');
+
+  // 红鸾天喜命中：甲子年生人四柱见卯支 (红鸾在卯)
+  const resHongLuan = matchSchoolClaims(['甲子', '丁卯', '丙寅', '己丑']);
+  const idsHongLuan = resHongLuan.matched.map((x) => x.id);
+  assert.ok(idsHongLuan.includes('S-SS-027'), '子年见卯支必须命中红鸾天喜 S-SS-027');
 });
 
 // --------------------------------------------------------------------
