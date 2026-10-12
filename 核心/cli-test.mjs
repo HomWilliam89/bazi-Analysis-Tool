@@ -786,6 +786,33 @@ assert('看门狗38：丙层六派归位、文献追溯链闭环与环境治理�
   wd38_sanming_present && wd38_six_schools_aligned && wd38_anchors_present && wd38_no_fake_chapters && wd38_gitignore_ok
 );
 
+// 看门狗 39：控制台熔断真实呈现、流年时间轴基准联动与死轨口径收口（D-060 钉住）
+// 1. 控制台概览必须真实识别未覆盖熔断盘，严禁虚假声称已推演第三段
+const uncoveredPillars = ['乙卯', '乙酉', '乙卯', '辛酉'];
+const uncoveredRep = generateFullReport(uncoveredPillars);
+const uncoveredConsole = formatConsoleSummary(uncoveredRep.chart);
+const wd39_1_console_meltdown = uncoveredConsole.includes('⚠️ 【第三段：本体系未覆盖，暂不判断】')
+  && !uncoveredConsole.includes('【第三段：体用推演】子平成破救应、去留路线、主要矛盾全景双通路、财富流年已推演');
+
+// 2. 控制台概览四柱推演在指定基准年与未指定时忠实呈现基准年信息
+const consolePillarsWithYear = formatConsoleSummary(generateFullReport(['庚午', '辛巳', '乙酉', '癸未'], { year: 1930 }).chart);
+const consolePillarsFallback = formatConsoleSummary(generateFullReport(['庚午', '辛巳', '乙酉', '癸未'], { year: 2032 }).chart);
+const wd39_2_console_year = consolePillarsWithYear.includes('锚定基准年：1930 年')
+  && consolePillarsFallback.includes('指定 2032 回退锚定 1990 年');
+
+// 3. 流年时间轴基准联动：传入指定基准年（如 -y 1930 或 options.year），流年起推年必须从 1930 年开始
+const rep1930 = generateFullReport(['庚午', '辛巳', '乙酉', '癸未'], { year: 1930 }).markdown;
+const wd39_3_timeline_linked = rep1930.includes('| **1930 年** | 庚午 | 路旁土 | 正官 |')
+  && rep1930.includes('| **1939 年** | 己卯 | 城头土 | 偏财 |');
+
+// 4. 历史名造（如 1900 年）3.5 流年起推年从 1900 年开始
+const repHistory = generateFullReport({ year: 1900, month: 1, day: 1, hour: 12, minute: 0, gender: '男' }).markdown;
+const wd39_4_history_linked = repHistory.includes('| **1900 年** | 庚子 | 壁上土 | 七杀 |');
+
+assert('看门狗39：控制台熔断真实呈现、流年时间轴基准联动与死轨口径收口（D-060 钉住：控制台熔断真警示、基准年忠实呈现、流年时代基准联动、历史名造时代自洽）',
+  wd39_1_console_meltdown && wd39_2_console_year && wd39_3_timeline_linked && wd39_4_history_linked
+);
+
 
 // -------------------------------------------------------------------
 // 统计汇总

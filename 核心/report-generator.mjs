@@ -1660,8 +1660,28 @@ function gejuRescueRoutes(geju, chart, yongElem) {
   ].join('\n');
 }
 
+/**
+ * 解析流年起推基准年份（D-060 落地，联动用户传参基准年、历史名造时代或现代默认年）
+ */
+export function resolveStartYear(chart, options = {}) {
+  if (options.startYear && Number.isFinite(Number(options.startYear))) {
+    return Number(options.startYear);
+  }
+  if (options.year && Number.isFinite(Number(options.year))) {
+    return Number(options.year);
+  }
+  if (chart.dateCandidatesInfo?.userSpecifiedYear && chart.dateCandidatesInfo?.chosenYear) {
+    return chart.dateCandidatesInfo.chosenYear;
+  }
+  const baseYear = chart.dateCandidatesInfo?.chosenYear || chart.calendar?.year || (chart.calendar?.solar ? Number(chart.calendar.solar.slice(0, 4)) : null);
+  if (baseYear && baseYear < 1926) {
+    return baseYear;
+  }
+  return 2026;
+}
+
 function futureTenYears(chart, options = {}) {
-  const currentYear = options.startYear || 2026;
+  const currentYear = options.startYear || resolveStartYear(chart, options);
   const dayStem = chart.dayMaster?.stem || chart.pillars[2].stem;
   const yongElem = options.yongElem || chart.dayMaster?.element || '木';
   const yongInfo = options.yongInfo || null;
@@ -3028,6 +3048,11 @@ export function describeActionMechanism(yong, bing, dmElem, yongTenGod) {
   }
 
   // 6. 同气相求 / 协力分担轨（同类比和，yong === bing）
+  // 【学理与防御性收口说明 · D-060 方案 3 A】：
+  // 依据《体用路线法》根本宪法与喜病互斥铁律（D-047/D-060），病神（主要矛盾元凶）与用神（做功解救枢纽）在定性上严格对立互斥；
+  // 在 resolveDiseaseElement 中已对病神候选作严格过滤（e !== primaryYong）。
+  // 数学上五行环中任意两两不同五行必满足前 5 轨之一。因此本分支在当前公理化体系下恒不可达，
+  // 特此作为数学逻辑完备性与防御性保底分支保留（Default Fallback），业务推演不落入此轨。
   return {
     轨道: '同气比和',
     机理: `以【${yong}】同气相求，并肩分担命局主要压力。同党合力，众志成城，化解孤立无援之危。用神为命主结伴同行、借力共赢之立足枢纽。`,
@@ -3129,6 +3154,7 @@ function renderTiyongSection(chart, options = {}) {
     ...(chart.covered !== undefined ? { covered: chart.covered } : {})
   };
   const cov = coverageOf(chart, covOpts);
+  chart.coverage = cov;
   if (!cov.covered) {
     lines.push('> [!CAUTION]');
     lines.push('> ### ⚠ 【本体系未覆盖，暂不判断】');
@@ -3358,7 +3384,8 @@ function renderTiyongSection(chart, options = {}) {
   lines.push('### 3.5 未来十年流年财富走势曲线与重点年份分析\n');
   lines.push('> **学理说明**：流年太岁乃一年之主宰。本段依体用路线法，推演未来十年真实岁君干支、十神落位、太岁与原局地支之刑冲会合及五行助用/克用状态，提供客观生克定性指引，坚决摒弃伪造分值与假折线图。\n');
 
-  const tenYears = futureTenYears(chart, { yongElem, yongInfo });
+  const startYear = resolveStartYear(chart, options);
+  const tenYears = futureTenYears(chart, { yongElem, yongInfo, startYear });
   lines.push('| 公历年份 | 太岁干支 | 纳音五行 | 岁君十神 | 生克定性 | 岁运互动与实操指南 |');
   lines.push('| :--- | :--- | :--- | :--- | :--- | :--- |');
   tenYears.forEach((item) => {
@@ -3468,13 +3495,27 @@ export function formatConsoleSummary(chart) {
   L.push('======================================================================');
   L.push('八字分析工具 · 三段式全景命理解读 (CLI 总装交付)');
   L.push('======================================================================');
-  const solarDesc = chart.calendar?.solar || (chart.dateCandidatesInfo?.chosenYear ? `四柱推演（锚定基准年：${chart.dateCandidatesInfo.chosenYear} 年）` : '四柱推演');
+  let solarDesc = chart.calendar?.solar || '四柱推演';
+  if (chart.isFourPillarsMode) {
+    if (chart.dateCandidatesInfo?.chosenYear) {
+      if (chart.dateCandidatesInfo.userSpecifiedYear && !chart.dateCandidatesInfo.exactMatched) {
+        solarDesc = `${chart.dateCandidatesInfo.chosenDate}（四柱推演，指定 ${chart.dateCandidatesInfo.targetYear} 回退锚定 ${chart.dateCandidatesInfo.chosenYear} 年）`;
+      } else if (chart.dateCandidatesInfo.userSpecifiedYear) {
+        solarDesc = `${chart.dateCandidatesInfo.chosenDate}（四柱推演，锚定基准年：${chart.dateCandidatesInfo.chosenYear} 年）`;
+      } else {
+        solarDesc = `${chart.dateCandidatesInfo.chosenDate}（四柱推演，默认启发式锚定：${chart.dateCandidatesInfo.chosenYear} 年）`;
+      }
+    } else {
+      solarDesc = '四柱直推（未匹配有效公历时代）';
+    }
+  }
   L.push(`四柱干支：【${p.map((x) => x.gz).join(' ')}】  日元：【${chart.dayMaster?.stem || p[2].stem}】  生辰：${solarDesc}`);
   L.push('----------------------------------------------------------------------');
   L.push('【第一段：排盘事实】四柱竖排卡片、五行力量对比条已生成完毕');
   L.push('【第二段：各派并陈】格局派、旺衰平衡派、调候穷通派、盲派象法、古法三命、神煞象义六派全列');
-  if (chart.coverage?.covered === false) {
-    L.push(`⚠️ 【第三段：本体系未覆盖，暂不判断】（${chart.coverage?.原因 || '特殊未立宪格局，依据宪法铁律坚决不硬答'}）`);
+  const cov = chart.coverage || coverageOf(chart, {});
+  if (cov?.covered === false) {
+    L.push(`⚠️ 【第三段：本体系未覆盖，暂不判断】（${cov?.原因 || cov?.结论 || '特殊未立宪格局，依据宪法铁律坚决不硬答'}）`);
   } else {
     L.push('【第三段：体用推演】子平成破救应、去留路线、主要矛盾全景双通路、财富流年已推演');
   }
