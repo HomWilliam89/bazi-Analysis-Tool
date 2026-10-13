@@ -38,20 +38,20 @@ console.log('【丙层流派匹配器自动化测试套件 · D-038 回归验证
 console.log('======================================================================\n');
 
 // --------------------------------------------------------------------
-// 测试组 1：单源 180 条标准条目解析验证（SSOT Parser Verification）
+// 测试组 1：单源 300 条标准条目解析验证（SSOT Parser Verification）
 // --------------------------------------------------------------------
 console.log('▶ [测试组 1] 单源条目解析完整性与字段规范测试');
 
-test('单源条目总数必须严格等于 270 条整', () => {
+test('单源条目总数必须严格等于 300 条整', () => {
   const { map, list } = loadAllSchoolEntries(true);
-  assert.equal(list.length, 270, `期望 270 条，实际解析得到 ${list.length} 条`);
-  assert.equal(map.size, 270, `期望 Map 容量 270，实际得到 ${map.size}`);
+  assert.equal(list.length, 300, `期望 300 条，实际解析得到 ${list.length} 条`);
+  assert.equal(map.size, 300, `期望 Map 容量 300，实际得到 ${map.size}`);
 });
 
-test('MATCH_PREDICATES 必须 100% 覆盖全量 270 条标准条目（零死条目门禁）', () => {
+test('MATCH_PREDICATES 必须 100% 覆盖全量 300 条标准条目（零死条目门禁）', () => {
   const { list } = loadAllSchoolEntries();
   const predicateKeys = Object.keys(MATCH_PREDICATES);
-  assert.equal(predicateKeys.length, 270, `谓词字典必须恰好 270 个键，实际得到 ${predicateKeys.length}`);
+  assert.equal(predicateKeys.length, 300, `谓词字典必须恰好 300 个键，实际得到 ${predicateKeys.length}`);
   for (const entry of list) {
     assert.equal(
       typeof MATCH_PREDICATES[entry.id],
@@ -61,7 +61,7 @@ test('MATCH_PREDICATES 必须 100% 覆盖全量 270 条标准条目（零死条�
   }
 });
 
-test('六大主流学派条目数量校验：格局派 60 条、调候派 60 条、古法三命 60 条，其余各派恰好 30 条', () => {
+test('六大主流学派条目数量校验：格局派 60 条、调候派 60 条、古法三命 60 条、神煞派 60 条，其余各派恰好 30 条', () => {
   const { list } = loadAllSchoolEntries();
   const counts = {
     geju: 0,
@@ -80,10 +80,10 @@ test('六大主流学派条目数量校验：格局派 60 条、调候派 60 条
   assert.equal(counts.wangshuai, 30, '旺衰扶抑派条目必须为 30 条');
   assert.equal(counts.mangpai, 30, '盲派与象法条目必须为 30 条');
   assert.equal(counts.sanming, 60, '古法三命条目必须为 60 条（批次 C 扩充至 60 条）');
-  assert.equal(counts.shensha, 30, '神煞派条目必须为 30 条');
+  assert.equal(counts.shensha, 60, '神煞派条目必须为 60 条（批次 D 扩充至 60 条）');
 });
 
-test('全部 270 条条目元数据字段完整且非空', () => {
+test('全部 300 条条目元数据字段完整且非空', () => {
   const { list } = loadAllSchoolEntries();
   const idPattern = /^S-(GJ|TH|WS|MP|SM|SS)-\d{3}$/;
   for (const item of list) {
@@ -489,6 +489,57 @@ test('古法三命扩充严密排他断言（辰戌相冲破龙排除、卯酉�
   // 一旬包裹杂入他旬排他：甲子 丙寅 戊辰 甲戌 (前三柱甲子旬，时柱甲戌旬)
   const resZaXun = matchSchoolClaims(['甲子', '丙寅', '戊辰', '甲戌']);
   assert.ok(!resZaXun.matched.some((x) => x.id === 'S-SM-060'), '杂入他旬必须排除一旬包裹 S-SM-060');
+});
+
+// --------------------------------------------------------------------
+// 测试组 9：神煞派《玉照定真经》铁断专测套件（批次 D 扩充验证）
+// --------------------------------------------------------------------
+console.log('▶ [测试组 9] 神煞派《玉照定真经》古法神煞铁断专测套件');
+
+test('神煞派扩充经典命中断言（四阳俱立 S-SS-031、阴覆全逢 S-SS-032、四仲有旺 S-SS-055、寅巳申三刑 S-SS-060、土居四季全 S-SS-054）', () => {
+  // 四阳俱立造：甲子 丙寅 戊辰 庚午 (四干纯阳)
+  const resYang = matchSchoolClaims(['甲子', '丙寅', '戊辰', '庚午']);
+  const idsYang = resYang.matched.map((x) => x.id);
+  assert.ok(idsYang.includes('S-SS-031'), '四柱天干纯阳必须命中四阳俱立 S-SS-031');
+
+  // 阴覆全逢造：乙丑 丁亥 己未 辛酉 (四干纯阴)
+  const resYin = matchSchoolClaims(['乙丑', '丁亥', '己未', '辛酉']);
+  const idsYin = resYin.matched.map((x) => x.id);
+  assert.ok(idsYin.includes('S-SS-032'), '四柱天干纯阴必须命中阴覆全逢 S-SS-032');
+
+  // 乾隆皇帝造：辛卯 丁酉 庚午 丙子 (地支子午卯酉四仲全备)
+  const resQianlong = matchSchoolClaims(['辛卯', '丁酉', '庚午', '丙子']);
+  const idsQianlong = resQianlong.matched.map((x) => x.id);
+  assert.ok(idsQianlong.includes('S-SS-055'), '子午卯酉四仲全备必须命中四仲见之有旺 S-SS-055');
+
+  // 寅巳申三刑造：壬申 癸卯 丙寅 癸巳 (地支全寅巳申无恩之刑)
+  const resSanXing = matchSchoolClaims(['壬申', '癸卯', '丙寅', '癸巳']);
+  const idsSanXing = resSanXing.matched.map((x) => x.id);
+  assert.ok(idsSanXing.includes('S-SS-060'), '地支寅巳申全备必须命中带刑全申巳寅 S-SS-060');
+
+  // 土居四季全备造：戊辰 己未 辛丑 戊戌 (地支辰戌丑未四墓库全备且透官印)
+  const resSiJi = matchSchoolClaims(['戊辰', '己未', '辛丑', '戊戌']);
+  const idsSiJi = resSiJi.matched.map((x) => x.id);
+  assert.ok(idsSiJi.includes('S-SS-054'), '辰戌丑未四库全备必须命中土居四季见全 S-SS-054');
+  assert.ok(idsSiJi.includes('S-SS-056'), '辰戌丑未透印必须命中季中全犯库藏之官 S-SS-056');
+});
+
+test('神煞派扩充严密排他断言（杂入阴干排除四阳、四仲缺一排除四仲有旺、非魁罡日排除魁罡屠讼）', () => {
+  // 杂入阴干排除四阳：甲子 丙寅 乙卯 庚午 (日干乙为阴干)
+  const resZaYin = matchSchoolClaims(['甲子', '丙寅', '乙卯', '庚午']);
+  assert.ok(!resZaYin.matched.some((x) => x.id === 'S-SS-031'), '杂入阴干必须排除四阳俱立 S-SS-031');
+
+  // 杂入阳干排除阴覆全逢：乙丑 丁亥 戊午 辛酉 (日干戊为阳干)
+  const resZaYang = matchSchoolClaims(['乙丑', '丁亥', '戊午', '辛酉']);
+  assert.ok(!resZaYang.matched.some((x) => x.id === 'S-SS-032'), '杂入阳干必须排除阴覆全逢 S-SS-032');
+
+  // 四仲缺一排除四仲有旺：辛卯 丁酉 庚辰 丙子 (地支仅卯酉子三字，辰非四仲)
+  const resQueZhong = matchSchoolClaims(['辛卯', '丁酉', '庚辰', '丙子']);
+  assert.ok(!resQueZhong.matched.some((x) => x.id === 'S-SS-055'), '四仲仅三字且缺午者必须排除四仲见之有旺 S-SS-055');
+
+  // 非魁罡日排除魁罡屠讼：甲子 戊辰 丙戌 庚戌 (日柱丙戌非魁罡日)
+  const resFeiKg = matchSchoolClaims(['甲子', '戊辰', '丙戌', '庚戌']);
+  assert.ok(!resFeiKg.matched.some((x) => x.id === 'S-SS-036'), '非魁罡日柱必须排除魁罡往来加临 S-SS-036');
 });
 
 // 汇总报告与退出码裁决
