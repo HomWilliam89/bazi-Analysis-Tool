@@ -42,16 +42,16 @@ console.log('===================================================================
 // --------------------------------------------------------------------
 console.log('▶ [测试组 1] 单源条目解析完整性与字段规范测试');
 
-test('单源条目总数必须严格等于 210 条整', () => {
+test('单源条目总数必须严格等于 240 条整', () => {
   const { map, list } = loadAllSchoolEntries(true);
-  assert.equal(list.length, 210, `期望 210 条，实际解析得到 ${list.length} 条`);
-  assert.equal(map.size, 210, `期望 Map 容量 210，实际得到 ${map.size}`);
+  assert.equal(list.length, 240, `期望 240 条，实际解析得到 ${list.length} 条`);
+  assert.equal(map.size, 240, `期望 Map 容量 240，实际得到 ${map.size}`);
 });
 
-test('MATCH_PREDICATES 必须 100% 覆盖全量 210 条标准条目（零死条目门禁）', () => {
+test('MATCH_PREDICATES 必须 100% 覆盖全量 240 条标准条目（零死条目门禁）', () => {
   const { list } = loadAllSchoolEntries();
   const predicateKeys = Object.keys(MATCH_PREDICATES);
-  assert.equal(predicateKeys.length, 210, `谓词字典必须恰好 210 个键，实际得到 ${predicateKeys.length}`);
+  assert.equal(predicateKeys.length, 240, `谓词字典必须恰好 240 个键，实际得到 ${predicateKeys.length}`);
   for (const entry of list) {
     assert.equal(
       typeof MATCH_PREDICATES[entry.id],
@@ -61,7 +61,7 @@ test('MATCH_PREDICATES 必须 100% 覆盖全量 210 条标准条目（零死条�
   }
 });
 
-test('六大主流学派条目数量校验：格局派 60 条（正格+外格），其余各派恰好 30 条', () => {
+test('六大主流学派条目数量校验：格局派 60 条、调候派 60 条，其余各派恰好 30 条', () => {
   const { list } = loadAllSchoolEntries();
   const counts = {
     geju: 0,
@@ -76,14 +76,14 @@ test('六大主流学派条目数量校验：格局派 60 条（正格+外格）
     counts[entry.schoolKey] += 1;
   }
   assert.equal(counts.geju, 60, '格局派条目必须为 60 条（30正格+30外格）');
-  assert.equal(counts.tiaohou, 30, '调候派条目必须为 30 条');
+  assert.equal(counts.tiaohou, 60, '调候派条目必须为 60 条（批次 B 扩充至 60 条）');
   assert.equal(counts.wangshuai, 30, '旺衰扶抑派条目必须为 30 条');
   assert.equal(counts.mangpai, 30, '盲派与象法条目必须为 30 条');
   assert.equal(counts.sanming, 30, '古法三命条目必须为 30 条');
   assert.equal(counts.shensha, 30, '神煞派条目必须为 30 条');
 });
 
-test('全部 210 条条目元数据字段完整且非空', () => {
+test('全部 240 条条目元数据字段完整且非空', () => {
   const { list } = loadAllSchoolEntries();
   const idPattern = /^S-(GJ|TH|WS|MP|SM|SS)-\d{3}$/;
   for (const item of list) {
@@ -400,6 +400,43 @@ test('外格严密破格与禁忌排除断言（填实破格、官杀混杂破�
   // 六乙鼠贵见午冲破格：丁卯 壬午 乙巳 丙子 (见午冲子)
   const resShuPo = matchSchoolClaims(['丁卯', '壬午', '乙巳', '丙子']);
   assert.ok(!resShuPo.matched.some((x) => x.id === 'S-GJ-035'), '六乙鼠贵见月令午冲破格必须排除 S-GJ-035');
+});
+
+// --------------------------------------------------------------------
+// 测试组 7：调候派扩充典型案例命中与排他验证（D-065 批次 B）
+// --------------------------------------------------------------------
+console.log('\n▶ [测试组 7] 调候派扩充典型案例命中与排他验证（D-065 批次 B）');
+
+test('调候派扩充经典命造命中（二月甲木阳刃用庚驾杀、秋金丁甲两透、冬月乙木丙暖忌癸、活木埋根之铁）', () => {
+  // 阳刃驾杀造：甲戌 丁卯 甲申 庚午 -> 命中 S-TH-033
+  const res1 = matchSchoolClaims(['甲戌', '丁卯', '甲申', '庚午']);
+  const ids1 = res1.matched.map((x) => x.id);
+  assert.ok(ids1.includes('S-TH-033'), '二月甲木透庚见财必须命中阳刃驾杀 S-TH-033');
+
+  // 秋金锐锐丁甲两透造：丁丑 己酉 庚申 甲申 -> 命中 S-TH-057
+  const res2 = matchSchoolClaims(['丁丑', '己酉', '庚申', '甲申']);
+  const ids2 = res2.matched.map((x) => x.id);
+  assert.ok(ids2.includes('S-TH-057'), '秋金丁甲两透必须命中定步青云 S-TH-057');
+
+  // 冬月乙木丙暖忌癸：丙子 庚子 乙亥 丙子 -> 命中 S-TH-040
+  const res3 = matchSchoolClaims(['丙子', '庚子', '乙亥', '丙子']);
+  const ids3 = res3.matched.map((x) => x.id);
+  assert.ok(ids3.includes('S-TH-040'), '子月乙木透丙不透癸必须命中 S-TH-040');
+
+  // 活木埋根之铁：甲寅 己巳 乙酉 壬午 -> 乙木通根但坐酉金暗戕
+  const res4 = matchSchoolClaims(['甲寅', '己巳', '乙酉', '壬午']);
+  const ids4 = res4.matched.map((x) => x.id);
+  assert.ok(ids4.includes('S-TH-039'), '春夏季乙木通根自坐酉金必须命中活木忌埋根之铁 S-TH-039');
+});
+
+test('调候派扩充严密排他断言（透癸冻木排除、见己浊水排除）', () => {
+  // 冬月乙木透癸冻木排他：癸丑 庚子 乙亥 丙子 (透癸冻木，不入 S-TH-040)
+  const resDong = matchSchoolClaims(['癸丑', '庚子', '乙亥', '丙子']);
+  assert.ok(!resDong.matched.some((x) => x.id === 'S-TH-040'), '子月乙木透癸出干冻木必须排除 S-TH-040');
+
+  // 九月庚金见己土浊水排他：甲戌 甲戌 庚辰 己卯 (见己土浊水，排除 S-TH-058)
+  const resTuo = matchSchoolClaims(['甲戌', '甲戌', '庚辰', '己卯']);
+  assert.ok(!resTuo.matched.some((x) => x.id === 'S-TH-058'), '九月庚金见己土浊壬必须排除 S-TH-058');
 });
 
 // --------------------------------------------------------------------

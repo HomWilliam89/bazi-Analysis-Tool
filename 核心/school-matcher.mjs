@@ -995,6 +995,132 @@ export const MATCH_PREDICATES = {
     ))
   ),
 
+  // 调候派批次 B（30 条扩充：S-TH-031～S-TH-060）
+  // S-TH-031: 正二月甲木素无取从格，得令身旺见财官杀仍以正格论
+  'S-TH-031': (f) => f.dayStem === '甲' && ['寅', '卯'].includes(f.monthBranch),
+
+  // S-TH-032: 甲木初春或三冬无丙丁暖局，一派壬癸汪洋无戊己堤防，水泛木浮
+  'S-TH-032': (f) => f.dayStem === '甲' && (f.isWinter || f.monthBranch === '寅')
+    && !f.stems.includes('丙') && !f.stems.includes('丁')
+    && (f.stems.includes('壬') || f.stems.includes('癸'))
+    && !f.stems.includes('戊') && !f.stems.includes('己'),
+
+  // S-TH-033: 二月卯月甲木乘旺阳刃，庚金透干得地劈木驾杀，须财星资扶，忌癸水困杀
+  'S-TH-033': (f) => f.dayStem === '甲' && f.monthBranch === '卯'
+    && f.stems.includes('庚') && !f.stems.includes('癸')
+    && (f.stems.includes('戊') || f.stems.includes('己') || f.branches.some((b) => ['辰', '戌', '丑', '未'].includes(b))),
+
+  // S-TH-034: 秋七月申令甲木绝地庚旺，非丁不能造庚，非庚不能劈甲引丁，丁庚两透
+  'S-TH-034': (f) => f.dayStem === '甲' && f.monthBranch === '申'
+    && f.stems.includes('庚') && f.stems.includes('丁'),
+
+  // S-TH-035: 辰戌丑未四季月甲木土厚，调候疏劈总不外乎庚金劈甲疏土
+  'S-TH-035': (f) => f.dayStem === '甲' && ['辰', '戌', '丑', '未'].includes(f.monthBranch)
+    && f.stems.includes('庚'),
+
+  // S-TH-036: 三夏甲木火炎木焦，局中乏水润泽且火旺，更行火地名木化成灰
+  'S-TH-036': (f) => f.dayStem === '甲' && f.isSummer
+    && !f.stems.includes('壬') && !f.stems.includes('癸')
+    && (f.stems.some((s) => ['丙', '丁'].includes(s)) || f.branches.some((b) => ['巳', '午'].includes(b))),
+
+  // S-TH-037: 三春乙木芝兰蒿草，丙照暖向阳，癸甘霖滋润，丙癸不可离
+  'S-TH-037': (f) => f.dayStem === '乙' && f.isSpring
+    && f.stems.includes('丙') && (f.stems.includes('癸') || f.branches.some((b) => ['子', '辰'].includes(b))),
+
+  // S-TH-038: 乙木喜阳不宜阴，最畏壬癸重水漂浮，亦不宜重金苦克
+  'S-TH-038': (f) => f.dayStem === '乙'
+    && (f.stems.filter((s) => ['壬', '癸'].includes(s)).length >= 2 || f.stems.filter((s) => ['庚', '辛'].includes(s)).length >= 2),
+
+  // S-TH-039: 活木忌埋根之铁，乙木生于春夏季通根，但坐下或支藏庚辛申酉金戕贼木根
+  'S-TH-039': (f) => f.dayStem === '乙' && (f.isSpring || f.isSummer)
+    && (f.branches.some((b) => ['寅', '卯', '辰', '未'].includes(b)))
+    && (f.branches.some((b) => ['申', '酉'].includes(b)) || f.dayBranch === '酉'),
+
+  // S-TH-040: 仲冬子月乙木一阳来复天寒地冻，端用丙火解冻，严忌癸水透干冻木
+  'S-TH-040': (f) => f.dayStem === '乙' && f.monthBranch === '子'
+    && f.stems.includes('丙') && !f.stems.includes('癸'),
+
+  // S-TH-041: 冬月严寒解冻必须丙火太阳，丁火灯烛不能解严寒之冻，冬令无丙透丁富贵不真
+  'S-TH-041': (f) => f.isWinter && f.stems.includes('丁') && !f.stems.includes('丙'),
+
+  // S-TH-042: 春丙火炎光焕发专爱壬水水辅阳光，时月透癸水雨雾迷蒙不晴不雨
+  'S-TH-042': (f) => f.dayStem === '丙' && f.isSpring && f.stems.includes('癸') && !f.stems.includes('戊'),
+
+  // S-TH-043: 正二月丙火木旺火相，最忌厚重戊土高透晦光
+  'S-TH-043': (f) => f.dayStem === '丙' && ['寅', '卯'].includes(f.monthBranch) && f.stems.includes('戊'),
+
+  // S-TH-044: 秋七月申令丙火水生火退，重叠壬杀，透一戊制杀名众杀猖狂一仁可化
+  'S-TH-044': (f) => f.dayStem === '丙' && f.monthBranch === '申'
+    && f.stems.includes('壬') && f.stems.includes('戊'),
+
+  // S-TH-045: 三夏丙火阳刃乘旺，透壬水七杀相制，阳刃合杀威权万里
+  'S-TH-045': (f) => f.dayStem === '丙' && f.isSummer
+    && f.branches.includes('午') && f.stems.includes('壬'),
+
+  // S-TH-046: 仲春卯月丁火逢乙木司权湿木伤丁，先庚去乙，后甲引丁
+  'S-TH-046': (f) => f.dayStem === '丁' && f.monthBranch === '卯'
+    && f.stems.includes('庚') && f.stems.includes('甲'),
+
+  // S-TH-047: 丁火阴柔灯烛最忌丙火夺光，柱见甲木透出生身引丁身安福临
+  'S-TH-047': (f) => f.dayStem === '丁' && f.stems.includes('丙') && f.stems.includes('甲'),
+
+  // S-TH-048: 三秋丁火气弱，甲庚丙并用调候引火生辉
+  'S-TH-048': (f) => f.dayStem === '丁' && f.isAutumn
+    && f.stems.includes('甲') && (f.stems.includes('庚') || f.stems.includes('丙') || f.branches.some((b) => ['申', '酉'].includes(b))),
+
+  // S-TH-049: 丁用甲不离庚劈木引火，乙用丙温暖向阳，自然配伍铁律
+  'S-TH-049': (f) => (f.dayStem === '丁' && f.stems.includes('甲') && (f.stems.includes('庚') || f.branches.includes('申')))
+    || (f.dayStem === '乙' && f.stems.includes('丙')),
+
+  // S-TH-050: 三冬丁火微寒水旺，端用庚甲良友劈木引火，成木火通明之局
+  'S-TH-050': (f) => f.dayStem === '丁' && f.isWinter
+    && f.stems.includes('甲') && (f.stems.includes('庚') || f.branches.includes('申')),
+
+  // S-TH-051: 戊己土赖火运生化，金泄其秀，水润其燥，最忌顽土聚滞
+  'S-TH-051': (f) => ['戊', '己'].includes(f.dayStem)
+    && f.stems.filter((s) => ['戊', '己'].includes(s)).length >= 2
+    && (f.stems.some((s) => ['丙', '丁'].includes(s)) || f.stems.some((s) => ['庚', '辛'].includes(s))),
+
+  // S-TH-052: 辰戌丑未四库土气，辰未蓄水火生机为贵，丑戌肃杀冷金不贵，调候爱辰未
+  'S-TH-052': (f) => f.branches.filter((b) => ['辰', '未'].includes(b)).length >= 2
+    || (['辰', '未'].includes(f.monthBranch) && f.branches.some((b) => ['辰', '未'].includes(b))),
+
+  // S-TH-053: 夏月金极火盛为铸印乘轩贵格，柱无丑字损模破印
+  'S-TH-053': (f) => ['庚', '辛'].includes(f.dayStem) && f.isSummer
+    && (f.stems.some((s) => ['丙', '丁'].includes(s)) || f.branches.some((b) => ['巳', '午'].includes(b)))
+    && !f.branches.includes('丑'),
+
+  // S-TH-054: 初春寅月庚金微弱，丙甲为上取丙暖局解冻、甲木生火财滋弱杀
+  'S-TH-054': (f) => f.dayStem === '庚' && f.monthBranch === '寅'
+    && f.stems.includes('丙') && (f.stems.includes('甲') || f.branches.includes('寅')),
+
+  // S-TH-055: 仲春卯月庚金衰绝，专用丁火熔金，借甲引丁、借庚劈甲，无丁用丙勉强
+  'S-TH-055': (f) => f.dayStem === '庚' && f.monthBranch === '卯'
+    && f.stems.includes('丁') && (f.stems.includes('甲') || f.branches.includes('寅')),
+
+  // S-TH-056: 秋七月申令庚金刚锐最为奇秀，最忌壬癸水泄，喜木火结党成局
+  'S-TH-056': (f) => f.dayStem === '庚' && f.monthBranch === '申'
+    && !f.stems.includes('壬') && !f.stems.includes('癸')
+    && (f.stems.some((s) => ['丙', '丁'].includes(s)) || f.stems.some((s) => ['甲', '乙'].includes(s))),
+
+  // S-TH-057: 秋令庚辛金旺司权，丁火熔金、甲木引丁，丁甲两透定步青云
+  'S-TH-057': (f) => ['庚', '辛'].includes(f.dayStem) && f.isAutumn
+    && f.stems.includes('丁') && f.stems.includes('甲'),
+
+  // S-TH-058: 季秋戌月戊土厚重埋金，先用甲木疏土，后用壬水洗涤，忌见己土浊壬
+  'S-TH-058': (f) => f.dayStem === '庚' && f.monthBranch === '戌'
+    && f.stems.includes('甲') && f.stems.includes('壬') && !f.stems.includes('己'),
+
+  // S-TH-059: 初春寅月壬水汪洋，无比肩羊刃者不用戊土，专用庚金发源生水、丙火照暖为佐
+  'S-TH-059': (f) => f.dayStem === '壬' && f.monthBranch === '寅'
+    && f.stems.filter((s) => ['壬', '癸'].includes(s)).length <= 1
+    && !f.stems.includes('戊') && (f.stems.includes('庚') || f.stems.includes('辛'))
+    && (f.stems.includes('丙') || f.stems.includes('丁')),
+
+  // S-TH-060: 季冬丑月壬水严冬极冻，专用丙火解冻照暖，兼取甲木疏土佐之
+  'S-TH-060': (f) => f.dayStem === '壬' && f.monthBranch === '丑'
+    && f.stems.includes('丙') && (f.stems.includes('甲') || f.branches.some((b) => ['寅', '卯'].includes(b))),
+
   // 旺衰扶抑派（30 条全量闭环）
   'S-WS-001': (f) => f.exposedTenGods.includes('七杀'),
   'S-WS-002': (f) => ['乙', '丁', '己', '辛', '癸'].includes(f.dayStem),
