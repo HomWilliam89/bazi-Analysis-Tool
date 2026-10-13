@@ -38,20 +38,20 @@ console.log('【丙层流派匹配器自动化测试套件 · D-038 回归验证
 console.log('======================================================================\n');
 
 // --------------------------------------------------------------------
-// 测试组 1：单源 300 条标准条目解析验证（SSOT Parser Verification）
+// 测试组 1：单源 330 条标准条目解析验证（SSOT Parser Verification）
 // --------------------------------------------------------------------
 console.log('▶ [测试组 1] 单源条目解析完整性与字段规范测试');
 
-test('单源条目总数必须严格等于 300 条整', () => {
+test('单源条目总数必须严格等于 330 条整', () => {
   const { map, list } = loadAllSchoolEntries(true);
-  assert.equal(list.length, 300, `期望 300 条，实际解析得到 ${list.length} 条`);
-  assert.equal(map.size, 300, `期望 Map 容量 300，实际得到 ${map.size}`);
+  assert.equal(list.length, 330, `期望 330 条，实际解析得到 ${list.length} 条`);
+  assert.equal(map.size, 330, `期望 Map 容量 330，实际得到 ${map.size}`);
 });
 
-test('MATCH_PREDICATES 必须 100% 覆盖全量 300 条标准条目（零死条目门禁）', () => {
+test('MATCH_PREDICATES 必须 100% 覆盖全量 330 条标准条目（零死条目门禁）', () => {
   const { list } = loadAllSchoolEntries();
   const predicateKeys = Object.keys(MATCH_PREDICATES);
-  assert.equal(predicateKeys.length, 300, `谓词字典必须恰好 300 个键，实际得到 ${predicateKeys.length}`);
+  assert.equal(predicateKeys.length, 330, `谓词字典必须恰好 330 个键，实际得到 ${predicateKeys.length}`);
   for (const entry of list) {
     assert.equal(
       typeof MATCH_PREDICATES[entry.id],
@@ -61,7 +61,7 @@ test('MATCH_PREDICATES 必须 100% 覆盖全量 300 条标准条目（零死条�
   }
 });
 
-test('六大主流学派条目数量校验：格局派 60 条、调候派 60 条、古法三命 60 条、神煞派 60 条，其余各派恰好 30 条', () => {
+test('六大主流学派条目数量校验：格局派 60 条、调候派 60 条、古法三命 60 条、神煞派 60 条、盲派 60 条，旺衰派 30 条', () => {
   const { list } = loadAllSchoolEntries();
   const counts = {
     geju: 0,
@@ -78,12 +78,12 @@ test('六大主流学派条目数量校验：格局派 60 条、调候派 60 条
   assert.equal(counts.geju, 60, '格局派条目必须为 60 条（30正格+30外格）');
   assert.equal(counts.tiaohou, 60, '调候派条目必须为 60 条（批次 B 扩充至 60 条）');
   assert.equal(counts.wangshuai, 30, '旺衰扶抑派条目必须为 30 条');
-  assert.equal(counts.mangpai, 30, '盲派与象法条目必须为 30 条');
+  assert.equal(counts.mangpai, 60, '盲派与象法条目必须为 60 条（批次 E 扩充至 60 条）');
   assert.equal(counts.sanming, 60, '古法三命条目必须为 60 条（批次 C 扩充至 60 条）');
   assert.equal(counts.shensha, 60, '神煞派条目必须为 60 条（批次 D 扩充至 60 条）');
 });
 
-test('全部 300 条条目元数据字段完整且非空', () => {
+test('全部 330 条条目元数据字段完整且非空', () => {
   const { list } = loadAllSchoolEntries();
   const idPattern = /^S-(GJ|TH|WS|MP|SM|SS)-\d{3}$/;
   for (const item of list) {
@@ -540,6 +540,52 @@ test('神煞派扩充严密排他断言（杂入阴干排除四阳、四仲缺�
   // 非魁罡日排除魁罡屠讼：甲子 戊辰 丙戌 庚戌 (日柱丙戌非魁罡日)
   const resFeiKg = matchSchoolClaims(['甲子', '戊辰', '丙戌', '庚戌']);
   assert.ok(!resFeiKg.matched.some((x) => x.id === 'S-SS-036'), '非魁罡日柱必须排除魁罡往来加临 S-SS-036');
+});
+
+// --------------------------------------------------------------------
+// 测试组 10：盲派象法做功定式专测套件（批次 E 扩充验证）
+// --------------------------------------------------------------------
+console.log('▶ [测试组 10] 盲派象法高级做功定式专测套件');
+
+test('盲派象法扩充经典命中断言（巳申合 S-MP-031、生穿 S-MP-032、干支自合九柱 S-MP-037、辰戌冲开库 S-MP-053、官杀生印化用 S-MP-044）', () => {
+  // 巳申合效率做功造：甲申 己巳 戊寅 丁巳 (年月巳申合，时丁巳日寅杀印相生)
+  const resSiShen = matchSchoolClaims(['甲申', '己巳', '戊寅', '丁巳']);
+  const idsSiShen = resSiShen.matched.map((x) => x.id);
+  assert.ok(idsSiShen.includes('S-MP-031'), '年月巳申相合必须命中巳申合做功效率最高 S-MP-031');
+  assert.ok(idsSiShen.includes('S-MP-044'), '官杀生印必须命中官杀生印良性化用结构 S-MP-044');
+
+  // 生穿造：壬申 辛亥 乙卯 丁亥 (申亥生穿)
+  const resShengChuan = matchSchoolClaims(['壬申', '辛亥', '乙卯', '丁亥']);
+  const idsShengChuan = resShengChuan.matched.map((x) => x.id);
+  assert.ok(idsShengChuan.includes('S-MP-032'), '年月申亥相见必须命中申亥生穿 S-MP-032');
+
+  // 干支自合九柱造：丁亥 癸卯 戊子 丙辰 (自坐戊子、年见丁亥干支自合)
+  const resZiHe = matchSchoolClaims(['丁亥', '癸卯', '戊子', '丙辰']);
+  const idsZiHe = resZiHe.matched.map((x) => x.id);
+  assert.ok(idsZiHe.includes('S-MP-037'), '柱见丁亥戊子必须命中干支自合上下直接做功 S-MP-037');
+
+  // 辰戌相冲开水火财库造：戊戌 丙辰 戊戌 丙辰 (辰戌相冲开库)
+  const resChenXu = matchSchoolClaims(['戊戌', '丙辰', '戊戌', '丙辰']);
+  const idsChenXu = resChenXu.matched.map((x) => x.id);
+  assert.ok(idsChenXu.includes('S-MP-053'), '辰戌相冲必须命中辰戌相冲开水火财库 S-MP-053');
+});
+
+test('盲派象法扩充严密排他断言（无巳申排除 S-MP-031、无生穿排除 S-MP-032、无自合排除 S-MP-037、中神不双见排除 S-MP-038）', () => {
+  // 无巳申相见排他：甲子 丙寅 戊辰 庚午 (地支无巳申)
+  const resWuSiShen = matchSchoolClaims(['甲子', '丙寅', '戊辰', '庚午']);
+  assert.ok(!resWuSiShen.matched.some((x) => x.id === 'S-MP-031'), '无巳申相见必须排除 S-MP-031');
+
+  // 仅见克穿无生穿排他：乙丑 己卯 戊辰 癸亥 (卯辰穿为克穿，非生穿)
+  const resKeChuan = matchSchoolClaims(['乙丑', '己卯', '戊辰', '癸亥']);
+  assert.ok(!resKeChuan.matched.some((x) => x.id === 'S-MP-032'), '仅克穿无申亥寅巳生穿必须排除 S-MP-032');
+
+  // 无干支自合九柱排他：甲子 丙寅 戊午 庚申 (无九柱自合)
+  const resWuZiHe = matchSchoolClaims(['甲子', '丙寅', '戊午', '庚申']);
+  assert.ok(!resWuZiHe.matched.some((x) => x.id === 'S-MP-037'), '无自合九柱必须排除干支自合 S-MP-037');
+
+  // 中神单见成局排他：甲寅 戊午 丙戌 庚寅 (午火仅一字不双见)
+  const resDanZhong = matchSchoolClaims(['甲寅', '戊午', '丙戌', '庚寅']);
+  assert.ok(!resDanZhong.matched.some((x) => x.id === 'S-MP-038'), '中神单见不双现必须排除中神双现不成局 S-MP-038');
 });
 
 // 汇总报告与退出码裁决
