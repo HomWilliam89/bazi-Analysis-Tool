@@ -1415,6 +1415,37 @@ function formatSchoolClaimItem(it) {
   return subLines;
 }
 
+/**
+ * 格式化流派命中主张全量输出（前 3 项核心强特征详析 + 其余命中全量附录全陈，彻底废除 slice(0, 3) 截断，D-070 落地）
+ */
+function appendSchoolClaimsBlock(lines, hits, schoolLabel) {
+  if (!hits || hits.length === 0) return;
+  if (hits.length <= 3) {
+    lines.push(`* **${schoolLabel}命中经典主张条目**：`);
+    hits.forEach((it) => {
+      formatSchoolClaimItem(it).forEach((line) => lines.push(line));
+    });
+  } else {
+    lines.push(`* **${schoolLabel}命中核心强特征详析**（前 3 项深度解析）：`);
+    hits.slice(0, 3).forEach((it) => {
+      formatSchoolClaimItem(it).forEach((line) => lines.push(line));
+    });
+    lines.push(`  * **${schoolLabel}其余命中主张全量附录全陈**（共 ${hits.length - 3} 项，全量无遗漏）：`);
+    hits.slice(3).forEach((it) => {
+      const cleanControversy = (it.controversy || '')
+        .replace(/（互链\s*[^）]+）/g, '')
+        .replace(/\(互链\s*[^)]+\)/g, '')
+        .trim();
+      let text = `    * **【学说要义 · ${it.id}】${it.claim}**（出处：${it.source}`;
+      if (cleanControversy && cleanControversy !== '—') {
+        text += ` ｜ 分歧：${cleanControversy}`;
+      }
+      text += '）';
+      lines.push(text);
+    });
+  }
+}
+
 function classifyDominantTenGod(geju, chart) {
   const gText = `${geju?.格局 || ''}${geju?.格神十神 || ''}`;
   if (gText.includes('伤官')) return '伤官';
@@ -2585,10 +2616,8 @@ function renderSchoolSection(chart) {
 
   const gejuHits = schoolRes.bySchool?.geju || [];
   if (gejuHits.length > 0) {
-    lines.push('\n* **格局派命中经典主张条目**：');
-    gejuHits.slice(0, 3).forEach((it) => {
-      formatSchoolClaimItem(it).forEach((line) => lines.push(line));
-    });
+    lines.push('');
+    appendSchoolClaimsBlock(lines, gejuHits, '格局派');
   }
   lines.push('* **学派实质分歧**：');
   lines.push('  * 格局派不以身强身弱为第一要义，将「月令格局清纯与成破救应」置于绝对优先位置；只要去留得当、格局清纯即可取贵。');
@@ -2613,10 +2642,7 @@ function renderSchoolSection(chart) {
 
   const wangshuaiHits = schoolRes.bySchool?.wangshuai || [];
   if (wangshuaiHits.length > 0) {
-    lines.push('* **旺衰平衡派命中经典主张条目**：');
-    wangshuaiHits.slice(0, 3).forEach((it) => {
-      formatSchoolClaimItem(it).forEach((line) => lines.push(line));
-    });
+    appendSchoolClaimsBlock(lines, wangshuaiHits, '旺衰平衡派');
   }
   lines.push('* **学派实质分歧**：');
   lines.push('  * 强调全盘气势流通与体用协调，认为日主为“体”，体若衰极无依，一切名利用神皆为克身利刃，保全生机为第一优先。');
@@ -2690,10 +2716,7 @@ function renderSchoolSection(chart) {
 
   const tiaohouHits = schoolRes.bySchool?.tiaohou || [];
   if (tiaohouHits.length > 0) {
-    lines.push('* **调候派命中经典主张条目**：');
-    tiaohouHits.slice(0, 3).forEach((it) => {
-      formatSchoolClaimItem(it).forEach((line) => lines.push(line));
-    });
+    appendSchoolClaimsBlock(lines, tiaohouHits, '调候派');
   }
   lines.push('* **学派实质分歧**：');
   lines.push('  * 突破十神吉凶教条，以大自然生态气候为最高基准；视生水之金为白虎源泉而非克身恶煞，视保全草木生机为先。');
@@ -2812,10 +2835,7 @@ function renderSchoolSection(chart) {
 
   const mangpaiHits = schoolRes.bySchool?.mangpai || [];
   if (mangpaiHits.length > 0) {
-    lines.push('* **盲派与象法命中经典主张条目**：');
-    mangpaiHits.slice(0, 3).forEach((it) => {
-      formatSchoolClaimItem(it).forEach((line) => lines.push(line));
-    });
+    appendSchoolClaimsBlock(lines, mangpaiHits, '盲派与象法');
   }
   lines.push('* **学派实质分歧**：');
   lines.push('  * 彻底打破子平身强身弱、日主平衡之教条，纯以宾主做功效率与捕神贼神定社会财富量级；不问日元有根无根，功成即贵。');
@@ -2865,10 +2885,7 @@ function renderSchoolSection(chart) {
 
   const sanmingHits = schoolRes.bySchool?.sanming || [];
   if (sanmingHits.length > 0) {
-    lines.push('* **古法三命命中经典主张条目**：');
-    sanmingHits.slice(0, 3).forEach((it) => {
-      formatSchoolClaimItem(it).forEach((line) => lines.push(line));
-    });
+    appendSchoolClaimsBlock(lines, sanmingHits, '古法三命');
   }
   lines.push('* **学派实质分歧**：');
   lines.push('  * 古法三命以年柱纳音为身命根基，天元禄、地元马、人元身三命并参；今法子平则纯以日干为唯一元神，弃纳音五行与胎元神煞不用。此乃命理学自唐宋至明清千年演进之根本分野。');
@@ -2924,10 +2941,7 @@ function renderSchoolSection(chart) {
 
   const shenshaHits = schoolRes.bySchool?.shensha || [];
   if (shenshaHits.length > 0) {
-    lines.push('* **神煞派命中经典主张条目**：');
-    shenshaHits.slice(0, 3).forEach((it) => {
-      formatSchoolClaimItem(it).forEach((line) => lines.push(line));
-    });
+    appendSchoolClaimsBlock(lines, shenshaHits, '神煞派');
   }
   lines.push('* **深入追问切入点**：');
   lines.push(`  * ${dynamicInquiry}\n`);

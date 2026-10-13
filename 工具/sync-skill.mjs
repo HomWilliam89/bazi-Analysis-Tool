@@ -49,6 +49,16 @@ export const SYNC_MANIFEST = [
   { src: '核心/matcher-test.mjs', dest: '核心/matcher-test.mjs' },
   { src: '核心/cli-test.mjs', dest: '核心/cli-test.mjs' },
 
+  // 丙层流派解耦谓词子模块（D-070 落地）
+  { src: '核心/matcher/index.mjs', dest: '核心/matcher/index.mjs' },
+  { src: '核心/matcher/helpers.mjs', dest: '核心/matcher/helpers.mjs' },
+  { src: '核心/matcher/geju.mjs', dest: '核心/matcher/geju.mjs' },
+  { src: '核心/matcher/tiaohou.mjs', dest: '核心/matcher/tiaohou.mjs' },
+  { src: '核心/matcher/wangshuai.mjs', dest: '核心/matcher/wangshuai.mjs' },
+  { src: '核心/matcher/mangpai.mjs', dest: '核心/matcher/mangpai.mjs' },
+  { src: '核心/matcher/sanming.mjs', dest: '核心/matcher/sanming.mjs' },
+  { src: '核心/matcher/shensha.mjs', dest: '核心/matcher/shensha.mjs' },
+
   // 规矩层（宪法、判据、术语、母本）
   { src: '规矩/宪法.md', dest: '规矩/宪法.md' },
   { src: '规矩/判据.md', dest: '规矩/判据.md' },

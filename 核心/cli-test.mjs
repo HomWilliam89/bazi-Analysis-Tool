@@ -836,6 +836,49 @@ assert('看门狗40：流派匹配十神透干类型纠偏、格局派主张真�
   wd40_1_geju_matched && wd40_2_guan_matched && wd40_3_mutual_exclusion
 );
 
+// 看门狗 41：废除 slice(0, 3) 截断与输出完整性 100% 锁死门禁（D-070 钉住 · 闸门三）
+// 1. 多盘跨流派测试：schoolRes.matched 命中的每一个 ID 必须 100% 存在于生成的 Markdown 报告中，漏一条即阻断
+const wd41Plates = [
+  ['庚午', '辛巳', '乙酉', '癸未'], // 经典示范盘（命中 54 条主张，六派命中均 > 3 条）
+  ['庚申', '戊寅', '甲申', '壬申'], // 典型冲战名造（命中 57 条）
+  ['辛卯', '丁酉', '庚午', '丙子'], // 乾隆四仲名造（命中 49 条）
+  ['戊戌', '辛酉', '庚辰', '丙戌'], // 魁罡名造（命中 62 条）
+];
+
+let wd41_all_ids_present = true;
+let wd41_appendix_rendered = true;
+let wd41_evaluated_count = 0;
+
+for (const gz of wd41Plates) {
+  const sRes = matchSchoolClaims(gz);
+  const repMd = generateFullReport(gz).markdown;
+  for (const item of sRes.matched) {
+    wd41_evaluated_count++;
+    if (!repMd.includes(item.id)) {
+      wd41_all_ids_present = false;
+    }
+  }
+  // 命中大于 3 条的学派必须同时包含前 3 条核心详析标题与其余命中全量附录全陈
+  for (const [sKey, hits] of Object.entries(sRes.bySchool)) {
+    if (hits.length > 3) {
+      if (!repMd.includes('其余命中主张全量附录全陈') || !repMd.includes('前 3 项深度解析')) {
+        wd41_appendix_rendered = false;
+      }
+    }
+  }
+}
+
+// 2. 极端边缘盘神煞命中多于 3 条（如示范盘命中 8 条神煞），强制断言第 4 条及以后的所有条目（S-SS-018, S-SS-024, S-SS-027, S-SS-028, S-SS-030）100% 呈现，杜绝隐瞒
+const demoGz = ['庚午', '辛巳', '乙酉', '癸未'];
+const demoMd = generateFullReport(demoGz).markdown;
+const demoShenshaHits = matchSchoolClaims(demoGz).bySchool.shensha;
+const wd41_shensha_beyond_three = demoShenshaHits.length > 3
+  && demoShenshaHits.slice(3).every((it) => demoMd.includes(it.id));
+
+assert('看门狗41：废除 slice(0, 3) 截断与输出完整性 100% 锁死门禁（D-070 钉住：全量 matched ID 100% 呈现、核心详析与附录全陈双轨完备、神煞等超额条目零截断隐瞒）',
+  wd41_all_ids_present && wd41_appendix_rendered && wd41_shensha_beyond_three && wd41_evaluated_count > 200
+);
+
 
 // -------------------------------------------------------------------
 // 统计汇总
