@@ -42,16 +42,16 @@ console.log('===================================================================
 // --------------------------------------------------------------------
 console.log('▶ [测试组 1] 单源条目解析完整性与字段规范测试');
 
-test('单源条目总数必须严格等于 180 条整', () => {
+test('单源条目总数必须严格等于 210 条整', () => {
   const { map, list } = loadAllSchoolEntries(true);
-  assert.equal(list.length, 180, `期望 180 条，实际解析得到 ${list.length} 条`);
-  assert.equal(map.size, 180, `期望 Map 容量 180，实际得到 ${map.size}`);
+  assert.equal(list.length, 210, `期望 210 条，实际解析得到 ${list.length} 条`);
+  assert.equal(map.size, 210, `期望 Map 容量 210，实际得到 ${map.size}`);
 });
 
-test('MATCH_PREDICATES 必须 100% 覆盖全量 180 条标准条目（零死条目门禁）', () => {
+test('MATCH_PREDICATES 必须 100% 覆盖全量 210 条标准条目（零死条目门禁）', () => {
   const { list } = loadAllSchoolEntries();
   const predicateKeys = Object.keys(MATCH_PREDICATES);
-  assert.equal(predicateKeys.length, 180, `谓词字典必须恰好 180 个键，实际得到 ${predicateKeys.length}`);
+  assert.equal(predicateKeys.length, 210, `谓词字典必须恰好 210 个键，实际得到 ${predicateKeys.length}`);
   for (const entry of list) {
     assert.equal(
       typeof MATCH_PREDICATES[entry.id],
@@ -61,7 +61,7 @@ test('MATCH_PREDICATES 必须 100% 覆盖全量 180 条标准条目（零死条�
   }
 });
 
-test('六大主流学派条目数量必须均衡，各派恰好 30 条', () => {
+test('六大主流学派条目数量校验：格局派 60 条（正格+外格），其余各派恰好 30 条', () => {
   const { list } = loadAllSchoolEntries();
   const counts = {
     geju: 0,
@@ -75,7 +75,7 @@ test('六大主流学派条目数量必须均衡，各派恰好 30 条', () => {
     assert.ok(entry.schoolKey in counts, `未知的学派 key: ${entry.schoolKey}`);
     counts[entry.schoolKey] += 1;
   }
-  assert.equal(counts.geju, 30, '格局派条目必须为 30 条');
+  assert.equal(counts.geju, 60, '格局派条目必须为 60 条（30正格+30外格）');
   assert.equal(counts.tiaohou, 30, '调候派条目必须为 30 条');
   assert.equal(counts.wangshuai, 30, '旺衰扶抑派条目必须为 30 条');
   assert.equal(counts.mangpai, 30, '盲派与象法条目必须为 30 条');
@@ -83,7 +83,7 @@ test('六大主流学派条目数量必须均衡，各派恰好 30 条', () => {
   assert.equal(counts.shensha, 30, '神煞派条目必须为 30 条');
 });
 
-test('全部 180 条条目元数据字段完整且非空', () => {
+test('全部 210 条条目元数据字段完整且非空', () => {
   const { list } = loadAllSchoolEntries();
   const idPattern = /^S-(GJ|TH|WS|MP|SM|SS)-\d{3}$/;
   for (const item of list) {
@@ -353,6 +353,53 @@ test('升级谓词命中精度验证（S-SM-004、S-SM-014、S-SM-015、S-SM-028
   const resSM = matchSchoolClaims(['甲子', '丙寅', '戊辰', '辛酉']);
   const idsSM = resSM.matched.map((x) => x.id);
   assert.ok(idsSM.includes('S-SM-004'), '胎元命宫相生必须命中 S-SM-004');
+});
+
+// --------------------------------------------------------------------
+// 测试组 6：子平外格群典型案例命中与排除验证（D-064 批次 A）
+// --------------------------------------------------------------------
+console.log('\n▶ [测试组 6] 子平外格群典型案例命中与排除验证（D-064 批次 A）');
+
+test('经典外格名造命中断言（飞天禄马、井栏叉、六阴朝阳、丑遥巳禄、壬骑龙背）', () => {
+  // 王阳明造：壬辰 辛亥 癸亥 癸亥 -> 飞天禄马格
+  const res1 = matchSchoolClaims(['壬辰', '辛亥', '癸亥', '癸亥']);
+  const ids1 = res1.matched.map((x) => x.id);
+  assert.ok(ids1.includes('S-GJ-031'), '王阳明造三亥冲巳必须命中飞天禄马格 S-GJ-031');
+  assert.ok(!ids1.includes('S-GJ-032'), '水命绝非倒冲火格，严禁误命中倒冲禄马格 S-GJ-032');
+
+  // 御史造：癸卯 庚申 庚子 庚辰 -> 井栏叉格
+  const res2 = matchSchoolClaims(['癸卯', '庚申', '庚子', '庚辰']);
+  const ids2 = res2.matched.map((x) => x.id);
+  assert.ok(ids2.includes('S-GJ-033'), '庚日申子辰全必须命中井栏叉格 S-GJ-033');
+
+  // 六阴朝阳造：戊辰 辛酉 辛酉 戊子 -> 六阴朝阳格
+  const res3 = matchSchoolClaims(['戊辰', '辛酉', '辛酉', '戊子']);
+  const ids3 = res3.matched.map((x) => x.id);
+  assert.ok(ids3.includes('S-GJ-036'), '辛生戊子时一位子必须命中六阴朝阳格 S-GJ-036');
+
+  // 丑遥巳禄造：癸丑 乙丑 癸丑 癸亥 -> 丑遥巳禄格
+  const res4 = matchSchoolClaims(['癸丑', '乙丑', '癸丑', '癸亥']);
+  const ids4 = res4.matched.map((x) => x.id);
+  assert.ok(ids4.includes('S-GJ-040'), '癸坐多丑无官必须命中丑遥巳禄格 S-GJ-040');
+
+  // 壬骑龙背造：丙子 甲午 壬辰 甲辰 -> 壬骑龙背格
+  const res5 = matchSchoolClaims(['丙子', '甲午', '壬辰', '甲辰']);
+  const ids5 = res5.matched.map((x) => x.id);
+  assert.ok(ids5.includes('S-GJ-034'), '壬辰日双辰必须命中壬骑龙背格 S-GJ-034');
+});
+
+test('外格严密破格与禁忌排除断言（填实破格、官杀混杂破格）', () => {
+  // 拱禄真格：丁巳 丙午 癸亥 癸丑 (癸亥日癸丑时拱子禄，局中无子)
+  const resGong = matchSchoolClaims(['丁巳', '丙午', '癸亥', '癸丑']);
+  assert.ok(resGong.matched.some((x) => x.id === 'S-GJ-037'), '癸亥见癸丑局中无子必须命中拱禄格 S-GJ-037');
+
+  // 拱禄填实破格：丁巳 壬子 癸亥 癸丑 (局中已见子字填实破格)
+  const resPo = matchSchoolClaims(['丁巳', '壬子', '癸亥', '癸丑']);
+  assert.ok(!resPo.matched.some((x) => x.id === 'S-GJ-037'), '局中见子填实必须排除拱禄格 S-GJ-037');
+
+  // 六乙鼠贵见午冲破格：丁卯 壬午 乙巳 丙子 (见午冲子)
+  const resShuPo = matchSchoolClaims(['丁卯', '壬午', '乙巳', '丙子']);
+  assert.ok(!resShuPo.matched.some((x) => x.id === 'S-GJ-035'), '六乙鼠贵见月令午冲破格必须排除 S-GJ-035');
 });
 
 // --------------------------------------------------------------------
