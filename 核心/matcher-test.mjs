@@ -38,20 +38,20 @@ console.log('【丙层流派匹配器自动化测试套件 · D-038 回归验证
 console.log('======================================================================\n');
 
 // --------------------------------------------------------------------
-// 测试组 1：单源 330 条标准条目解析验证（SSOT Parser Verification）
+// 测试组 1：单源 390 条标准条目解析验证（SSOT Parser Verification）
 // --------------------------------------------------------------------
 console.log('▶ [测试组 1] 单源条目解析完整性与字段规范测试');
 
-test('单源条目总数必须严格等于 360 条整', () => {
+test('单源条目总数必须严格等于 390 条整', () => {
   const { map, list } = loadAllSchoolEntries(true);
-  assert.equal(list.length, 360, `期望 360 条，实际解析得到 ${list.length} 条`);
-  assert.equal(map.size, 360, `期望 Map 容量 360，实际得到 ${map.size}`);
+  assert.equal(list.length, 390, `期望 390 条，实际解析得到 ${list.length} 条`);
+  assert.equal(map.size, 390, `期望 Map 容量 390，实际得到 ${map.size}`);
 });
 
-test('MATCH_PREDICATES 必须 100% 覆盖全量 360 条标准条目（零死条目门禁）', () => {
+test('MATCH_PREDICATES 必须 100% 覆盖全量 390 条标准条目（零死条目门禁）', () => {
   const { list } = loadAllSchoolEntries();
   const predicateKeys = Object.keys(MATCH_PREDICATES);
-  assert.equal(predicateKeys.length, 360, `谓词字典必须恰好 360 个键，实际得到 ${predicateKeys.length}`);
+  assert.equal(predicateKeys.length, 390, `谓词字典必须恰好 390 个键，实际得到 ${predicateKeys.length}`);
   for (const entry of list) {
     assert.equal(
       typeof MATCH_PREDICATES[entry.id],
@@ -61,7 +61,7 @@ test('MATCH_PREDICATES 必须 100% 覆盖全量 360 条标准条目（零死条�
   }
 });
 
-test('六大主流学派条目数量校验：格局派 60 条、调候派 60 条、古法三命 60 条、神煞派 60 条、盲派 60 条、旺衰派 60 条（齐步走基座圆满）', () => {
+test('六大主流学派条目数量校验：格局派 60 条、调候派 60 条、古法三命 60 条、神煞派 90 条、盲派 60 条、旺衰派 60 条（四大专著深度扫尾首批达成）', () => {
   const { list } = loadAllSchoolEntries();
   const counts = {
     geju: 0,
@@ -80,10 +80,10 @@ test('六大主流学派条目数量校验：格局派 60 条、调候派 60 条
   assert.equal(counts.wangshuai, 60, '旺衰扶抑派条目必须为 60 条（批次 F 扩充至 60 条）');
   assert.equal(counts.mangpai, 60, '盲派与象法条目必须为 60 条（批次 E 扩充至 60 条）');
   assert.equal(counts.sanming, 60, '古法三命条目必须为 60 条（批次 C 扩充至 60 条）');
-  assert.equal(counts.shensha, 60, '神煞派条目必须为 60 条（批次 D 扩充至 60 条）');
+  assert.equal(counts.shensha, 90, '神煞派条目必须为 90 条（《玉照定真经》扫尾第一批 30 条达成 90 条）');
 });
 
-test('全部 360 条条目元数据字段完整且非空', () => {
+test('全部 390 条条目元数据字段完整且非空', () => {
   const { list } = loadAllSchoolEntries();
   const idPattern = /^S-(GJ|TH|WS|MP|SM|SS)-\d{3}$/;
   for (const item of list) {
@@ -647,6 +647,73 @@ test('旺衰扶抑派扩充严密排他断言（日主坐禄排他 S-WS-031、�
   assert.ok(!resWuChong.matched.some((x) => x.id === 'S-WS-059'), '日支无冲者必须排除地生天者天衰怕冲 S-WS-059');
 });
 
+// --------------------------------------------------------------------
+// 测试组 12：神煞派《玉照定真经》干支刑冲定位铁断专测套件（D-072 30 条新定式）
+// --------------------------------------------------------------------
+console.log('\n▶ [测试组 12] 神煞派《玉照定真经》干支刑冲定位铁断专测套件（D-072 30 条新定式）');
+
+test('神煞派《玉照定真经》30 条经典命造特征命中测试（S-SS-061～S-SS-090）', () => {
+  // 1. 癸巳乙卯庚申连天门亥造：癸巳 乙卯 庚申 丁亥 (命中 S-SS-076 连戌亥九流、S-SS-078 乙庚同会、S-SS-070 龙常经商)
+  const resGeng = matchSchoolClaims(['癸巳', '乙卯', '庚申', '丁亥']);
+  const idsGeng = resGeng.matched.map((x) => x.id);
+  assert.ok(idsGeng.includes('S-SS-076'), '癸巳乙卯庚申连亥天门必须命中九流之士 S-SS-076');
+  assert.ok(idsGeng.includes('S-SS-078'), '乙庚两透地支通根必须命中乙庚同会 S-SS-078');
+  assert.ok(idsGeng.includes('S-SS-070'), '地支亥卯相合透木必须命中龙常经商利路绵绵 S-SS-070');
+
+  // 2. 自刑重见造：甲辰 戊辰 戊辰 壬戌 (三辰自刑相并)
+  const resZiXing = matchSchoolClaims(['甲辰', '戊辰', '戊辰', '壬戌']);
+  const idsZiXing = resZiXing.matched.map((x) => x.id);
+  assert.ok(idsZiXing.includes('S-SS-086'), '三辰自刑重见必须命中自刑重见自死自凶 S-SS-086');
+
+  // 3. 子卯相刑造：癸未 乙卯 甲子 己巳 (子卯紧贴相刑)
+  const resZiMao = matchSchoolClaims(['癸未', '乙卯', '甲子', '己巳']);
+  const idsZiMao = resZiMao.matched.map((x) => x.id);
+  assert.ok(idsZiMao.includes('S-SS-087'), '子卯紧贴无解必须命中子卯相刑门无礼德 S-SS-087');
+
+  // 4. 冬丁坐巳刃暖局造：丁巳 壬子 丁卯 辛亥 (丁巳生于子月冬水)
+  const resDongDing = matchSchoolClaims(['丁巳', '壬子', '丁卯', '辛亥']);
+  const idsDongDing = resDongDing.matched.map((x) => x.id);
+  assert.ok(idsDongDing.includes('S-SS-079'), '丁巳生于冬月必须命中丁巳丁卯冬生门内官人进纳 S-SS-079');
+
+  // 5. 辛亥卯上相斫造：辛亥 辛卯 乙酉 丁亥 (柱见辛亥与卯)
+  const resXinHai = matchSchoolClaims(['辛亥', '辛卯', '乙酉', '丁亥']);
+  const idsXinHai = resXinHai.matched.map((x) => x.id);
+  assert.ok(idsXinHai.includes('S-SS-083'), '柱逢辛亥与卯必须命中辛亥卯上定生唇缺之人 S-SS-083');
+
+  // 6. 丑戌未刑肢病难痊造：乙丑 丙戌 戊未 壬子 (地支丑戌未三刑全)
+  const resSanXing = matchSchoolClaims(['乙丑', '丙戌', '戊未', '壬子']);
+  const idsSanXing = resSanXing.matched.map((x) => x.id);
+  assert.ok(idsSanXing.includes('S-SS-088'), '地支丑戌未三刑全必须命中丑逢戌未犯支刑肢病难痊 S-SS-088');
+
+  // 7. 丑午相穿害造：甲午 辛未 癸丑 丙辰 (午丑穿害)
+  const resWuChou = matchSchoolClaims(['甲午', '辛未', '癸丑', '丙辰']);
+  const idsWuChou = resWuChou.matched.map((x) => x.id);
+  assert.ok(idsWuChou.includes('S-SS-090'), '午丑相穿害必须命中午逢丑位久病内气之灾 S-SS-090');
+});
+
+test('神煞派《玉照定真经》严密排他反向断言（无天门排他 S-SS-076、无自刑排他 S-SS-086、无子卯排他 S-SS-087、非冬令排他 S-SS-079、无穿害排他 S-SS-090）', () => {
+  // 无天门戌亥排他 S-SS-076：癸巳 乙卯 庚申 丙子 (无戌亥)
+  const resWuTianMen = matchSchoolClaims(['癸巳', '乙卯', '庚申', '丙子']);
+  assert.ok(!resWuTianMen.matched.some((x) => x.id === 'S-SS-076'), '无戌亥天门者必须排除 S-SS-076');
+
+  // 无自刑重见排他 S-SS-086：甲子 丙寅 戊辰 庚申 (辰单见无重叠自刑)
+  const resWuZiXing = matchSchoolClaims(['甲子', '丙寅', '戊辰', '庚申']);
+  assert.ok(!resWuZiXing.matched.some((x) => x.id === 'S-SS-086'), '无自刑重见者必须排除 S-SS-086');
+
+  // 无子卯相刑排他 S-SS-087：甲子 丙寅 戊辰 庚申 (有子无卯)
+  const resWuZiMao = matchSchoolClaims(['甲子', '丙寅', '戊辰', '庚申']);
+  assert.ok(!resWuZiMao.matched.some((x) => x.id === 'S-SS-087'), '无子卯相见者必须排除 S-SS-087');
+
+  // 非冬令排他 S-SS-079：丁巳 丙午 丁卯 辛亥 (生于午月夏令，非三冬)
+  const resFeiDong = matchSchoolClaims(['丁巳', '丙午', '丁卯', '辛亥']);
+  assert.ok(!resFeiDong.matched.some((x) => x.id === 'S-SS-079'), '非冬令生人必须排除丁巳丁卯冬生 S-SS-079');
+
+  // 无丑午相穿害排他 S-SS-090：甲子 丙寅 戊辰 庚申 (无丑午)
+  const resWuChuan = matchSchoolClaims(['甲子', '丙寅', '戊辰', '庚申']);
+  assert.ok(!resWuChuan.matched.some((x) => x.id === 'S-SS-090'), '无丑午相害者必须排除 S-SS-090');
+});
+
+// --------------------------------------------------------------------
 // 汇总报告与退出码裁决
 // --------------------------------------------------------------------
 console.log('\n----------------------------------------------------------------------');
@@ -660,3 +727,4 @@ if (failedCount === 0) {
   console.log('----------------------------------------------------------------------\n');
   process.exit(1);
 }
+

@@ -222,4 +222,169 @@ export const SHENSHA_PREDICATES = {
   'S-SS-060': (f) => {
     return ['寅', '巳', '申'].every((b) => f.branches.includes(b));
   },
+  'S-SS-061': (f) => {
+    const hasDeHe = f.shenshaList.some((s) => s.includes('天德合') || s.includes('月德合'));
+    return hasDeHe && f.chongPairs.length === 0;
+  },
+  'S-SS-062': (f) => {
+    const isDayHourChong = f.chongPairs.some(([i, j]) => (i === 2 && j === 3) || (i === 3 && j === 2));
+    const dayElem = safeNayin(f.dayGz).slice(-1);
+    const hourElem = safeNayin(f.hourGz).slice(-1);
+    const isNayinKe = dayElem && hourElem && (KE_ELEM[dayElem] === hourElem || KE_ELEM[hourElem] === dayElem);
+    return isDayHourChong && isNayinKe;
+  },
+  'S-SS-063': (f) => {
+    const mB = f.monthBranch;
+    const tB = f.taiyuan?.branch;
+    const chongOrXingMonth = f.chongPairs.filter(([, , b1, b2]) => b1 === mB || b2 === mB).length
+      + f.chuanPairs.filter(([, , b1, b2]) => b1 === mB || b2 === mB).length;
+    const chongOrXingTai = tB ? (f.chongPairs.filter(([, , b1, b2]) => b1 === tB || b2 === tB).length
+      + f.chuanPairs.filter(([, , b1, b2]) => b1 === tB || b2 === tB).length) : 0;
+    return chongOrXingMonth >= 2 || chongOrXingTai >= 2;
+  },
+  'S-SS-064': (f) => {
+    const hasYou = f.branches.includes('酉');
+    const isAttacked = f.branches.some((b) => ['巳', '午', '卯', '戌'].includes(b));
+    const noWaterHeal = !f.stems.some((s) => ['壬', '癸'].includes(s));
+    return hasYou && isAttacked && noWaterHeal;
+  },
+  'S-SS-065': (f) => {
+    const hasHai = f.branches.includes('亥');
+    const hasKuiGang = f.branches.some((b) => ['辰', '戌'].includes(b));
+    const waterHeavy = (f.branches.filter((b) => ['亥', '子'].includes(b)).length + f.stems.filter((s) => ['壬', '癸'].includes(s)).length) >= 2;
+    return hasHai && hasKuiGang && waterHeavy;
+  },
+  'S-SS-066': (f) => {
+    const hasGui = f.stems.includes('癸');
+    const waterMetalCount = f.stems.filter((s) => ['壬', '癸', '庚', '辛'].includes(s)).length
+      + f.branches.filter((b) => ['亥', '子', '申', '酉'].includes(b)).length;
+    const noEarthDam = !f.stems.some((s) => ['戊', '己'].includes(s));
+    return hasGui && waterMetalCount >= 4 && noEarthDam;
+  },
+  'S-SS-067': (f) => {
+    const hasYueDe = f.shenshaList.includes('月德');
+    const hasYueDeDouble = f.shenshaList.filter((s) => s.includes('月德')).length >= 2;
+    const hasDeHe = f.shenshaList.some((s) => s.includes('月德合') || s.includes('天德合'));
+    const hasGanHe = (f.chart?.gzRelations?.天干合 || []).length > 0;
+    return hasYueDeDouble || (hasYueDe && (hasDeHe || hasGanHe));
+  },
+  'S-SS-068': (f) => {
+    const fanZhan = (f.chart?.gzRelations?.天克地冲 || []).length > 0 || (f.chart?.gzRelations?.反吟 || []).length > 0;
+    const noDirectSeal = !f.exposedTenGods.some((tg) => ['正印', '偏印'].includes(tg));
+    return fanZhan && noDirectSeal;
+  },
+  'S-SS-069': (f) => {
+    const mB = f.monthBranch;
+    const tB = f.taiyuan?.branch;
+    const isMuKu = ['辰', '戌', '丑', '未'].includes(mB) || (tB && ['辰', '戌', '丑', '未'].includes(tB));
+    const hasKuChong = f.chongPairs.some(([, , b1, b2]) => ['辰', '戌', '丑', '未'].includes(b1) && ['辰', '戌', '丑', '未'].includes(b2));
+    return isMuKu && hasKuChong;
+  },
+  'S-SS-070': (f) => {
+    const woodCount = ['亥', '卯', '未'].filter((b) => f.branches.includes(b)).length;
+    const hasYinMao = f.branches.includes('寅') && f.branches.includes('卯');
+    const hasWaterWoodStem = f.stems.some((s) => ['甲', '乙', '壬', '癸'].includes(s));
+    return (woodCount >= 2 || hasYinMao) && hasWaterWoodStem;
+  },
+  'S-SS-071': (f) => {
+    const xinCount = f.stems.filter((s) => s === '辛').length;
+    const hasEarthOrMetalBranch = f.branches.some((b) => ['酉', '申', '丑'].includes(b));
+    return xinCount >= 2 && hasEarthOrMetalBranch;
+  },
+  'S-SS-072': (f) => {
+    const isJia = f.dayStem === '甲';
+    const waterStems = f.stems.filter((s) => ['壬', '癸'].includes(s)).length;
+    const hasWaterBranch = f.branches.some((b) => ['亥', '子'].includes(b));
+    const totalWater = waterStems + f.branches.filter((b) => ['亥', '子'].includes(b)).length;
+    return isJia && waterStems >= 1 && hasWaterBranch && totalWater >= 3;
+  },
+  'S-SS-073': (f) => {
+    const hasQian = f.branches.some((b) => ['戌', '亥'].includes(b));
+    const qianDamaged = f.chongPairs.some(([, , b1, b2]) => (['戌', '亥'].includes(b1) && ['辰', '巳'].includes(b2)) || (['戌', '亥'].includes(b2) && ['辰', '巳'].includes(b1)));
+    return hasQian && qianDamaged;
+  },
+  'S-SS-074': (f) => {
+    const isEarthDay = ['戊', '己'].includes(f.dayStem);
+    const inFourSeasons = ['辰', '戌', '丑', '未'].includes(f.monthBranch);
+    const hasOfficerOrSeal = f.exposedTenGods.some((tg) => ['正官', '七杀', '正印', '偏印'].includes(tg));
+    return isEarthDay && inFourSeasons && hasOfficerOrSeal;
+  },
+  'S-SS-075': (f) => {
+    const isSittingMetal = ['甲申', '乙酉'].includes(f.dayGz);
+    const metalCount = f.stems.filter((s) => ['庚', '辛'].includes(s)).length + f.branches.filter((b) => ['申', '酉'].includes(b)).length;
+    const noRescue = !f.stems.some((s) => ['丙', '丁', '壬', '癸'].includes(s));
+    return isSittingMetal && metalCount >= 2 && noRescue;
+  },
+  'S-SS-076': (f) => {
+    const hasSpecialPillar = f.gzList.some((gz) => ['癸巳', '乙卯', '庚申'].includes(gz));
+    const hasTianMen = f.branches.some((b) => ['戌', '亥'].includes(b));
+    return hasSpecialPillar && hasTianMen;
+  },
+  'S-SS-077': (f) => {
+    const fireStems = f.stems.filter((s) => ['丙', '丁'].includes(s)).length;
+    const mountainBranches = f.branches.filter((b) => ['丑', '寅', '辰', '戌'].includes(b)).length;
+    const noWater = !f.stems.some((s) => ['壬', '癸'].includes(s));
+    return fireStems >= 2 && mountainBranches >= 2 && noWater;
+  },
+  'S-SS-078': (f) => {
+    const hasYiGeng = f.stems.includes('乙') && f.stems.includes('庚');
+    const hasProsperousBranch = f.branches.some((b) => ['申', '酉', '巳', '辰'].includes(b));
+    return hasYiGeng && hasProsperousBranch;
+  },
+  'S-SS-079': (f) => {
+    const hasDingPillar = f.gzList.some((gz) => ['丁巳', '丁卯'].includes(gz));
+    const isWinter = ['亥', '子', '丑'].includes(f.monthBranch);
+    return hasDingPillar && isWinter;
+  },
+  'S-SS-080': (f) => {
+    const hasWuXin = f.stems.includes('戊') && f.stems.includes('辛');
+    const conflictCount = f.chongPairs.length + f.chuanPairs.length;
+    return hasWuXin && conflictCount >= 2;
+  },
+  'S-SS-081': (f) => {
+    const hasHai = f.branches.includes('亥');
+    const metalCount = f.stems.filter((s) => ['庚', '辛'].includes(s)).length + f.branches.filter((b) => ['申', '酉'].includes(b)).length;
+    const noFireWarm = !f.stems.some((s) => ['丙', '丁'].includes(s));
+    return hasHai && metalCount >= 3 && noFireWarm;
+  },
+  'S-SS-082': (f) => {
+    const isWaterDay = ['壬', '癸'].includes(f.dayStem);
+    const isAutumn = ['申', '酉'].includes(f.monthBranch);
+    const noFire = !f.stems.some((s) => ['丙', '丁'].includes(s));
+    return isWaterDay && isAutumn && noFire;
+  },
+  'S-SS-083': (f) => {
+    return f.gzList.includes('辛亥') && f.branches.includes('卯');
+  },
+  'S-SS-084': (f) => {
+    const hasDingYou = f.dayGz === '丁酉' || f.hourGz === '丁酉';
+    const noWetEarth = !['辰', '丑'].includes(f.hourBranch);
+    return hasDingYou && noWetEarth;
+  },
+  'S-SS-085': (f) => {
+    const isEarthDay = ['戊', '己'].includes(f.dayStem);
+    const isWeiShenMonth = ['未', '申'].includes(f.monthBranch);
+    const earthMetalCount = f.stems.filter((s) => ['戊', '己', '庚', '辛'].includes(s)).length
+      + f.branches.filter((b) => ['未', '申', '酉', '丑'].includes(b)).length;
+    return isEarthDay && isWeiShenMonth && earthMetalCount >= 3;
+  },
+  'S-SS-086': (f) => {
+    return ['辰', '午', '酉', '亥'].some((b) => f.branches.filter((x) => x === b).length >= 2);
+  },
+  'S-SS-087': (f) => {
+    return f.branches.includes('子') && f.branches.includes('卯');
+  },
+  'S-SS-088': (f) => {
+    const hasChouXu = f.branches.includes('丑') && f.branches.includes('戌');
+    const hasChouWei = f.branches.includes('丑') && f.branches.includes('未');
+    const hasSanXing = f.branches.includes('丑') && f.branches.includes('戌') && f.branches.includes('未');
+    return hasSanXing || hasChouXu || hasChouWei;
+  },
+  'S-SS-089': (f) => {
+    return f.chuanPairs.some(([, , b1, b2]) => (b1 === '辰' && b2 === '卯') || (b1 === '卯' && b2 === '辰'));
+  },
+  'S-SS-090': (f) => {
+    return f.chuanPairs.some(([, , b1, b2]) => (b1 === '午' && b2 === '丑') || (b1 === '丑' && b2 === '午'));
+  },
 };
+
