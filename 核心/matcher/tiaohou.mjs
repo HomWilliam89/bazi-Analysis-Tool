@@ -311,4 +311,66 @@ export const TIAOHOU_PREDICATES = {
   // S-TH-090: 季冬丑月癸水寒极成冰，天干癸己会党，年透一丁孤灯照暖，名雪后灯光夜生者贵
   'S-TH-090': (f) => f.dayStem === '癸' && f.monthBranch === '丑'
     && f.stems.includes('丁') && f.stems.some((s) => ['己', '癸'].includes(s)),
+
+  // S-TH-091: 孟夏巳月庚金长生值火土，巳内戊丙并见，须用壬水济火、丙火照暖、戊土培根，分病用药
+  'S-TH-091': (f) => f.dayStem === '庚' && f.monthBranch === '巳' && f.stems.includes('壬') && (f.stems.includes('丙') || f.stems.includes('戊') || f.branches.filter((b) => ['巳', '酉', '丑', '申'].includes(b)).length >= 2),
+  // S-TH-092: 仲夏午月庚金坐败地火烈熔金，壬透癸藏金水相生必然科甲，仲夏无水非上格
+  'S-TH-092': (f) => f.dayStem === '庚' && f.monthBranch === '午' && f.stems.includes('壬') && f.branches.some((b) => ['子', '亥', '丑', '辰'].includes(b)) && f.stems.some((s) => ['庚', '辛'].includes(s)),
+  // S-TH-093: 季夏未月庚金顽钝极矣三伏生寒，丁火熔煅、甲木引燃，丁甲两透名显身荣
+  'S-TH-093': (f) => f.dayStem === '庚' && f.monthBranch === '未' && f.stems.includes('丁') && f.stems.includes('甲'),
+  // S-TH-094: 仲秋酉月庚金羊刃司权，丁甲并显且丙杀藏支无冲，名羊刃架杀出将入相
+  'S-TH-094': (f) => f.dayStem === '庚' && f.monthBranch === '酉' && ['巳', '寅', '戌'].some((b) => f.branches.includes(b)) && !f.chongPairs.some(([i, j]) => i === 1 || j === 1),
+  // S-TH-095: 仲冬子月庚金严寒水冷，丁甲两透且丙火藏支暖局，水冷金寒化为科甲恩封
+  'S-TH-095': (f) => f.dayStem === '庚' && f.monthBranch === '子' && f.stems.includes('丁') && f.stems.includes('甲') && ['巳', '寅', '午'].some((b) => f.branches.includes(b)),
+  // S-TH-096: 季冬丑月庚金愈寒愈冻，先用丙火照暖解冻次用丁火炼金，丙丁甲齐备显赫恩荣
+  'S-TH-096': (f) => f.dayStem === '庚' && f.monthBranch === '丑' && f.stems.includes('丙') && (f.stems.includes('丁') || f.stems.includes('甲')),
+  // S-TH-097: 初春寅月辛金柔弱，己土培身为根本、壬水淘洗显精英，己壬两透见庚制甲科甲定然
+  'S-TH-097': (f) => f.dayStem === '辛' && f.monthBranch === '寅' && f.stems.includes('己') && (f.stems.includes('壬') || f.stems.includes('癸')),
+  // S-TH-098: 仲春卯月辛金阴柔，壬水淘洗为尊，见戊己厚土为病得甲木制伏，辛金不埋壬水澄清
+  'S-TH-098': (f) => f.dayStem === '辛' && f.monthBranch === '卯' && f.stems.includes('壬') && (f.stems.includes('甲') || !f.stems.some((s) => ['戊', '己'].includes(s))),
+  // S-TH-099: 季春辰月辛金母旺子相，先壬水淘洗次甲木疏土，壬甲两透脱颖而出名登玉堂
+  'S-TH-099': (f) => f.dayStem === '辛' && f.monthBranch === '辰' && f.stems.includes('壬') && f.stems.includes('甲'),
+  // S-TH-100: 孟夏巳月辛金火旺金脆，喜壬水淘洗，支成金局水透木制戊土，名一清彻底科甲功名
+  'S-TH-100': (f) => f.dayStem === '辛' && f.monthBranch === '巳' && (f.stems.includes('壬') || f.stems.includes('癸')) && f.branches.filter((b) => ['巳', '酉', '丑', '申'].includes(b)).length >= 2,
+  // S-TH-101: 仲夏午月辛金阴柔之极不宜火炼，须己土生身、壬水润土兼用，己无壬不湿辛无己不生
+  'S-TH-101': (f) => f.dayStem === '辛' && f.monthBranch === '午' && f.stems.includes('己') && (f.stems.includes('壬') || f.stems.includes('癸')),
+  // S-TH-102: 季夏未月辛金己土当权恐掩金光，壬水淘洗、庚金发源，壬庚两透科甲功名
+  'S-TH-102': (f) => f.dayStem === '辛' && f.monthBranch === '未' && f.stems.includes('壬') && f.stems.includes('庚'),
+  // S-TH-103: 孟秋申月辛金庚金司令不旺自旺，不见厚土埋没金多得水泄秀，名体全之象为官清正
+  'S-TH-103': (f) => f.dayStem === '辛' && f.monthBranch === '申' && !f.stems.includes('戊') && (f.stems.some((s) => ['壬', '癸'].includes(s)) || f.branches.some((b) => ['亥', '子'].includes(b))),
+  // S-TH-104: 仲秋酉月辛金支成金局戊己透干，天干透壬水淘洗无丙丁火破格，合白虎格富贵大显
+  'S-TH-104': (f) => f.dayStem === '辛' && f.monthBranch === '酉' && f.stems.includes('壬') && !f.stems.some((s) => ['丙', '丁'].includes(s)) && f.stems.some((s) => ['戊', '己'].includes(s)),
+  // S-TH-105: 季秋戌月辛金火土为病水木为药，甲木疏厚土壬水淘旺金，水木两显桃洞之仙
+  'S-TH-105': (f) => f.dayStem === '辛' && f.monthBranch === '戌' && (f.stems.includes('壬') || f.stems.includes('癸')) && (f.stems.includes('甲') || f.stems.includes('乙')),
+  // S-TH-106: 孟冬亥月辛金水冷金寒，先壬水淘洗后丙火温暖，壬丙两透金榜题名名金白水清
+  'S-TH-106': (f) => f.dayStem === '辛' && f.monthBranch === '亥' && f.stems.includes('壬') && f.stems.includes('丙'),
+  // S-TH-107: 初春寅月壬水汪洋，柱无比肩羊刃不必见戊，专用庚金发源生水、丙火照暖为佐
+  'S-TH-107': (f) => f.dayStem === '壬' && f.monthBranch === '寅' && f.stems.includes('庚') && f.stems.includes('丙'),
+  // S-TH-108: 仲春卯月壬水泄弱，不用丙暖先戊土截流后辛金发源，戊辛两透名土止流水福寿全
+  'S-TH-108': (f) => f.dayStem === '壬' && f.monthBranch === '卯' && f.stems.includes('戊') && (f.stems.includes('辛') || f.stems.includes('庚')),
+  // S-TH-109: 季春辰月壬水值戊土司权，先用甲木疏厚土次取庚金发水源，甲庚俱透科甲定然
+  'S-TH-109': (f) => f.dayStem === '壬' && f.monthBranch === '辰' && f.stems.includes('甲') && f.stems.includes('庚'),
+  // S-TH-110: 仲夏午月壬水火烈当权，无庚不能发水无癸不能制火，庚癸两透科甲必然名显公卿
+  'S-TH-110': (f) => f.dayStem === '壬' && f.monthBranch === '午' && f.stems.includes('庚') && (f.stems.includes('癸') || f.stems.includes('壬')),
+  // S-TH-111: 季夏未月壬水己土当权丁火退气，先辛金生身次甲木疏土，佐以癸水润泽，辛甲两透清高富贵
+  'S-TH-111': (f) => f.dayStem === '壬' && f.monthBranch === '未' && f.stems.includes('辛') && f.stems.includes('甲'),
+  // S-TH-112: 孟秋申月壬水庚金司权转弱为强，专取辰戌之戊土为堤防，次取丁火制庚佐戊，科甲显名
+  'S-TH-112': (f) => f.dayStem === '壬' && f.monthBranch === '申' && f.stems.includes('戊') && f.branches.some((b) => ['辰', '戌'].includes(b)),
+  // S-TH-113: 季秋戌月壬水厚土进气，一派壬水见甲木制土、戊土出干则配丙火，格纯清贵极矣
+  'S-TH-113': (f) => f.dayStem === '壬' && f.monthBranch === '戌' && f.stems.includes('甲') && f.stems.includes('戊') && f.stems.includes('丙'),
+  // S-TH-114: 孟冬亥月壬水至旺极矣，专取戊土截流、庚金发源，戊庚两全登科及第位显权高
+  'S-TH-114': (f) => f.dayStem === '壬' && f.monthBranch === '亥' && ((f.stems.includes('戊') && f.stems.includes('庚')) || (f.branches.filter((b) => ['亥', '子', '申', '辰'].includes(b)).length >= 3 && !f.stems.includes('戊'))),
+  // S-TH-115: 仲冬子月壬水阳刃帮身至旺，丙火照暖解冻、戊土砥柱截流，丙戊两透富贵荣华极品之贵
+  'S-TH-115': (f) => f.dayStem === '壬' && f.monthBranch === '子' && f.stems.includes('丙') && f.stems.includes('戊'),
+  // S-TH-116: 初春寅月癸水雨露之精，先辛金生水源次丙火照暖，辛丙两透阴阳和合名登金榜
+  'S-TH-116': (f) => f.dayStem === '癸' && f.monthBranch === '寅' && f.stems.includes('辛') && f.stems.includes('丙'),
+  // S-TH-117: 仲春卯月癸水乙木司权泄弱元神，庚辛金透干发水源且无丁火伤金，贵由科甲
+  'S-TH-117': (f) => f.dayStem === '癸' && f.monthBranch === '卯' && (f.stems.includes('庚') || f.stems.includes('辛')) && !f.stems.includes('丁'),
+  // S-TH-118: 孟夏巳月癸水火炎水干，专用辛金发水之源、壬水比劫救渴，辛壬两透名劫印化晋极贵之格
+  'S-TH-118': (f) => f.dayStem === '癸' && f.monthBranch === '巳' && (f.stems.includes('辛') || f.stems.includes('庚')) && f.stems.includes('壬') && !f.stems.includes('丁'),
+  // S-TH-119: 孟秋申月癸水申金死处逢生弱中复强，丁火财星透干且自坐午禄，名独才格金玉满堂
+  'S-TH-119': (f) => f.dayStem === '癸' && f.monthBranch === '申' && f.stems.includes('丁') && f.branches[2] === '午',
+  // S-TH-120: 仲冬子月癸水值冰冻之时金水无交欢，专用丙火解冻兼取辛金滋扶，有丙透则金温水暖名臣之贵
+  'S-TH-120': (f) => f.dayStem === '癸' && f.monthBranch === '子' && f.stems.includes('丙') && (f.stems.includes('辛') || f.stems.includes('庚')),
 };
+
