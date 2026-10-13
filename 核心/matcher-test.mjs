@@ -42,16 +42,16 @@ console.log('===================================================================
 // --------------------------------------------------------------------
 console.log('▶ [测试组 1] 单源条目解析完整性与字段规范测试');
 
-test('单源条目总数必须严格等于 240 条整', () => {
+test('单源条目总数必须严格等于 270 条整', () => {
   const { map, list } = loadAllSchoolEntries(true);
-  assert.equal(list.length, 240, `期望 240 条，实际解析得到 ${list.length} 条`);
-  assert.equal(map.size, 240, `期望 Map 容量 240，实际得到 ${map.size}`);
+  assert.equal(list.length, 270, `期望 270 条，实际解析得到 ${list.length} 条`);
+  assert.equal(map.size, 270, `期望 Map 容量 270，实际得到 ${map.size}`);
 });
 
-test('MATCH_PREDICATES 必须 100% 覆盖全量 240 条标准条目（零死条目门禁）', () => {
+test('MATCH_PREDICATES 必须 100% 覆盖全量 270 条标准条目（零死条目门禁）', () => {
   const { list } = loadAllSchoolEntries();
   const predicateKeys = Object.keys(MATCH_PREDICATES);
-  assert.equal(predicateKeys.length, 240, `谓词字典必须恰好 240 个键，实际得到 ${predicateKeys.length}`);
+  assert.equal(predicateKeys.length, 270, `谓词字典必须恰好 270 个键，实际得到 ${predicateKeys.length}`);
   for (const entry of list) {
     assert.equal(
       typeof MATCH_PREDICATES[entry.id],
@@ -61,7 +61,7 @@ test('MATCH_PREDICATES 必须 100% 覆盖全量 240 条标准条目（零死条�
   }
 });
 
-test('六大主流学派条目数量校验：格局派 60 条、调候派 60 条，其余各派恰好 30 条', () => {
+test('六大主流学派条目数量校验：格局派 60 条、调候派 60 条、古法三命 60 条，其余各派恰好 30 条', () => {
   const { list } = loadAllSchoolEntries();
   const counts = {
     geju: 0,
@@ -79,11 +79,11 @@ test('六大主流学派条目数量校验：格局派 60 条、调候派 60 条
   assert.equal(counts.tiaohou, 60, '调候派条目必须为 60 条（批次 B 扩充至 60 条）');
   assert.equal(counts.wangshuai, 30, '旺衰扶抑派条目必须为 30 条');
   assert.equal(counts.mangpai, 30, '盲派与象法条目必须为 30 条');
-  assert.equal(counts.sanming, 30, '古法三命条目必须为 30 条');
+  assert.equal(counts.sanming, 60, '古法三命条目必须为 60 条（批次 C 扩充至 60 条）');
   assert.equal(counts.shensha, 30, '神煞派条目必须为 30 条');
 });
 
-test('全部 240 条条目元数据字段完整且非空', () => {
+test('全部 270 条条目元数据字段完整且非空', () => {
   const { list } = loadAllSchoolEntries();
   const idPattern = /^S-(GJ|TH|WS|MP|SM|SS)-\d{3}$/;
   for (const item of list) {
@@ -440,6 +440,57 @@ test('调候派扩充严密排他断言（透癸冻木排除、见己浊水排�
 });
 
 // --------------------------------------------------------------------
+
+// --------------------------------------------------------------------
+// 测试组 8：古法三命《兰台妙选》扩充典型案例命中与排他验证（D-066 批次 C）
+// --------------------------------------------------------------------
+console.log('\n▶ [测试组 8] 古法三命《兰台妙选》扩充典型案例命中与排他验证（D-066 批次 C）');
+
+test('古法三命扩充经典命造命中（苍龙驾海、兔入月宫、藏珠渊海、月桂芬芳、一旬包裹）', () => {
+  // 苍龙驾海造：甲辰 丁卯 甲申 癸亥 (辰年命时见癸亥大海水无辰戌冲)
+  const res1 = matchSchoolClaims(['甲辰', '丁卯', '甲申', '癸亥']);
+  const ids1 = res1.matched.map((x) => x.id);
+  assert.ok(ids1.includes('S-SM-031'), '辰年生人日时见癸亥大海水必须命中苍龙驾海 S-SM-031');
+
+  // 兔入月宫造：乙卯 戊寅 己未 丁卯 (卯年生人日见己未无酉冲)
+  const res2 = matchSchoolClaims(['乙卯', '戊寅', '己未', '丁卯']);
+  const ids2 = res2.matched.map((x) => x.id);
+  assert.ok(ids2.includes('S-SM-037'), '卯年生人日亲见己未月宫必须命中兔入月宫 S-SM-037');
+
+  // 藏珠渊海造：癸亥 甲子 癸丑 壬戌 (四柱同见癸亥大海水与甲子海中金)
+  const res3 = matchSchoolClaims(['癸亥', '甲子', '癸丑', '壬戌']);
+  const ids3 = res3.matched.map((x) => x.id);
+  assert.ok(ids3.includes('S-SM-041'), '癸亥逢甲子金水相藏必须命中藏珠渊海 S-SM-041');
+
+  // 月桂芬芳造：己未 丁丑 辛卯 丙申 (己未天上火逢辛卯松柏木月桂)
+  const res4 = matchSchoolClaims(['己未', '丁丑', '辛卯', '丙申']);
+  const ids4 = res4.matched.map((x) => x.id);
+  assert.ok(ids4.includes('S-SM-051'), '己未遇辛卯月桂芬芳必须命中 S-SM-051');
+
+  // 一旬包裹造：甲子 丙寅 戊辰 庚午 (四柱俱在甲子旬)
+  const res5 = matchSchoolClaims(['甲子', '丙寅', '戊辰', '庚午']);
+  const ids5 = res5.matched.map((x) => x.id);
+  assert.ok(ids5.includes('S-SM-060'), '四柱俱在同单一旬中必须命中一旬包裹 S-SM-060');
+});
+
+test('古法三命扩充严密排他断言（辰戌相冲破龙排除、卯酉相冲破兔排除、丑未冲碎蚌壳排除、杂入他旬排除）', () => {
+  // 苍龙驾海辰戌近冲破格排他：甲辰 甲戌 壬戌 癸亥 (年月辰戌近冲破龙)
+  const resPoLong = matchSchoolClaims(['甲辰', '甲戌', '壬戌', '癸亥']);
+  assert.ok(!resPoLong.matched.some((x) => x.id === 'S-SM-031'), '辰戌近冲破龙格必须排除 S-SM-031');
+
+  // 兔入月宫卯酉相冲排他：乙卯 乙酉 己未 丁卯 (年月卯酉相冲破兔)
+  const resPoTu = matchSchoolClaims(['乙卯', '乙酉', '己未', '丁卯']);
+  assert.ok(!resPoTu.matched.some((x) => x.id === 'S-SM-037'), '卯酉相冲破兔入月宫必须排除 S-SM-037');
+
+  // 蚌珠照月丑未近冲碎蚌壳排他：乙丑 癸未 甲子 丙寅 (年月丑未近冲碎蚌)
+  const resPoBang = matchSchoolClaims(['乙丑', '癸未', '甲子', '丙寅']);
+  assert.ok(!resPoBang.matched.some((x) => x.id === 'S-SM-043'), '丑未近冲碎蚌壳必须排除蚌珠照月 S-SM-043');
+
+  // 一旬包裹杂入他旬排他：甲子 丙寅 戊辰 甲戌 (前三柱甲子旬，时柱甲戌旬)
+  const resZaXun = matchSchoolClaims(['甲子', '丙寅', '戊辰', '甲戌']);
+  assert.ok(!resZaXun.matched.some((x) => x.id === 'S-SM-060'), '杂入他旬必须排除一旬包裹 S-SM-060');
+});
+
 // 汇总报告与退出码裁决
 // --------------------------------------------------------------------
 console.log('\n----------------------------------------------------------------------');
