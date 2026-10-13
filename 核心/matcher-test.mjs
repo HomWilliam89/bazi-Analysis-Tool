@@ -42,16 +42,16 @@ console.log('===================================================================
 // --------------------------------------------------------------------
 console.log('▶ [测试组 1] 单源条目解析完整性与字段规范测试');
 
-test('单源条目总数必须严格等于 330 条整', () => {
+test('单源条目总数必须严格等于 360 条整', () => {
   const { map, list } = loadAllSchoolEntries(true);
-  assert.equal(list.length, 330, `期望 330 条，实际解析得到 ${list.length} 条`);
-  assert.equal(map.size, 330, `期望 Map 容量 330，实际得到 ${map.size}`);
+  assert.equal(list.length, 360, `期望 360 条，实际解析得到 ${list.length} 条`);
+  assert.equal(map.size, 360, `期望 Map 容量 360，实际得到 ${map.size}`);
 });
 
-test('MATCH_PREDICATES 必须 100% 覆盖全量 330 条标准条目（零死条目门禁）', () => {
+test('MATCH_PREDICATES 必须 100% 覆盖全量 360 条标准条目（零死条目门禁）', () => {
   const { list } = loadAllSchoolEntries();
   const predicateKeys = Object.keys(MATCH_PREDICATES);
-  assert.equal(predicateKeys.length, 330, `谓词字典必须恰好 330 个键，实际得到 ${predicateKeys.length}`);
+  assert.equal(predicateKeys.length, 360, `谓词字典必须恰好 360 个键，实际得到 ${predicateKeys.length}`);
   for (const entry of list) {
     assert.equal(
       typeof MATCH_PREDICATES[entry.id],
@@ -61,7 +61,7 @@ test('MATCH_PREDICATES 必须 100% 覆盖全量 330 条标准条目（零死条�
   }
 });
 
-test('六大主流学派条目数量校验：格局派 60 条、调候派 60 条、古法三命 60 条、神煞派 60 条、盲派 60 条，旺衰派 30 条', () => {
+test('六大主流学派条目数量校验：格局派 60 条、调候派 60 条、古法三命 60 条、神煞派 60 条、盲派 60 条、旺衰派 60 条（齐步走基座圆满）', () => {
   const { list } = loadAllSchoolEntries();
   const counts = {
     geju: 0,
@@ -77,13 +77,13 @@ test('六大主流学派条目数量校验：格局派 60 条、调候派 60 条
   }
   assert.equal(counts.geju, 60, '格局派条目必须为 60 条（30正格+30外格）');
   assert.equal(counts.tiaohou, 60, '调候派条目必须为 60 条（批次 B 扩充至 60 条）');
-  assert.equal(counts.wangshuai, 30, '旺衰扶抑派条目必须为 30 条');
+  assert.equal(counts.wangshuai, 60, '旺衰扶抑派条目必须为 60 条（批次 F 扩充至 60 条）');
   assert.equal(counts.mangpai, 60, '盲派与象法条目必须为 60 条（批次 E 扩充至 60 条）');
   assert.equal(counts.sanming, 60, '古法三命条目必须为 60 条（批次 C 扩充至 60 条）');
   assert.equal(counts.shensha, 60, '神煞派条目必须为 60 条（批次 D 扩充至 60 条）');
 });
 
-test('全部 330 条条目元数据字段完整且非空', () => {
+test('全部 360 条条目元数据字段完整且非空', () => {
   const { list } = loadAllSchoolEntries();
   const idPattern = /^S-(GJ|TH|WS|MP|SM|SS)-\d{3}$/;
   for (const item of list) {
@@ -586,6 +586,65 @@ test('盲派象法扩充严密排他断言（无巳申排除 S-MP-031、无生�
   // 中神单见成局排他：甲寅 戊午 丙戌 庚寅 (午火仅一字不双见)
   const resDanZhong = matchSchoolClaims(['甲寅', '戊午', '丙戌', '庚寅']);
   assert.ok(!resDanZhong.matched.some((x) => x.id === 'S-MP-038'), '中神单见不双现必须排除中神双现不成局 S-MP-038');
+});
+
+// --------------------------------------------------------------------
+// 测试组 11：旺衰扶抑派经典体用变局通关专测套件（批次 F 扩充验证）
+// --------------------------------------------------------------------
+console.log('▶ [测试组 11] 旺衰扶抑派经典体用变局通关专测套件');
+
+test('旺衰扶抑派扩充经典命中断言（君赖臣生 S-WS-031、夫健怕妻 S-WS-033、两气成象 S-WS-038、伤官见官可见 S-WS-055、地生天怕冲 S-WS-059、刃煞神清 S-WS-060）', () => {
+  // 君赖臣生造：壬申 壬子 甲子 戊辰 (冬水极旺木浮，日主无禄刃，透戊辰财星培木破印)
+  const resJunLai = matchSchoolClaims(['壬申', '壬子', '甲子', '戊辰']);
+  const idsJunLai = resJunLai.matched.map((x) => x.id);
+  assert.ok(idsJunLai.includes('S-WS-031'), '印绶太旺透财培木必须命中君赖臣生 S-WS-031');
+
+  // 夫健怕妻造：甲寅 己巳 乙卯 戊寅 (乙坐卯禄身健，财星透干结党)
+  const resFuJian = matchSchoolClaims(['甲寅', '己巳', '乙卯', '戊寅']);
+  const idsFuJian = resFuJian.matched.map((x) => x.id);
+  assert.ok(idsFuJian.includes('S-WS-033'), '日主身健身旺财多必须命中夫健怕妻 S-WS-033');
+
+  // 两气合而成象造：甲寅 丁巳 乙卯 丙午 (木火两神相涵并旺成象)
+  const resLiangQi = matchSchoolClaims(['甲寅', '丁巳', '乙卯', '丙午']);
+  const idsLiangQi = resLiangQi.matched.map((x) => x.id);
+  assert.ok(idsLiangQi.includes('S-WS-038'), '木火两气均停必须命中两气合而成象 S-WS-038');
+
+  // 伤官见官有财引化造：庚辰 癸未 丙午 己丑 (丙火见癸水正官、己土伤官、庚金偏财)
+  const resShangGuan = matchSchoolClaims(['庚辰', '癸未', '丙午', '己丑']);
+  const idsShangGuan = resShangGuan.matched.map((x) => x.id);
+  assert.ok(idsShangGuan.includes('S-WS-055'), '伤官见官有财通关必须命中伤官见官果难辨 S-WS-055');
+
+  // 地生天者天衰怕冲造：甲子 庚午 甲子 丙寅 (甲子日自坐印生，子午近冲拔根)
+  const resDiSheng = matchSchoolClaims(['甲子', '庚午', '甲子', '丙寅']);
+  const idsDiSheng = resDiSheng.matched.map((x) => x.id);
+  assert.ok(idsDiSheng.includes('S-WS-059'), '日坐印生而日支逢冲必须命中地生天者天衰怕冲 S-WS-059');
+
+  // 刃煞神清造：癸巳 戊午 丙午 壬辰 (丙生午月坐阳刃，时透壬杀)
+  const resRenSha = matchSchoolClaims(['癸巳', '戊午', '丙午', '壬辰']);
+  const idsRenSha = resRenSha.matched.map((x) => x.id);
+  assert.ok(idsRenSha.includes('S-WS-060'), '阳刃坐局透七杀必须命中刃煞神清气势特 S-WS-060');
+});
+
+test('旺衰扶抑派扩充严密排他断言（日主坐禄排他 S-WS-031、见财排他母慈灭子 S-WS-032、五行杂出排他两气成象 S-WS-038、无刃排他刃煞神清 S-WS-060、无坐冲排他地生天 S-WS-059）', () => {
+  // 身强坐禄刃排他君赖臣生：壬申 壬子 甲寅 戊辰 (甲坐寅禄，日主自强，非衰弱之君)
+  const resLuPai = matchSchoolClaims(['壬申', '壬子', '甲寅', '戊辰']);
+  assert.ok(!resLuPai.matched.some((x) => x.id === 'S-WS-031'), '身强坐禄刃者必须排除君赖臣生 S-WS-031');
+
+  // 见财排他母慈灭子：壬申 壬子 甲子 戊辰 (局透戊土偏财，应入君赖臣生破印，非母慈灭子)
+  const resCaiPai = matchSchoolClaims(['壬申', '壬子', '甲子', '戊辰']);
+  assert.ok(!resCaiPai.matched.some((x) => x.id === 'S-WS-032'), '局中透财星者必须排除母慈灭子 S-WS-032');
+
+  // 五行杂出三党以上排他两气成象：甲子 丙寅 戊辰 庚申 (金木水火土杂出)
+  const resZaPai = matchSchoolClaims(['甲子', '丙寅', '戊辰', '庚申']);
+  assert.ok(!resZaPai.matched.some((x) => x.id === 'S-WS-038'), '五行杂出者必须排除两气合而成象 S-WS-038');
+
+  // 无阳刃排他刃煞神清：甲子 丙寅 戊辰 庚申 (无阳刃)
+  const resWuRen = matchSchoolClaims(['甲子', '丙寅', '戊辰', '庚申']);
+  assert.ok(!resWuRen.matched.some((x) => x.id === 'S-WS-060'), '无阳刃者必须排除刃煞神清 S-WS-060');
+
+  // 无日支相冲排他地生天怕冲：甲子 丙寅 甲子 丙寅 (日支子水无冲)
+  const resWuChong = matchSchoolClaims(['甲子', '丙寅', '甲子', '丙寅']);
+  assert.ok(!resWuChong.matched.some((x) => x.id === 'S-WS-059'), '日支无冲者必须排除地生天者天衰怕冲 S-WS-059');
 });
 
 // 汇总报告与退出码裁决
