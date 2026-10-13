@@ -11,6 +11,10 @@ import {
   matchSchoolClaims,
   formatSchoolMatches,
   safeTenGod,
+  calculateTaiyuan,
+  calculateMinggong,
+  analyzeRoots,
+  analyzeGongJia,
   MATCH_PREDICATES,
 } from './school-matcher.mjs';
 
@@ -263,6 +267,92 @@ test('空特征盘与冷门盘不崩溃且优雅呈现无命中提示', () => {
   const text = formatSchoolMatches(res);
   assert.ok(typeof text === 'string' && text.length > 0, '格式化输出不能为 null');
   assert.ok(res.totalMatched >= 0, '命中计数应为有效非负整数');
+});
+
+// --------------------------------------------------------------------
+// 测试组 5：路径 A 高阶易学特征提取器验证（胎元、命宫、通根离散图谱、虚邀暗夹）
+// --------------------------------------------------------------------
+console.log('\n▶ [测试组 5] 路径 A 高阶易学特征提取器与升级谓词验证');
+
+test('胎元计算精度：对照《三命通会》《渊海子平》标准案例', () => {
+  const ty1 = calculateTaiyuan('丙寅');
+  assert.equal(ty1.gz, '丁巳', '丙寅月胎元必须为丁巳');
+  assert.equal(ty1.nayin, '沙中土', '丁巳胎元纳音必须为沙中土');
+
+  const ty2 = calculateTaiyuan('己巳');
+  assert.equal(ty2.gz, '庚申', '己巳月胎元必须为庚申');
+
+  const ty3 = calculateTaiyuan('丁丑');
+  assert.equal(ty3.gz, '戊辰', '丁丑月胎元必须为戊辰');
+});
+
+test('命宫计算精度：对照《命理探源》俞曲园案与道光坤造案', () => {
+  // 案例 1：《命理探源》行 738 俞曲园《游艺录》甲子年三月酉时
+  const mg1 = calculateMinggong('甲子', '戊辰', '辛酉');
+  assert.equal(mg1.gz, '戊辰', '甲子年辰月酉时命宫必须为戊辰');
+  assert.equal(mg1.nayin, '大林木', '戊辰命宫纳音必须为大林木');
+
+  // 案例 2：《命理探源》行 742 丙午年十二月过大寒（建寅）申时
+  const mg2 = calculateMinggong('丙午', '庚寅', '丙申');
+  assert.equal(mg2.gz, '乙未', '丙午年寅月申时命宫必须为乙未');
+  assert.equal(mg2.nayin, '沙中金', '乙未命宫纳音必须为沙中金');
+});
+
+test('通根离散图谱推导：纯离散命理状态机测试（禄刃专气 vs 虚浮无根 vs 刑穿动摇）', () => {
+  // 盘 A：甲木深根安稳盘（甲子 丙寅 甲寅 戊辰）——无冲无穿
+  const fA = extractChartFeatures(['甲子', '丙寅', '甲寅', '戊辰']);
+  assert.equal(fA.roots.dayMaster.highestTier, '禄刃专气', '甲木坐寅通提纲寅禄必须为禄刃专气');
+  assert.equal(fA.roots.dayMaster.isSelfRooted, true, '甲寅自坐寅木必须识别为自坐通根');
+  assert.equal(fA.roots.dayMaster.isMonthRooted, true, '寅月必须识别为提纲通根');
+  assert.equal(fA.roots.dayMaster.status, '安稳', '四柱无冲穿状态必须为安稳');
+
+  // 盘 A2：卯辰相害穿损盘（甲寅 丁卯 甲辰 丙寅）——卯辰相穿
+  const fA2 = extractChartFeatures(['甲寅', '丁卯', '甲辰', '丙寅']);
+  assert.equal(fA2.roots.dayMaster.status, '刑穿受损', '卯辰相穿必须精准识别为刑穿受损');
+
+  // 盘 B：乙木虚浮盘（辛巳 丙申 乙巳 丁丑）
+  const fB = extractChartFeatures(['辛巳', '丙申', '乙巳', '丁丑']);
+  assert.equal(fB.roots.dayMaster.highestTier, '虚浮无根', '乙木满盘无水木必须判定为虚浮无根');
+  assert.equal(fB.roots.dayMaster.isSelfRooted, false, '乙巳绝地必须判定非自坐通根');
+  assert.equal(fB.roots.dayMaster.status, '无根', '虚浮无根状态必须为无根');
+  assert.equal(fB.roots.dayMaster.purity, '无根', '虚浮无根纯度必须为无根');
+});
+
+test('虚邀暗拱与暗夹推导：三合拱中神、隔位暗夹与倒冲飞天', () => {
+  // 申辰虚拱子水
+  const gj1 = analyzeGongJia(['壬申', '甲辰', '甲子', '丙寅'], '甲', ['申', '辰', '子', '寅']);
+  // 局中已有子，不算虚拱；若无子则算虚拱：
+  const gj2 = analyzeGongJia(['壬申', '甲辰', '甲寅', '丙戌'], '甲', ['申', '辰', '寅', '戌']);
+  assert.ok(gj2.gongChong.some((g) => g.mid === '子'), '申辰无子必须虚拱子水');
+
+  // 癸亥日癸丑时暗夹子禄（局中无子，真拱禄不填实）
+  const gj3 = analyzeGongJia(['乙卯', '己卯', '癸亥', '癸丑'], '癸', ['卯', '卯', '亥', '丑']);
+  assert.equal(gj3.hasGongLu, true, '癸亥日癸丑时隔位必暗夹子禄');
+
+  // 局中已有子字（填实）：严谨不作拱禄
+  const gj3Tianshi = analyzeGongJia(['辛丑', '庚子', '癸亥', '癸丑'], '癸', ['丑', '子', '亥', '丑']);
+  assert.equal(gj3Tianshi.hasGongLu, false, '局中见子填实绝不误判为虚拱');
+
+  // 庚子日四子倒冲飞天禄马
+  const gj4 = analyzeGongJia(['庚子', '戊子', '庚子', '丙子'], '庚', ['子', '子', '子', '子']);
+  assert.equal(gj4.hasFeiTianDaoChong, true, '四子水无午必须判定倒冲飞天禄马');
+});
+
+test('升级谓词命中精度验证（S-SM-004、S-SM-014、S-SM-015、S-SM-028、S-TH-030）', () => {
+  // 验证 S-TH-030 调候通根有力触发
+  const resTH = matchSchoolClaims(['庚子', '戊子', '丙午', '甲午']);
+  const idsTH = resTH.matched.map((x) => x.id);
+  assert.ok(idsTH.includes('S-TH-030'), '冬火透丙坐午禄必须命中调候通根有力 S-TH-030');
+
+  // 验证 S-SM-014 拱禄格命中（真拱禄不填实造）
+  const resGong = matchSchoolClaims(['乙卯', '己卯', '癸亥', '癸丑']);
+  const idsGong = resGong.matched.map((x) => x.id);
+  assert.ok(idsGong.includes('S-SM-014'), '癸亥见癸丑夹子禄必须命中拱禄 S-SM-014');
+
+  // 验证 S-SM-004 胎元命宫立身命中（丙寅月生，胎元丁巳沙中土，生甲子年海中金）
+  const resSM = matchSchoolClaims(['甲子', '丙寅', '戊辰', '辛酉']);
+  const idsSM = resSM.matched.map((x) => x.id);
+  assert.ok(idsSM.includes('S-SM-004'), '胎元命宫相生必须命中 S-SM-004');
 });
 
 // --------------------------------------------------------------------

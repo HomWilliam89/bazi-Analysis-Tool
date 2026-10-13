@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import {
   STEMS, BRANCHES, STEM_ELEMENT, BRANCH_ELEMENT, ELEMENTS,
   castChart, hiddenStemsOf, tenGod, nayinOf, shenshaOf,
-  gzRelations, elementStrength,
+  gzRelations, elementStrength, HIDDEN_STEMS_SPEC, GANZHI,
 } from './engine.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -164,6 +164,271 @@ export function loadAllSchoolEntries(forceReload = false) {
   return cachedEntries;
 }
 
+// 长生与墓库映射
+export const CHANGSHENG_MAP = {
+  木: ['亥'], 火: ['寅'], 金: ['巳'], 水: ['申'], 土: ['寅', '申'],
+};
+export const MUKU_MAP = {
+  木: ['未', '辰'], 火: ['戌', '未'], 金: ['丑', '戌'], 水: ['辰', '丑'], 土: ['辰', '戌', '丑', '未'],
+};
+
+/**
+ * 安全纳音推导：支持两字干支字符串直接推导纳音全称（如「丁巳」⇒「沙中土」）
+ */
+export function safeNayin(gz) {
+  if (!gz || typeof gz !== 'string' || gz.length < 2) return '';
+  const idx = GANZHI.indexOf(gz);
+  if (idx < 0) return '';
+  return nayinOf(idx).name || '';
+}
+
+/**
+ * 胎元推导算法：依《三命通会》《渊海子平》，月干顺推一位、月支顺推三位
+ */
+export function calculateTaiyuan(monthGz) {
+  if (!monthGz || monthGz.length < 2) return null;
+  const sIdx = STEMS.indexOf(monthGz[0]);
+  const bIdx = BRANCHES.indexOf(monthGz[1]);
+  if (sIdx < 0 || bIdx < 0) return null;
+  const tyStemIdx = (sIdx + 1) % 10;
+  const tyBranchIdx = (bIdx + 3) % 12;
+  const gz = STEMS[tyStemIdx] + BRANCHES[tyBranchIdx];
+  return {
+    gz,
+    stem: STEMS[tyStemIdx],
+    branch: BRANCHES[tyBranchIdx],
+    nayin: safeNayin(gz),
+  };
+}
+
+/**
+ * 命宫推导算法：依《命理探源》《三命通会》，卯上起正月顺数生月、生时加生月逆数至卯
+ * 数学公式：命宫支 = (16 - 月建 - 时支序 + 24) % 12；年干五虎遁得命宫干
+ */
+export function calculateMinggong(yearGz, monthGz, hourGz) {
+  if (!yearGz || !monthGz || !hourGz || yearGz.length < 2 || monthGz.length < 2 || hourGz.length < 2) {
+    return null;
+  }
+  const yStemIdx = STEMS.indexOf(yearGz[0]);
+  const mBranch = monthGz[1];
+  const hBranch = hourGz[1];
+  if (yStemIdx < 0 || !BRANCHES.includes(mBranch) || !BRANCHES.includes(hBranch)) return null;
+
+  const mJian = (BRANCHES.indexOf(mBranch) - 2 + 12) % 12 + 1;
+  const hIdx = BRANCHES.indexOf(hBranch);
+  const mgBranchIdx = (16 - mJian - hIdx + 24) % 12;
+  const yinStemIdx = ((yStemIdx % 5) * 2 + 2) % 10;
+  const stepsFromYin = (mgBranchIdx - 2 + 12) % 12;
+  const mgStemIdx = (yinStemIdx + stepsFromYin) % 10;
+  const gz = STEMS[mgStemIdx] + BRANCHES[mgBranchIdx];
+  return {
+    gz,
+    stem: STEMS[mgStemIdx],
+    branch: BRANCHES[mgBranchIdx],
+    nayin: safeNayin(gz),
+  };
+}
+
+/**
+ * 通根离散图谱推导：纯离散命理状态机（最高根阶、受力状态、清浊形态、位置明细）
+ */
+export function analyzeRoots(stems, branches, dayStem, chongPairs = [], chuanPairs = []) {
+  const dayElem = STEM_TO_ELEMENT[dayStem] || '';
+  const posNames = ['年柱', '月柱', '日柱', '时柱'];
+  const byElement = {};
+
+  for (const elem of ELEMENTS) {
+    const rootDetails = [];
+    let hasLu = false;
+    let hasRen = false;
+    let hasBenQi = false;
+    let hasChangSheng = false;
+    let hasMuKu = false;
+    let isSelfRooted = false;
+    let isMonthRooted = false;
+    let isHourRooted = false;
+    let isYearRooted = false;
+
+    for (let i = 0; i < branches.length; i++) {
+      const b = branches[i];
+      const bIdx = BRANCHES.indexOf(b);
+      if (bIdx < 0) continue;
+      const hidden = HIDDEN_STEMS_SPEC[bIdx] || [];
+      for (const [hStem, hRole] of hidden) {
+        const hElem = STEM_TO_ELEMENT[hStem];
+        if (hElem === elem) {
+          let tier = '墓库微根';
+          if (hRole === '本') {
+            hasBenQi = true;
+            if (elem === dayElem && b === LU_MAP[dayStem]) hasLu = true;
+            if (elem === dayElem && b === REN_MAP[dayStem]) hasRen = true;
+            tier = '禄刃专气';
+          } else if ((CHANGSHENG_MAP[elem] || []).includes(b)) {
+            hasChangSheng = true;
+            tier = '长生源头';
+          } else {
+            hasMuKu = true;
+            tier = '墓库微根';
+          }
+
+          if (i === 2 && elem === dayElem) isSelfRooted = true;
+          if (i === 1) isMonthRooted = true;
+          if (i === 3) isHourRooted = true;
+          if (i === 0) isYearRooted = true;
+
+          const isChong = chongPairs.some(([ci, cj]) => ci === i || cj === i);
+          const isChuan = chuanPairs.some(([ci, cj]) => ci === i || cj === i);
+          const status = isChong ? '冲拔动摇' : (isChuan ? '刑穿受损' : '安稳');
+
+          rootDetails.push({
+            pillar: posNames[i] || '',
+            branch: b,
+            stem: hStem,
+            role: hRole === '本' ? '本气' : (hRole === '中' ? '中气' : '余气'),
+            tier,
+            status,
+          });
+        }
+      }
+    }
+
+    let highestTier = '虚浮无根';
+    if (hasBenQi || hasLu || hasRen) highestTier = '禄刃专气';
+    else if (hasChangSheng) highestTier = '长生源头';
+    else if (hasMuKu || rootDetails.length > 0) highestTier = '墓库微根';
+
+    let overallStatus = '无根';
+    if (rootDetails.length > 0) {
+      const allDamaged = rootDetails.every((r) => r.status !== '安稳');
+      const anyChong = rootDetails.some((r) => r.status === '冲拔动摇');
+      const anyChuan = rootDetails.some((r) => r.status === '刑穿受损');
+      if (allDamaged && anyChong) overallStatus = '独根被拔';
+      else if (anyChong) overallStatus = '冲拔动摇';
+      else if (anyChuan) overallStatus = '刑穿受损';
+      else overallStatus = '安稳';
+    }
+
+    let purity = '无根';
+    if (rootDetails.length > 0) {
+      const rootBranches = [...new Set(rootDetails.map((r) => r.branch))];
+      const allSiZheng = rootBranches.every((b) => ['子', '卯', '酉'].includes(b));
+      const allSiSheng = rootBranches.every((b) => ['寅', '巳', '申', '亥', '午'].includes(b));
+      const anyMuKu = rootBranches.some((b) => ['辰', '戌', '丑', '未'].includes(b));
+      const isExposed = stems.some((s) => STEM_TO_ELEMENT[s] === elem);
+
+      if (allSiZheng) purity = '专气纯粹';
+      else if (allSiSheng) purity = '生化清和';
+      else if (anyMuKu && isExposed) purity = '杂气引清';
+      else if (anyMuKu) purity = '墓库伏杂';
+      else purity = '清和兼杂';
+    }
+
+    byElement[elem] = {
+      highestTier,
+      status: overallStatus,
+      purity,
+      isSelfRooted,
+      isMonthRooted,
+      isHourRooted,
+      isYearRooted,
+      count: rootDetails.length,
+      details: rootDetails,
+    };
+  }
+
+  return {
+    dayMaster: byElement[dayElem] || {
+      highestTier: '虚浮无根',
+      status: '无根',
+      purity: '无根',
+      isSelfRooted: false,
+      isMonthRooted: false,
+      isHourRooted: false,
+      isYearRooted: false,
+      count: 0,
+      details: [],
+    },
+    byElement,
+  };
+}
+
+/**
+ * 虚邀暗拱与暗夹推导：三合拱中神、相邻隔位暗夹（拱禄/拱贵/夹刃）、倒冲飞天禄马
+ */
+export function analyzeGongJia(gzList, dayStem, branches) {
+  const gongChong = [];
+  const jiaPairs = [];
+  let hasGongLu = false;
+  let hasGongGui = false;
+  let hasJiaRen = false;
+
+  const SANHE_GONG = [
+    [['申', '辰'], '子', '水'],
+    [['辰', '申'], '子', '水'],
+    [['寅', '戌'], '午', '火'],
+    [['戌', '寅'], '午', '火'],
+    [['亥', '未'], '卯', '木'],
+    [['未', '亥'], '卯', '木'],
+    [['巳', '丑'], '酉', '金'],
+    [['丑', '巳'], '酉', '金'],
+  ];
+
+  for (const [[b1, b2], mid, elem] of SANHE_GONG) {
+    if (branches.includes(b1) && branches.includes(b2) && !branches.includes(mid)) {
+      if (!gongChong.some((g) => g.mid === mid)) {
+        gongChong.push({ pair: [b1, b2], mid, elem });
+      }
+    }
+  }
+
+  // 隔位暗夹 (相邻柱地支隔一位)
+  for (let i = 0; i < branches.length - 1; i++) {
+    const b1 = branches[i];
+    const b2 = branches[i + 1];
+    const idx1 = BRANCHES.indexOf(b1);
+    const idx2 = BRANCHES.indexOf(b2);
+    if (idx1 < 0 || idx2 < 0) continue;
+
+    let clamped = '';
+    if ((idx1 + 2) % 12 === idx2) {
+      clamped = BRANCHES[(idx1 + 1) % 12];
+    } else if ((idx2 + 2) % 12 === idx1) {
+      clamped = BRANCHES[(idx2 + 1) % 12];
+    }
+
+    if (clamped && !branches.includes(clamped)) {
+      const isLu = clamped === LU_MAP[dayStem];
+      const isGui = (TIANYI_MAP[dayStem] || []).includes(clamped);
+      const isRen = clamped === REN_MAP[dayStem];
+      if (isLu) hasGongLu = true;
+      if (isGui) hasGongGui = true;
+      if (isRen) hasJiaRen = true;
+      jiaPairs.push({ pair: [b1, b2], clamped, isLu, isGui, isRen });
+    }
+  }
+
+  // 飞天禄马倒冲：庚子/壬子日支多见子水倒冲午，辛亥/癸亥日支多见亥水倒冲巳
+  const dayGz = gzList[2] || '';
+  const subBranches = branches;
+  let hasFeiTianDaoChong = false;
+  if (['庚子', '壬子'].includes(dayGz)) {
+    const ziCount = subBranches.filter((b) => b === '子').length;
+    if (ziCount >= 3 && !subBranches.includes('午')) hasFeiTianDaoChong = true;
+  } else if (['辛亥', '癸亥'].includes(dayGz)) {
+    const haiCount = subBranches.filter((b) => b === '亥').length;
+    if (haiCount >= 3 && !subBranches.includes('巳')) hasFeiTianDaoChong = true;
+  }
+
+  return {
+    gongChong,
+    jiaPairs,
+    hasGongLu,
+    hasGongGui,
+    hasJiaRen,
+    hasFeiTianDaoChong,
+  };
+}
+
 /**
  * 提取命盘之全景干支与十神特征
  */
@@ -248,7 +513,7 @@ export function extractChartFeatures(chartInput) {
   const yangRenChong = chongPairs.some(([, , b1, b2]) => b1 === renBranch || b2 === renBranch);
 
   // 4. 纳音与神煞
-  const nayins = gzList.map((gz) => nayinOf(gz));
+  const nayins = gzList.map((gz) => safeNayin(gz));
   const pillarsForShensha = gzList.map((gz) => ({
     stemIndex: STEMS.indexOf(gz[0]),
     branchIndex: BRANCHES.indexOf(gz[1]),
@@ -280,6 +545,20 @@ export function extractChartFeatures(chartInput) {
     elemStrength = null;
   }
 
+  // 6. 路径 A 高阶易学特征：胎元、命宫、通根离散图谱、虚邀暗夹与纳音物性
+  const taiyuan = calculateTaiyuan(monthGz);
+  const minggong = calculateMinggong(yearGz, monthGz, hourGz);
+  const roots = analyzeRoots(stems, branches, dayStem, chongPairs, chuanPairs);
+  const gongJia = analyzeGongJia(gzList, dayStem, branches);
+  const nayinDetails = {
+    yearNayin: nayins[0] || '',
+    monthNayin: nayins[1] || '',
+    dayNayin: nayins[2] || '',
+    hourNayin: nayins[3] || '',
+    taiyuanNayin: taiyuan?.nayin || '',
+    minggongNayin: minggong?.nayin || '',
+  };
+
   return {
     chart,
     dayStem,
@@ -306,9 +585,14 @@ export function extractChartFeatures(chartInput) {
     luChuan,
     yangRenChong,
     nayins,
+    nayinDetails,
     shenshaList,
     hasTianYiHuHuan,
     elemStrength,
+    taiyuan,
+    minggong,
+    roots,
+    gongJia,
     isWinter: ['亥', '子', '丑'].includes(monthBranch),
     isSummer: ['巳', '午', '未'].includes(monthBranch),
     isSpring: ['寅', '卯', '辰'].includes(monthBranch),
@@ -433,8 +717,16 @@ export const MATCH_PREDICATES = {
   'S-TH-028': (f) => f.dayStem === '壬' && f.isSummer,
   'S-TH-029': (f) => f.dayStem === '戊' && f.monthBranch === '戌',
   'S-TH-030': (f) => (
-    (f.isWinter && (f.stems.includes('丙') || f.stems.includes('丁')) && f.branches.some((b) => ['巳', '午', '寅'].includes(b)))
-    || (f.isSummer && (f.stems.includes('壬') || f.stems.includes('癸')) && f.branches.some((b) => ['亥', '子', '申', '辰'].includes(b)))
+    (f.isWinter && (f.stems.includes('丙') || f.stems.includes('丁')) && (
+      f.roots?.byElement?.['火']?.highestTier === '禄刃专气'
+      || f.roots?.byElement?.['火']?.highestTier === '长生源头'
+      || f.branches.some((b) => ['巳', '午', '寅'].includes(b))
+    ))
+    || (f.isSummer && (f.stems.includes('壬') || f.stems.includes('癸')) && (
+      f.roots?.byElement?.['水']?.highestTier === '禄刃专气'
+      || f.roots?.byElement?.['水']?.highestTier === '长生源头'
+      || f.branches.some((b) => ['亥', '子', '申', '辰'].includes(b))
+    ))
   ),
 
   // 旺衰扶抑派（30 条全量闭环）
@@ -617,10 +909,11 @@ export const MATCH_PREDICATES = {
     });
   },
   'S-MP-020': (f) => {
+    if (f.roots?.dayMaster?.highestTier === '虚浮无根' && f.roots?.dayMaster?.details?.length === 0) return true;
     const bElems = f.branches.map((b) => BRANCH_TO_ELEMENT[b]);
     const xuTou = f.stems.some((s, idx) => idx !== 2 && !bElems.includes(STEM_TO_ELEMENT[s]));
     const zuoShi = f.stems.some((s, idx) => idx !== 2 && bElems.includes(STEM_TO_ELEMENT[s]));
-    return xuTou && zuoShi;
+    return (xuTou && zuoShi) || (f.roots?.dayMaster?.isSelfRooted && xuTou);
   },
   'S-MP-021': (f) => {
     let count = 0;
@@ -696,8 +989,13 @@ export const MATCH_PREDICATES = {
   'S-SM-004': (f) => {
     if (!f.nayins || f.nayins.length < 4) return false;
     const yEl = f.nayins[0]?.slice(-1);
+    const tyEl = f.taiyuan?.nayin?.slice(-1);
+    const mgEl = f.minggong?.nayin?.slice(-1);
+    const tySheng = tyEl && (SHENG_ELEM[tyEl] === yEl || tyEl === yEl);
+    const mgSheng = mgEl && (SHENG_ELEM[mgEl] === yEl || mgEl === yEl);
     const others = f.nayins.slice(1).map((n) => n?.slice(-1));
-    return others.some((e) => SHENG_ELEM[e] === yEl);
+    const pillarSheng = others.some((e) => SHENG_ELEM[e] === yEl);
+    return Boolean(tySheng || mgSheng || pillarSheng);
   },
   'S-SM-005': (f) => {
     const hasXiao = f.exposedTenGods.includes('偏印');
@@ -754,6 +1052,7 @@ export const MATCH_PREDICATES = {
     return wb.includes(f.branches[1]) || wb.includes(f.branches[3]);
   },
   'S-SM-014': (f) => {
+    if (f.gongJia?.hasGongLu || f.gongJia?.hasGongGui || (f.gongJia?.jiaPairs?.length || 0) > 0) return true;
     const GONG_PAIRS = [
       ['癸亥', '癸丑'], ['癸丑', '癸亥'],
       ['丁巳', '丁未'], ['丁未', '丁巳'],
@@ -765,6 +1064,7 @@ export const MATCH_PREDICATES = {
     return hasGongLu || diff === 2;
   },
   'S-SM-015': (f) => {
+    if (f.gongJia?.hasFeiTianDaoChong) return true;
     const noGuanSha = !f.exposedTenGods.includes('正官') && !f.exposedTenGods.includes('七杀');
     const branchCounts = {};
     for (const b of f.branches) branchCounts[b] = (branchCounts[b] || 0) + 1;
@@ -820,7 +1120,22 @@ export const MATCH_PREDICATES = {
     const nayinKe = KE_ELEM[dEl] === yEl;
     return hasGuan && nayinKe;
   },
-  'S-SM-028': (f) => f.chongPairs.some(([i, j]) => i === 2 || j === 2 || i === 3 || j === 3),
+  'S-SM-028': (f) => {
+    const checkChongKe = (gzA, gzB) => {
+      if (!gzA || !gzB || gzA.length < 2 || gzB.length < 2) return false;
+      const bA = gzA[1], bB = gzB[1];
+      const sA = gzA[0], sB = gzB[0];
+      const isChong = CHONG_DEFS.some(([x, y]) => (bA === x && bB === y) || (bA === y && bB === x));
+      const sAEl = STEM_TO_ELEMENT[sA], sBEl = STEM_TO_ELEMENT[sB];
+      const isKe = KE_ELEM[sAEl] === sBEl || KE_ELEM[sBEl] === sAEl;
+      return isChong && isKe;
+    };
+    const ty = f.taiyuan?.gz;
+    const mg = f.minggong?.gz;
+    const hasChongKeTaiMing = checkChongKe(f.dayGz, ty) || checkChongKe(f.hourGz, ty)
+      || checkChongKe(f.dayGz, mg) || checkChongKe(f.hourGz, mg);
+    return Boolean(hasChongKeTaiMing || f.chongPairs.some(([i, j]) => i === 2 || j === 2 || i === 3 || j === 3));
+  },
   'S-SM-029': (f) => {
     if (!f.nayins || f.nayins.length < 3) return false;
     const yEl = f.nayins[0]?.slice(-1);
