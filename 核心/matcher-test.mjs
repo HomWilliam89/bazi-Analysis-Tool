@@ -38,20 +38,21 @@ console.log('【丙层流派匹配器自动化测试套件 · D-038 回归验证
 console.log('======================================================================\n');
 
 // --------------------------------------------------------------------
-// 测试组 1：单源 390 条标准条目解析验证（SSOT Parser Verification）
+// --------------------------------------------------------------------
+// 测试组 1：单源 420 条标准条目解析验证（SSOT Parser Verification）
 // --------------------------------------------------------------------
 console.log('▶ [测试组 1] 单源条目解析完整性与字段规范测试');
 
-test('单源条目总数必须严格等于 390 条整', () => {
+test('单源条目总数必须严格等于 420 条整', () => {
   const { map, list } = loadAllSchoolEntries(true);
-  assert.equal(list.length, 390, `期望 390 条，实际解析得到 ${list.length} 条`);
-  assert.equal(map.size, 390, `期望 Map 容量 390，实际得到 ${map.size}`);
+  assert.equal(list.length, 420, `期望 420 条，实际解析得到 ${list.length} 条`);
+  assert.equal(map.size, 420, `期望 Map 容量 420，实际得到 ${map.size}`);
 });
 
-test('MATCH_PREDICATES 必须 100% 覆盖全量 390 条标准条目（零死条目门禁）', () => {
+test('MATCH_PREDICATES 必须 100% 覆盖全量 420 条标准条目（零死条目门禁）', () => {
   const { list } = loadAllSchoolEntries();
   const predicateKeys = Object.keys(MATCH_PREDICATES);
-  assert.equal(predicateKeys.length, 390, `谓词字典必须恰好 390 个键，实际得到 ${predicateKeys.length}`);
+  assert.equal(predicateKeys.length, 420, `谓词字典必须恰好 420 个键，实际得到 ${predicateKeys.length}`);
   for (const entry of list) {
     assert.equal(
       typeof MATCH_PREDICATES[entry.id],
@@ -61,7 +62,7 @@ test('MATCH_PREDICATES 必须 100% 覆盖全量 390 条标准条目（零死条�
   }
 });
 
-test('六大主流学派条目数量校验：格局派 60 条、调候派 60 条、古法三命 60 条、神煞派 90 条、盲派 60 条、旺衰派 60 条（四大专著深度扫尾首批达成）', () => {
+test('六大主流学派条目数量校验：格局派 60 条、调候派 90 条、古法三命 60 条、神煞派 90 条、盲派 60 条、旺衰派 60 条（四大专著深度扫尾第二批达成）', () => {
   const { list } = loadAllSchoolEntries();
   const counts = {
     geju: 0,
@@ -76,14 +77,14 @@ test('六大主流学派条目数量校验：格局派 60 条、调候派 60 条
     counts[entry.schoolKey] += 1;
   }
   assert.equal(counts.geju, 60, '格局派条目必须为 60 条（30正格+30外格）');
-  assert.equal(counts.tiaohou, 60, '调候派条目必须为 60 条（批次 B 扩充至 60 条）');
+  assert.equal(counts.tiaohou, 90, '调候派条目必须为 90 条（《穷通宝鉴》十干十二月令扫尾达成 90 条）');
   assert.equal(counts.wangshuai, 60, '旺衰扶抑派条目必须为 60 条（批次 F 扩充至 60 条）');
   assert.equal(counts.mangpai, 60, '盲派与象法条目必须为 60 条（批次 E 扩充至 60 条）');
   assert.equal(counts.sanming, 60, '古法三命条目必须为 60 条（批次 C 扩充至 60 条）');
   assert.equal(counts.shensha, 90, '神煞派条目必须为 90 条（《玉照定真经》扫尾第一批 30 条达成 90 条）');
 });
 
-test('全部 390 条条目元数据字段完整且非空', () => {
+test('全部 420 条条目元数据字段完整且非空', () => {
   const { list } = loadAllSchoolEntries();
   const idPattern = /^S-(GJ|TH|WS|MP|SM|SS)-\d{3}$/;
   for (const item of list) {
@@ -711,6 +712,71 @@ test('神煞派《玉照定真经》严密排他反向断言（无天门排他 S
   // 无丑午相穿害排他 S-SS-090：甲子 丙寅 戊辰 庚申 (无丑午)
   const resWuChuan = matchSchoolClaims(['甲子', '丙寅', '戊辰', '庚申']);
   assert.ok(!resWuChuan.matched.some((x) => x.id === 'S-SS-090'), '无丑午相害者必须排除 S-SS-090');
+});
+
+// --------------------------------------------------------------------
+// 测试组 13：调候派《穷通宝鉴》十干十二月调候专测套件（D-073 30 条新定式）
+// --------------------------------------------------------------------
+console.log('\n▶ [测试组 13] 调候派《穷通宝鉴》十干十二月调候专测套件（D-073 30 条新定式）');
+
+test('调候派《穷通宝鉴》30 条经典命造特征命中测试（S-TH-061～S-TH-090）', () => {
+  // 1. 仲夏午月甲木癸庚两透：癸未 戊午 甲子 庚午 (命中 S-TH-061)
+  const res1 = matchSchoolClaims(['癸未', '戊午', '甲子', '庚午']);
+  const ids1 = res1.matched.map((x) => x.id);
+  assert.ok(ids1.includes('S-TH-061'), '午月甲木透癸庚必须命中上上之格 S-TH-061');
+
+  // 2. 季春辰月乙木癸丙两透无己庚：癸卯 丙辰 乙亥 丙子 (命中 S-TH-063)
+  const res2 = matchSchoolClaims(['癸卯', '丙辰', '乙亥', '丙子']);
+  const ids2 = res2.matched.map((x) => x.id);
+  assert.ok(ids2.includes('S-TH-063'), '辰月乙木癸丙两透无己庚必须命中玉堂之客 S-TH-063');
+
+  // 3. 孟夏巳月丙火建禄壬庚两透无戊：庚申 辛巳 丙子 壬辰 (命中 S-TH-068)
+  const res3 = matchSchoolClaims(['庚申', '辛巳', '丙子', '壬辰']);
+  const ids3 = res3.matched.map((x) => x.id);
+  assert.ok(ids3.includes('S-TH-068'), '巳月丙火壬庚两透无戊必须命中湖水汪洋 S-TH-068');
+
+  // 4. 仲夏午月丁火独杀当权：己未 庚午 丁酉 癸卯 (命中 S-TH-073)
+  const res4 = matchSchoolClaims(['己未', '庚午', '丁酉', '癸卯']);
+  const ids4 = res4.matched.map((x) => x.id);
+  assert.ok(ids4.includes('S-TH-073'), '午月丁火得一癸透干无甲必须命中独杀当权 S-TH-073');
+
+  // 5. 仲夏午月戊土君臣庆会：甲寅 庚午 戊辰 壬子 (命中 S-TH-077)
+  const res5 = matchSchoolClaims(['甲寅', '庚午', '戊辰', '壬子']);
+  const ids5 = res5.matched.map((x) => x.id);
+  assert.ok(ids5.includes('S-TH-077'), '午月戊土壬甲两透必须命中君臣庆会 S-TH-077');
+
+  // 6. 季冬丑月辛金丙壬两透：丙申 辛丑 辛酉 壬辰 (命中 S-TH-086)
+  const res6 = matchSchoolClaims(['丙申', '辛丑', '辛酉', '壬辰']);
+  const ids6 = res6.matched.map((x) => x.id);
+  assert.ok(ids6.includes('S-TH-086'), '丑月辛金丙壬两透必须命中金马玉堂 S-TH-086');
+
+  // 7. 仲秋酉月壬水透甲无戊澄清：甲子 癸酉 壬子 庚子 (命中 S-TH-088)
+  const res7 = matchSchoolClaims(['甲子', '癸酉', '壬子', '庚子']);
+  const ids7 = res7.matched.map((x) => x.id);
+  assert.ok(ids7.includes('S-TH-088'), '酉月壬水透甲无戊必须命中澈底澄清 S-TH-088');
+
+  // 8. 季冬丑月癸水雪后灯光：丁丑 癸丑 癸亥 己未 (命中 S-TH-090)
+  const res8 = matchSchoolClaims(['丁丑', '癸丑', '癸亥', '己未']);
+  const ids8 = res8.matched.map((x) => x.id);
+  assert.ok(ids8.includes('S-TH-090'), '丑月癸水透丁会党必须命中雪后灯光 S-TH-090');
+});
+
+test('调候派《穷通宝鉴》严密排他反向断言（无癸排他 S-TH-061、见己排他 S-TH-063、见戊浊源排他 S-TH-068、见戊排他 S-TH-088）', () => {
+  // 午月甲木无癸排除 S-TH-061：甲寅 庚午 甲子 庚午 (无癸透)
+  const resWuGui = matchSchoolClaims(['甲寅', '庚午', '甲子', '庚午']);
+  assert.ok(!resWuGui.matched.some((x) => x.id === 'S-TH-061'), '午月甲木无癸透干必须排除 S-TH-061');
+
+  // 辰月乙木见己土破格排除 S-TH-063：癸卯 丙辰 乙亥 己卯 (见己土浊癸)
+  const resJianJi = matchSchoolClaims(['癸卯', '丙辰', '乙亥', '己卯']);
+  assert.ok(!resJianJi.matched.some((x) => x.id === 'S-TH-063'), '辰月乙木见己土浊水必须排除 S-TH-063');
+
+  // 巳月丙火见戊土浊源排除 S-TH-068：庚申 辛巳 丙子 戊子 (见戊土浊源)
+  const resJianWu = matchSchoolClaims(['庚申', '辛巳', '丙子', '戊子']);
+  assert.ok(!resJianWu.matched.some((x) => x.id === 'S-TH-068'), '巳月丙火见戊土克水必须排除 S-TH-068');
+
+  // 酉月壬水见戊土浊水排除 S-TH-088：甲子 癸酉 壬子 戊申 (见戊土浊源)
+  const resRenWu = matchSchoolClaims(['甲子', '癸酉', '壬子', '戊申']);
+  assert.ok(!resRenWu.matched.some((x) => x.id === 'S-TH-088'), '酉月壬水见戊土克水必须排除 S-TH-088');
 });
 
 // --------------------------------------------------------------------
