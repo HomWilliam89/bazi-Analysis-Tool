@@ -2017,6 +2017,63 @@ function luckStageAdvice(lp, stance, dmElem, yongElem) {
   return `此十年行运聚焦【${gz}·${g}】气象，天干【${stem}】主事，宜顺应环境节律，善加把握生克转折契机。`;
 }
 
+/**
+ * 综合大运天干（40%）与地支方所根基（60%），并结合地支冲合动态定性大运行运气象（BUG-03 治理）
+ */
+function determineLuckPillarStance(lp, chart, yongInfo, yongElem, dmElem) {
+  const sElem = ['木', '火', '土', '金', '水'][STEM_ELEMENT[STEMS.indexOf(lp.gz[0])]];
+  const bElem = ['木', '火', '土', '金', '水'][BRANCH_ELEMENT[BRANCHES.indexOf(lp.gz[1])]];
+  const lBranch = lp.gz[1];
+  const dayBranch = chart.dayMaster?.branch || chart.pillars?.[2]?.branch;
+  const monthBranch = chart.pillars?.[1]?.branch;
+  const targetYong = yongInfo?.primaryYong || yongElem;
+
+  const rate = (elem) => {
+    if (yongInfo) {
+      if (elem === yongInfo.primaryYong) return 2.0;
+      if (elem === yongInfo.huShenElem || (yongInfo.shengYongElem && elem === yongInfo.shengYongElem)) return 1.5;
+      if (elem === yongInfo.mieToolElem) return -2.0;
+      if (elem === yongInfo.bingElem) return -1.5;
+      if (ELEM_REL[yongInfo.primaryYong]?.被生 === elem) return 1.0;
+      if (ELEM_REL[yongInfo.primaryYong]?.被克 === elem) return -1.5;
+      return 0.0;
+    } else {
+      if (elem === yongElem) return 2.0;
+      if (ELEM_REL[yongElem]?.被生 === elem) return 1.5;
+      if (ELEM_REL[yongElem]?.被克 === elem) return -2.0;
+      return 0.0;
+    }
+  };
+
+  const sScore = rate(sElem);
+  const bScore = rate(bElem);
+  // 大运重地支，地支占 60%，天干占 40%
+  let score = sScore * 0.4 + bScore * 0.6;
+
+  // 地支刑冲会合动态考量
+  if (dayBranch && getBranchClash(lBranch) === dayBranch) {
+    score -= 0.5; // 运支冲夫妻宫/日基
+  }
+  if (monthBranch && getBranchClash(lBranch) === monthBranch) {
+    score -= 0.3; // 运支冲提纲月令
+  }
+  if (dayBranch && getBranchCombine(lBranch) === dayBranch) {
+    score += 0.3; // 运支合日基
+  }
+
+  // 映射最终行运气象定性
+  if (score >= 0.6 && (sElem === targetYong || bElem === targetYong)) {
+    return '才华发露 · 积极做功';
+  }
+  if (score >= 0.2) {
+    return '顺势生发 · 拓展舒展';
+  }
+  if (score <= -0.5) {
+    return '逆风磨砺 · 严谨修持';
+  }
+  return '生克制衡 · 稳健蓄势';
+}
+
 function strategyGuidance(domTenGod, dmElem, yongElem, dayStem) {
   if (domTenGod === '七杀') {
     return {
@@ -3054,10 +3111,18 @@ export function describeActionMechanism(yong, bing, dmElem, yongTenGod) {
 
   // 5. 强身任泄 / 滋培生发轨（用生病）
   if (ELEM_REL[yong]?.生 === bing) {
+    const isDayMasterHelper = (yong === dmElem || ELEM_REL[yong]?.生 === dmElem);
+    const jiLi = isDayMasterHelper
+      ? `以【${yong}】强固日元体魄，增强抗压担力，源源不断输送动能以滋养【${bing}】之开阖生发。身弱克泄交加，以【${yong}】强身固本，使元气充盈、秀气有源而不竭。用神为命主强身固本、底蕴承托之核心根基。`
+      : `以【${yong}】作为动能枢纽，顺生流通以滋养转化原局主要矛盾【${bing}】之气。五行相生有情，以【${yong}】（${yongTenGod}）疏通流通节点，将滞气导向生发之途，变阻力为开阖动能。用神为命主疏通造化、转化生机之核心枢纽。`;
+    const zhanLue = isDayMasterHelper
+      ? `夯实【${yong}】（${yongTenGod}）所代表的内功修为与体魄身心，注重长远蓄力与底层积累，以内在丰盈的确定性应对外部高负荷消耗。`
+      : `深耕【${yong}】（${yongTenGod}）所代表的开创转化与资源整合策略，顺势而为，以生生不息的动态周转盘活全局资产。`;
+
     return {
       轨道: '强身任泄',
-      机理: `以【${yong}】强固日元体魄，源源不断输送动能以滋养【${bing}】之开阖生发。身弱克泄交加，以【${yong}】强身固本，使元气充盈、秀气有源而不竭。用神为命主强身固本、底蕴承托之核心根基。`,
-      战略: `夯实【${yong}】（${yongTenGod}）所代表的内功修为与体魄身心，注重长远蓄力与底层积累，以内在丰盈的确定性应对外部高负荷消耗。`
+      机理: jiLi,
+      战略: zhanLue
     };
   }
 
@@ -3371,18 +3436,7 @@ function renderTiyongSection(chart, options = {}) {
     lines.push('```\n');
 
     luckPillars.slice(0, 6).forEach((lp, idx) => {
-      const stemElem = ['木', '火', '土', '金', '水'][STEM_ELEMENT[STEMS.indexOf(lp.gz[0])]];
-      let stance = '';
-      if (yongInfo) {
-        const isHelper = (stemElem === yongInfo.primaryYong || stemElem === yongInfo.huShenElem || stemElem === yongInfo.shengYongElem);
-        const isChallenger = (stemElem === yongInfo.mieToolElem || stemElem === yongInfo.bingElem);
-        const isWork = (stemElem === yongInfo.primaryYong);
-        stance = isWork ? '才华发露 · 积极做功' : isHelper ? '顺势生发 · 拓展舒展' : isChallenger ? '逆风磨砺 · 严谨修持' : '生克制衡 · 稳健蓄势';
-      } else {
-        const isHelper = (stemElem === yongElem || ELEM_REL[yongElem]?.被生 === stemElem);
-        const isChallenger = (ELEM_REL[yongElem]?.被克 === stemElem);
-        stance = isHelper ? '顺势生发 · 拓展舒展' : isChallenger ? '逆风磨砺 · 严谨修持' : '生克制衡 · 稳健蓄势';
-      }
+      const stance = determineLuckPillarStance(lp, chart, yongInfo, yongElem, dmElem);
 
       lines.push(`#### 3.4.${idx + 1} 【${lp.gz}大运】（约 ${lp.startAge || 5} ~ ${(lp.startAge || 5) + 9} 岁 / ${lp.startYear || 2020 + idx * 10} ~ ${(lp.startYear || 2020 + idx * 10) + 9} 年）`);
       lines.push(`* **干支配置**：天干【${lp.gz[0]}】${lp.tenGod || '星'}，地支【${lp.gz[1]}】。`);
