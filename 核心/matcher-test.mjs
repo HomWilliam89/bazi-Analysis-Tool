@@ -39,20 +39,20 @@ console.log('===================================================================
 
 // --------------------------------------------------------------------
 // --------------------------------------------------------------------
-// 测试组 1：单源 570 条标准条目解析验证（SSOT Parser Verification）
+// 测试组 1：单源 600 条标准条目解析验证（SSOT Parser Verification）
 // --------------------------------------------------------------------
 console.log('▶ [测试组 1] 单源条目解析完整性与字段规范测试');
 
-test('单源条目总数必须严格等于 570 条整', () => {
+test('单源条目总数必须严格等于 600 条整', () => {
   const { map, list } = loadAllSchoolEntries(true);
-  assert.equal(list.length, 570, `期望 570 条，实际解析得到 ${list.length} 条`);
-  assert.equal(map.size, 570, `期望 Map 容量 570，实际得到 ${map.size}`);
+  assert.equal(list.length, 600, `期望 600 条，实际解析得到 ${list.length} 条`);
+  assert.equal(map.size, 600, `期望 Map 容量 600，实际得到 ${map.size}`);
 });
 
-test('MATCH_PREDICATES 必须 100% 覆盖全量 570 条标准条目（零死条目门禁）', () => {
+test('MATCH_PREDICATES 必须 100% 覆盖全量 600 条标准条目（零死条目门禁）', () => {
   const { list } = loadAllSchoolEntries();
   const predicateKeys = Object.keys(MATCH_PREDICATES);
-  assert.equal(predicateKeys.length, 570, `谓词字典必须恰好 570 个键，实际得到 ${predicateKeys.length}`);
+  assert.equal(predicateKeys.length, 600, `谓词字典必须恰好 600 个键，实际得到 ${predicateKeys.length}`);
   for (const entry of list) {
     assert.equal(
       typeof MATCH_PREDICATES[entry.id],
@@ -62,7 +62,7 @@ test('MATCH_PREDICATES 必须 100% 覆盖全量 570 条标准条目（零死条�
   }
 });
 
-test('六大主流学派条目数量校验：格局派 120 条、调候派 120 条、神煞派 120 条、旺衰派 90 条、古法三命 60 条、盲派 60 条（四大专著深度扫尾第七批达成）', () => {
+test('六大主流学派条目数量校验：格局派 120 条、调候派 120 条、神煞派 120 条、旺衰派 120 条、古法三命 60 条、盲派 60 条（四大传世专著全景大圆满达成）', () => {
   const { list } = loadAllSchoolEntries();
   const counts = {
     geju: 0,
@@ -78,13 +78,13 @@ test('六大主流学派条目数量校验：格局派 120 条、调候派 120 �
   }
   assert.equal(counts.geju, 120, '格局派条目必须为 120 条（30正格+30外格+60成败救应全章大圆满）');
   assert.equal(counts.tiaohou, 120, '调候派条目必须为 120 条（《穷通宝鉴》十干十二月令扫尾达成 120 条）');
-  assert.equal(counts.wangshuai, 90, '旺衰扶抑派条目必须为 90 条（《神峰通考》动静盖头病药雕枯第一批达成 90 条）');
+  assert.equal(counts.wangshuai, 120, '旺衰扶抑派条目必须为 120 条（《神峰通考》动静盖头生克与病药说全卷大圆满达成 120 条）');
   assert.equal(counts.mangpai, 60, '盲派与象法条目必须为 60 条（批次 E 扩充至 60 条）');
   assert.equal(counts.sanming, 60, '古法三命条目必须为 60 条（批次 C 扩充至 60 条）');
   assert.equal(counts.shensha, 120, '神煞派条目必须为 120 条（《玉照定真经》干支刑冲定位铁断扫尾大圆满达成 120 条）');
 });
 
-test('全部 570 条条目元数据字段完整且非空', () => {
+test('全部 600 条条目元数据字段完整且非空', () => {
   const { list } = loadAllSchoolEntries();
   const idPattern = /^S-(GJ|TH|WS|MP|SM|SS)-\d{3}$/;
   for (const item of list) {
@@ -1160,6 +1160,54 @@ test('旺衰扶抑派《神峰通考》严密排他反向断言（地支冲破�
   // 5. 庚金生于秋月火炼无厚土排除土多金埋 S-WS-083：庚申 乙酉 庚申 丙戌
   const resNoTuJin = matchSchoolClaims(['庚申', '乙酉', '庚申', '丙戌']);
   assert.ok(!resNoTuJin.matched.some((x) => x.id === 'S-WS-083'), '金旺得火无厚土必须排除土多金埋 S-WS-083');
+});
+
+// --------------------------------------------------------------------
+// 测试组 19：旺衰扶抑派《神峰通考》动静盖头生克与病药说大圆满专测套件 (D-079)
+// --------------------------------------------------------------------
+console.log('\n▶ [测试组 19] 旺衰扶抑派《神峰通考》动静盖头生克与病药说大圆满专测套件 (D-079)');
+
+test('旺衰扶抑派《神峰通考》大圆满正向特征命中断言（C-236 李志富命盘、合婚补救、重重生气无官、印重逢财破印、六甲坐申三重见子、阴水从火、丁酉不怕多水从杀、弃命从财从杀）', () => {
+  // 1. C-236 李志富公命：辛巳 丁酉 丙寅 己丑 (正财身旺任财、透食伤化劫生财)
+  const resC236 = matchSchoolClaims(['辛巳', '丁酉', '丙寅', '己丑']);
+  const idsC236 = resC236.matched.map((x) => x.id);
+  assert.ok(idsC236.includes('S-WS-098'), '身旺比劫多逢财见杀去比存财必须命中 S-WS-098');
+  assert.ok(idsC236.includes('S-WS-100'), '正财有气喜强身旺任财必须命中 S-WS-100');
+
+  // 2. 重重生气若无官常作清高技艺看：甲寅 丙寅 丙寅 甲午 (纯印比无一字官杀)
+  const resJiYi = matchSchoolClaims(['甲寅', '丙寅', '丙寅', '甲午']);
+  const idsJiYi = resJiYi.matched.map((x) => x.id);
+  assert.ok(idsJiYi.includes('S-WS-095'), '重重生气无官杀常作技艺看必须命中 S-WS-095');
+
+  // 3. 六甲坐申三重见子：甲申 丙子 甲申 丙子 (甲申日主支见双子以上)
+  const resShenZi = matchSchoolClaims(['甲申', '丙子', '甲申', '丙子']);
+  const idsShenZi = resShenZi.matched.map((x) => x.id);
+  assert.ok(idsShenZi.includes('S-WS-107'), '六甲坐申重见子北方防溺漂必须命中 S-WS-107');
+
+  // 4. 丁酉阴柔不怕多水、阴火酉月弃命就财：癸酉 辛酉 丁酉 辛亥 (丁火酉提无根弃命就财从杀)
+  const resDingYou = matchSchoolClaims(['癸酉', '辛酉', '丁酉', '辛亥']);
+  const idsDingYou = resDingYou.matched.map((x) => x.id);
+  assert.ok(idsDingYou.includes('S-WS-112'), '丁酉阴柔不怕多水必须命中 S-WS-112');
+  assert.ok(idsDingYou.includes('S-WS-120'), '阴火酉月弃命就财北方入格必须命中 S-WS-120');
+
+  // 5. 男比劫重女食伤重合婚补救：庚申 辛酉 庚申 辛酉 (全金比劫极盛)
+  const resHeHun = matchSchoolClaims(['庚申', '辛酉', '庚申', '辛酉']);
+  const idsHeHun = resHeHun.matched.map((x) => x.id);
+  assert.ok(idsHeHun.includes('S-WS-091'), '比劫重叠或食伤重叠合婚补救必须命中 S-WS-091');
+});
+
+test('旺衰扶抑派《神峰通考》大圆满严密排他反向断言（有官杀排除技艺看 S-WS-095、非甲申日主排除水漂 S-WS-107、非丁酉日排除丁酉不怕多水 S-WS-112）', () => {
+  // 1. 局有官杀排除清高技艺看 S-WS-095：甲子 丁卯 丙寅 癸巳 (透癸水正官)
+  const resYouGuan = matchSchoolClaims(['甲子', '丁卯', '丙寅', '癸巳']);
+  assert.ok(!resYouGuan.matched.some((x) => x.id === 'S-WS-095'), '局透官星必须排除清高技艺看 S-WS-095');
+
+  // 2. 非甲申日主排除六甲坐申重见子 S-WS-107：甲子 丙子 甲子 丙子 (甲子日非甲申日)
+  const resNoShen = matchSchoolClaims(['甲子', '丙子', '甲子', '丙子']);
+  assert.ok(!resNoShen.matched.some((x) => x.id === 'S-WS-107'), '日支非申必须排除六甲坐申重见子 S-WS-107');
+
+  // 3. 非丁酉日主排除丁酉阴柔不怕水 S-WS-112：丁巳 壬子 丁丑 辛亥 (丁丑日非丁酉日)
+  const resNoDingYou = matchSchoolClaims(['丁巳', '壬子', '丁丑', '辛亥']);
+  assert.ok(!resNoDingYou.matched.some((x) => x.id === 'S-WS-112'), '非丁酉日主必须排除丁酉不怕多水 S-WS-112');
 });
 console.log('\n----------------------------------------------------------------------');
 console.log(`【测试结果看板】通过: ${passedCount} 项，失败: ${failedCount} 项`);

@@ -9,6 +9,7 @@ import {
   CHANGSHENG_MAP, MUKU_MAP,
 } from './helpers.mjs';
 import { WANGSHUAI_SHENFENG_PREDICATES } from './wangshuai_shenfeng.mjs';
+import { WANGSHUAI_SHENFENG_ER_PREDICATES } from './wangshuai_shenfeng_er.mjs';
 
 export const WANGSHUAI_PREDICATES = {
   'S-WS-001': (f) => f.exposedTenGods.includes('七杀'),
@@ -351,5 +352,6 @@ export const WANGSHUAI_PREDICATES = {
   },
   'S-WS-060': (f) => f.hasYangRen === true && f.exposedTenGods.includes('七杀'),
   ...WANGSHUAI_SHENFENG_PREDICATES,
+  ...WANGSHUAI_SHENFENG_ER_PREDICATES,
 };
 
