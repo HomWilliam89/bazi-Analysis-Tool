@@ -8,6 +8,7 @@ import {
   ZAISHA_MAP, YUANCHEN_MAP, HONGLUAN_MAP, TIANXI_MAP, JIE_MAP,
   CHANGSHENG_MAP, MUKU_MAP,
 } from './helpers.mjs';
+import { WANGSHUAI_SHENFENG_PREDICATES } from './wangshuai_shenfeng.mjs';
 
 export const WANGSHUAI_PREDICATES = {
   'S-WS-001': (f) => f.exposedTenGods.includes('七杀'),
@@ -349,5 +350,6 @@ export const WANGSHUAI_PREDICATES = {
     return Boolean(isDiShengTian && dayBranchChong);
   },
   'S-WS-060': (f) => f.hasYangRen === true && f.exposedTenGods.includes('七杀'),
+  ...WANGSHUAI_SHENFENG_PREDICATES,
 };
 
