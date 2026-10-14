@@ -39,8 +39,9 @@ export const SYNC_MANIFEST = [
   { src: '命令行/bazi.mjs', dest: '命令行/bazi.mjs' },
   { src: 'bazi.mjs', dest: 'bazi.mjs' },
 
-  // 核心执行与推演大脑
+  // 核心执行与推演大脑及静态数据
   { src: '核心/engine.mjs', dest: '核心/engine.mjs' },
+  { src: '核心/data/tiyao.json', dest: '核心/data/tiyao.json' },
   { src: '核心/astronomy.mjs', dest: '核心/astronomy.mjs' },
   { src: '核心/tiyong.mjs', dest: '核心/tiyong.mjs' },
   { src: '核心/school-matcher.mjs', dest: '核心/school-matcher.mjs' },
