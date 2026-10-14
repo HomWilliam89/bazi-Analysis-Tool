@@ -8,6 +8,7 @@ import {
   ZAISHA_MAP, YUANCHEN_MAP, HONGLUAN_MAP, TIANXI_MAP, JIE_MAP,
   CHANGSHENG_MAP, MUKU_MAP,
 } from './helpers.mjs';
+import { MANGPAI_ER_PREDICATES } from './mangpai_er.mjs';
 
 export const MANGPAI_PREDICATES = {
   'S-MP-001': (f) => f.chongPairs.some(([i, j]) => (i < 2 && j >= 2) || (i >= 2 && j < 2))
@@ -348,4 +349,6 @@ export const MANGPAI_PREDICATES = {
     const hasXuTou = f.stems.some((s, idx) => idx !== 2 && !branchElems.includes(STEM_TO_ELEMENT[s]));
     return hasZuoShi && hasXuTou;
   },
+
+  ...MANGPAI_ER_PREDICATES,
 };

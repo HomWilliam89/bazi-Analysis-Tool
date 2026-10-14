@@ -39,20 +39,20 @@ console.log('===================================================================
 
 // --------------------------------------------------------------------
 // --------------------------------------------------------------------
-// 测试组 1：单源 690 条标准条目解析验证（SSOT Parser Verification）
+// 测试组 1：单源 720 条标准条目解析验证（SSOT Parser Verification）
 // --------------------------------------------------------------------
 console.log('▶ [测试组 1] 单源条目解析完整性与字段规范测试');
 
-test('单源条目总数必须严格等于 690 条整', () => {
+test('单源条目总数必须严格等于 720 条整', () => {
   const { map, list } = loadAllSchoolEntries(true);
-  assert.equal(list.length, 690, `期望 690 条，实际解析得到 ${list.length} 条`);
-  assert.equal(map.size, 690, `期望 Map 容量 690，实际得到 ${map.size}`);
+  assert.equal(list.length, 720, `期望 720 条，实际解析得到 ${list.length} 条`);
+  assert.equal(map.size, 720, `期望 Map 容量 720，实际得到 ${map.size}`);
 });
 
-test('MATCH_PREDICATES 必须 100% 覆盖全量 690 条标准条目（零死条目门禁）', () => {
+test('MATCH_PREDICATES 必须 100% 覆盖全量 720 条标准条目（零死条目门禁）', () => {
   const { list } = loadAllSchoolEntries();
   const predicateKeys = Object.keys(MATCH_PREDICATES);
-  assert.equal(predicateKeys.length, 690, `谓词字典必须恰好 690 个键，实际得到 ${predicateKeys.length}`);
+  assert.equal(predicateKeys.length, 720, `谓词字典必须恰好 720 个键，实际得到 ${predicateKeys.length}`);
   for (const entry of list) {
     assert.equal(
       typeof MATCH_PREDICATES[entry.id],
@@ -62,7 +62,7 @@ test('MATCH_PREDICATES 必须 100% 覆盖全量 690 条标准条目（零死条�
   }
 });
 
-test('六大主流学派条目数量校验：格局派 120 条、调候派 120 条、神煞派 120 条、旺衰派 120 条、古法三命 120 条、盲派 90 条（古法三命单派 120 条封顶达成）', () => {
+test('六大主流学派条目数量校验：格局派 120 条、调候派 120 条、神煞派 120 条、旺衰派 120 条、古法三命 120 条、盲派 120 条（六派 6 × 120 = 720 条绝对对称终极大圆满达成）', () => {
   const { list } = loadAllSchoolEntries();
   const counts = {
     geju: 0,
@@ -79,12 +79,12 @@ test('六大主流学派条目数量校验：格局派 120 条、调候派 120 �
   assert.equal(counts.geju, 120, '格局派条目必须为 120 条（30正格+30外格+60成败救应全章大圆满）');
   assert.equal(counts.tiaohou, 120, '调候派条目必须为 120 条（《穷通宝鉴》十干十二月令扫尾达成 120 条）');
   assert.equal(counts.wangshuai, 120, '旺衰扶抑派条目必须为 120 条（《神峰通考》动静盖头生克与病药说全卷大圆满达成 120 条）');
-  assert.equal(counts.mangpai, 90, '盲派与象法条目必须为 90 条（盲派象法高级做功与开库换象第一批扩充达成 90 条）');
+  assert.equal(counts.mangpai, 120, '盲派与象法条目必须为 120 条（盲派象法高级做功与开库换象第二批收官达成 120 条封顶）');
   assert.equal(counts.sanming, 120, '古法三命条目必须为 120 条（《兰台妙选》《五行精纪》纳音神机与名格第二批收官达成 120 条封顶）');
   assert.equal(counts.shensha, 120, '神煞派条目必须为 120 条（《玉照定真经》干支刑冲定位铁断扫尾大圆满达成 120 条）');
 });
 
-test('全部 690 条条目元数据字段完整且非空', () => {
+test('全部 720 条条目元数据字段完整且非空', () => {
   const { list } = loadAllSchoolEntries();
   const idPattern = /^S-(GJ|TH|WS|MP|SM|SS)-\d{3}$/;
   for (const item of list) {
@@ -1403,6 +1403,71 @@ test('古法三命名格收官严密排他反向断言（非水命排除水居�
   // 4. 非寅年生人排除虎卧凤阙格 S-SM-108：甲子 癸酉 丙申 丁酉
   const resNoYinHu = matchSchoolClaims(['甲子', '癸酉', '丙申', '丁酉']);
   assert.ok(!resNoYinHu.matched.some((x) => x.id === 'S-SM-108'), '非寅年必须排除虎卧凤阙 S-SM-108');
+});
+
+// --------------------------------------------------------------------
+// 测试组 23: 盲派象法高级应象与实战断法定式专测套件 (D-083 最终收官大圆满批次)
+// --------------------------------------------------------------------
+console.log('\n▶ [测试组 23] 盲派象法高级应象与实战断法定式专测 (D-083)');
+
+test('盲派象法高级应象与实战断法定式典型命盘正向命中校验（活木见丙、死木怕火、丁火不怕旺、水流方向、半拱不叫入库、十神组合象）', () => {
+  // 1. 活木见丙泄秀 S-MP-091：甲寅 丙寅 甲子 丙寅
+  const resHuoMu = matchSchoolClaims(['甲寅', '丙寅', '甲子', '丙寅']);
+  assert.ok(resHuoMu.matched.some((x) => x.id === 'S-MP-091'), '活木透丙必须命中活木泄秀 S-MP-091');
+
+  // 2. 丁火是一种光不怕旺 S-MP-093：丁巳 丙午 丁未 乙巳
+  const resDingHuo = matchSchoolClaims(['丁巳', '丙午', '丁未', '乙巳']);
+  assert.ok(resDingHuo.matched.some((x) => x.id === 'S-MP-093'), '丁火身旺必须命中丁火不怕旺 S-MP-093');
+
+  // 3. 辰子半拱局不叫入墓 S-MP-100：戊子 丙辰 庚申 壬子
+  const resChenZi = matchSchoolClaims(['戊子', '丙辰', '庚申', '壬子']);
+  assert.ok(resChenZi.matched.some((x) => x.id === 'S-MP-100'), '辰子同见必须命中半拱局 S-MP-100');
+
+  // 4. 戌午拱中神不叫入库 S-MP-101：甲戌 庚午 丙寅 戊戌
+  const resXuWu = matchSchoolClaims(['甲戌', '庚午', '丙寅', '戊戌']);
+  assert.ok(resXuWu.matched.some((x) => x.id === 'S-MP-101'), '戌午同见必须命中戌拱午 S-MP-101');
+
+  // 5. 丑是财库穿不动 S-MP-102：乙丑 壬午 庚申 辛巳
+  const resChouChuan = matchSchoolClaims(['乙丑', '壬午', '庚申', '辛巳']);
+  assert.ok(resChouChuan.matched.some((x) => x.id === 'S-MP-102'), '午丑相穿必须命中丑穿不动 S-MP-102');
+
+  // 6. 伤官正财求名求利 S-MP-111：甲戌 丁卯 甲子 己巳 (甲日主透丁伤官己正财)
+  const resShangCai = matchSchoolClaims(['甲戌', '丁卯', '甲子', '己巳']);
+  assert.ok(resShangCai.matched.some((x) => x.id === 'S-MP-111'), '伤官正财并透必须命中求名求利 S-MP-111');
+
+  // 7. 正官正印适合公职 S-MP-112：乙丑 癸未 丙子 甲午 (丙日主透癸正官乙正印)
+  const resGuanYin = matchSchoolClaims(['乙丑', '癸未', '丙子', '甲午']);
+  assert.ok(resGuanYin.matched.some((x) => x.id === 'S-MP-112'), '官印同透必须命中公职幕僚 S-MP-112');
+
+  // 8. 七杀正印权威司法 S-MP-113：壬辰 乙巳 丙寅 戊戌 (丙日主透壬七杀乙正印)
+  const resShaYin = matchSchoolClaims(['壬辰', '乙巳', '丙寅', '戊戌']);
+  assert.ok(resShaYin.matched.some((x) => x.id === 'S-MP-113'), '杀印并透必须命中权威司法 S-MP-113');
+
+  // 9. 七杀劫财军人黑道 S-MP-115：壬子 丁未 丙午 戊子 (丙日主透壬七杀丁劫财)
+  const resShaJie = matchSchoolClaims(['壬子', '丁未', '丙午', '戊子']);
+  assert.ok(resShaJie.matched.some((x) => x.id === 'S-MP-115'), '杀劫并透必须命中七杀劫财 S-MP-115');
+
+  // 10. 正官七杀一言九鼎 S-MP-120：癸巳 壬戌 丙子 戊子 (丙日主透癸正官壬七杀)
+  const resGuanSha = matchSchoolClaims(['癸巳', '壬戌', '丙子', '戊子']);
+  assert.ok(resGuanSha.matched.some((x) => x.id === 'S-MP-120'), '官杀并透必须命中说到做到 S-MP-120');
+});
+
+test('盲派象法收官严密排他反向断言（非木日主排除活木见丙、非丁火排除丁火不怕旺、无辰子排除半拱水局、非官杀并透排除说到做到）', () => {
+  // 1. 庚金日主排除活木见丙 S-MP-091：庚申 丙戌 庚申 丙子
+  const resNoHuoMu = matchSchoolClaims(['庚申', '丙戌', '庚申', '丙子']);
+  assert.ok(!resNoHuoMu.matched.some((x) => x.id === 'S-MP-091'), '非甲乙木日主必须排除活木泄秀 S-MP-091');
+
+  // 2. 戊土日主排除丁火不怕旺 S-MP-093：戊午 丙午 戊午 丁巳
+  const resNoDing = matchSchoolClaims(['戊午', '丙午', '戊午', '丁巳']);
+  assert.ok(!resNoDing.matched.some((x) => x.id === 'S-MP-093'), '非丁火日主必须排除丁火不怕旺 S-MP-093');
+
+  // 3. 无辰子排除辰子半拱水局 S-MP-100：甲寅 乙卯 丙午 丁未
+  const resNoChenZi = matchSchoolClaims(['甲寅', '乙卯', '丙午', '丁未']);
+  assert.ok(!resNoChenZi.matched.some((x) => x.id === 'S-MP-100'), '无辰子必须排除辰子半拱 S-MP-100');
+
+  // 4. 仅透正官无七杀排除官杀并透 S-MP-120：乙丑 癸未 丙子 己丑
+  const resNoGuanSha = matchSchoolClaims(['乙丑', '癸未', '丙子', '己丑']);
+  assert.ok(!resNoGuanSha.matched.some((x) => x.id === 'S-MP-120'), '仅透正官无七杀必须排除一言九鼎 S-MP-120');
 });
 
 console.log('\n----------------------------------------------------------------------');

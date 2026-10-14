@@ -60,6 +60,7 @@ export const SYNC_MANIFEST = [
   { src: '核心/matcher/wangshuai_shenfeng.mjs', dest: '核心/matcher/wangshuai_shenfeng.mjs' },
   { src: '核心/matcher/wangshuai_shenfeng_er.mjs', dest: '核心/matcher/wangshuai_shenfeng_er.mjs' },
   { src: '核心/matcher/mangpai.mjs', dest: '核心/matcher/mangpai.mjs' },
+  { src: '核心/matcher/mangpai_er.mjs', dest: '核心/matcher/mangpai_er.mjs' },
   { src: '核心/matcher/sanming.mjs', dest: '核心/matcher/sanming.mjs' },
   { src: '核心/matcher/sanming_lantai.mjs', dest: '核心/matcher/sanming_lantai.mjs' },
   { src: '核心/matcher/sanming_jingji.mjs', dest: '核心/matcher/sanming_jingji.mjs' },
