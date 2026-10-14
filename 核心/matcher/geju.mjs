@@ -8,6 +8,7 @@ import {
   ZAISHA_MAP, YUANCHEN_MAP, HONGLUAN_MAP, TIANXI_MAP, JIE_MAP,
   CHANGSHENG_MAP, MUKU_MAP,
 } from './helpers.mjs';
+import { GEJU_CHENGBAI_PREDICATES } from './geju_chengbai.mjs';
 
 export const GEJU_PREDICATES = {
   'S-GJ-001': (f) => f.monthMainStemExposed,
@@ -350,4 +351,5 @@ export const GEJU_PREDICATES = {
     const noHeavyEarth = f.stems.filter((s) => ['戊', '己'].includes(s)).length === 0;
     return (isShenZiChen || isHaiZiChou) && noHeavyEarth;
   },
+  ...GEJU_CHENGBAI_PREDICATES,
 };
