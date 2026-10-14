@@ -39,20 +39,20 @@ console.log('===================================================================
 
 // --------------------------------------------------------------------
 // --------------------------------------------------------------------
-// 测试组 1：单源 480 条标准条目解析验证（SSOT Parser Verification）
+// 测试组 1：单源 510 条标准条目解析验证（SSOT Parser Verification）
 // --------------------------------------------------------------------
 console.log('▶ [测试组 1] 单源条目解析完整性与字段规范测试');
 
-test('单源条目总数必须严格等于 480 条整', () => {
+test('单源条目总数必须严格等于 510 条整', () => {
   const { map, list } = loadAllSchoolEntries(true);
-  assert.equal(list.length, 480, `期望 480 条，实际解析得到 ${list.length} 条`);
-  assert.equal(map.size, 480, `期望 Map 容量 480，实际得到 ${map.size}`);
+  assert.equal(list.length, 510, `期望 510 条，实际解析得到 ${list.length} 条`);
+  assert.equal(map.size, 510, `期望 Map 容量 510，实际得到 ${map.size}`);
 });
 
-test('MATCH_PREDICATES 必须 100% 覆盖全量 480 条标准条目（零死条目门禁）', () => {
+test('MATCH_PREDICATES 必须 100% 覆盖全量 510 条标准条目（零死条目门禁）', () => {
   const { list } = loadAllSchoolEntries();
   const predicateKeys = Object.keys(MATCH_PREDICATES);
-  assert.equal(predicateKeys.length, 480, `谓词字典必须恰好 480 个键，实际得到 ${predicateKeys.length}`);
+  assert.equal(predicateKeys.length, 510, `谓词字典必须恰好 510 个键，实际得到 ${predicateKeys.length}`);
   for (const entry of list) {
     assert.equal(
       typeof MATCH_PREDICATES[entry.id],
@@ -62,7 +62,7 @@ test('MATCH_PREDICATES 必须 100% 覆盖全量 480 条标准条目（零死条�
   }
 });
 
-test('六大主流学派条目数量校验：格局派 90 条、调候派 120 条、古法三命 60 条、神煞派 90 条、盲派 60 条、旺衰派 60 条（四大专著深度扫尾第四批达成）', () => {
+test('六大主流学派条目数量校验：格局派 120 条、调候派 120 条、古法三命 60 条、神煞派 90 条、盲派 60 条、旺衰派 60 条（四大专著深度扫尾第五批达成）', () => {
   const { list } = loadAllSchoolEntries();
   const counts = {
     geju: 0,
@@ -76,7 +76,7 @@ test('六大主流学派条目数量校验：格局派 90 条、调候派 120 �
     assert.ok(entry.schoolKey in counts, `未知的学派 key: ${entry.schoolKey}`);
     counts[entry.schoolKey] += 1;
   }
-  assert.equal(counts.geju, 90, '格局派条目必须为 90 条（30正格+30外格+30成败救应）');
+  assert.equal(counts.geju, 120, '格局派条目必须为 120 条（30正格+30外格+60成败救应全章大圆满）');
   assert.equal(counts.tiaohou, 120, '调候派条目必须为 120 条（《穷通宝鉴》十干十二月令扫尾达成 120 条）');
   assert.equal(counts.wangshuai, 60, '旺衰扶抑派条目必须为 60 条（批次 F 扩充至 60 条）');
   assert.equal(counts.mangpai, 60, '盲派与象法条目必须为 60 条（批次 E 扩充至 60 条）');
@@ -84,7 +84,7 @@ test('六大主流学派条目数量校验：格局派 90 条、调候派 120 �
   assert.equal(counts.shensha, 90, '神煞派条目必须为 90 条（《玉照定真经》扫尾第一批 30 条达成 90 条）');
 });
 
-test('全部 480 条条目元数据字段完整且非空', () => {
+test('全部 510 条条目元数据字段完整且非空', () => {
   const { list } = loadAllSchoolEntries();
   const idPattern = /^S-(GJ|TH|WS|MP|SM|SS)-\d{3}$/;
   for (const item of list) {
@@ -937,10 +937,79 @@ test('格局派《子平真诠》严密排他反向断言（见伤破官排除 S
   assert.ok(!resPoRen.matched.some((x) => x.id === 'S-GJ-090'), '阳刃见伤官克官必须排除成格 S-GJ-090');
 });
 
+// --------------------------------------------------------------------
+// 测试组 16：格局派《子平真诠》成败救应全章大圆满专测套件（S-GJ-091～S-GJ-120）
+// --------------------------------------------------------------------
+console.log('▶ [测试组 16] 格局派《子平真诠》成败救应全章大圆满专测套件（S-GJ-091～S-GJ-120）');
 
-// --------------------------------------------------------------------
-// 汇总报告与退出码裁决
-// --------------------------------------------------------------------
+test('格局派《子平真诠》经典成败救应命造真实命中测试（S-GJ-091～S-GJ-120）', () => {
+  // 1. 建禄月劫透官逢财印：庚午 戊子 癸卯 丁巳 (王少师命，命中 S-GJ-091, S-GJ-098, S-GJ-113, S-GJ-120)
+  const res1 = matchSchoolClaims(['庚午', '戊子', '癸卯', '丁巳']);
+  const ids1 = res1.matched.map((x) => x.id);
+  assert.ok(ids1.includes('S-GJ-098'), '癸生子月月劫透戊官庚印丁财必须命中 S-GJ-098');
+  assert.ok(ids1.includes('S-GJ-091'), '财格/禄财透印两不相碍位置妥贴必须命中 S-GJ-091');
+  assert.ok(ids1.includes('S-GJ-113'), '财官相生互用相得必须命中 S-GJ-113');
+
+  // 2. 伤官旺身主弱透煞印：己未 丙子 庚子 丙子 (蔡贵妃命，命中 S-GJ-092, S-GJ-093, S-GJ-119)
+  const res2 = matchSchoolClaims(['己未', '丙子', '庚子', '丙子']);
+  const ids2 = res2.matched.map((x) => x.id);
+  assert.ok(ids2.includes('S-GJ-092'), '庚生子月伤官透丙煞己印必须命中 S-GJ-092');
+  assert.ok(ids2.includes('S-GJ-093'), '伤官带煞无财专一制煞必须命中 S-GJ-093');
+  assert.ok(ids2.includes('S-GJ-119'), '冬金伤官见官煞其秀百倍必须命中 S-GJ-119');
+
+  // 3. 阳刃无官杀为破格：丙寅 丁卯 甲寅 己巳 (甲生卯月阳刃无官杀)
+  const res3 = matchSchoolClaims(['丙寅', '丁卯', '甲寅', '己巳']);
+  const ids3 = res3.matched.map((x) => x.id);
+  assert.ok(ids3.includes('S-GJ-096'), '阳刃当令无官煞制伏破格必须命中 S-GJ-096');
+
+  // 4. 阳刃用官煞带伤食重印以护之：癸酉 甲午 丙申 己亥 (午月阳刃透癸官己伤甲印)
+  const res4 = matchSchoolClaims(['癸酉', '甲午', '丙申', '己亥']);
+  const ids4 = res4.matched.map((x) => x.id);
+  assert.ok(ids4.includes('S-GJ-097'), '阳刃官伤印并透重印护官必须命中 S-GJ-097');
+
+  // 5. 建禄透财逢食伤：甲子 丙子 癸丑 壬辰 (张都统命，命中 S-GJ-099)
+  const res5 = matchSchoolClaims(['甲子', '丙子', '癸丑', '壬辰']);
+  const ids5 = res5.matched.map((x) => x.id);
+  assert.ok(ids5.includes('S-GJ-099'), '子月癸水透丙财甲伤顺流必须命中 S-GJ-099');
+
+  // 6. 建禄用财带煞煞被合：戊辰 癸亥 壬午 丙午 (袁内阁命，命中 S-GJ-103)
+  const res6 = matchSchoolClaims(['戊辰', '癸亥', '壬午', '丙午']);
+  const ids6 = res6.matched.map((x) => x.id);
+  assert.ok(ids6.includes('S-GJ-103'), '亥月壬水透丙财戊煞癸合煞去煞留财必须命中 S-GJ-103');
+
+  // 7. 透官逢合贪合忘贵：丙午 辛卯 甲子 戊辰 (甲生卯月辛官透逢丙合)
+  const res7 = matchSchoolClaims(['丙午', '辛卯', '甲子', '戊辰']);
+  const ids7 = res7.matched.map((x) => x.id);
+  assert.ok(ids7.includes('S-GJ-105'), '正官透干逢丙火合羁必须命中 S-GJ-105');
+
+  // 8. 冻水不能生木：壬子 壬子 甲子 乙亥 (甲木冬生印水太重无火照暖)
+  const res8 = matchSchoolClaims(['壬子', '壬子', '甲子', '乙亥']);
+  const ids8 = res8.matched.map((x) => x.id);
+  assert.ok(ids8.includes('S-GJ-118'), '冬水凝冰不能生木无火调候必须命中 S-GJ-118');
+
+  // 9. 木火伤官非金水见官破格：甲午 丁卯 甲寅 辛未 (甲生卯月透丁伤辛官)
+  const res9 = matchSchoolClaims(['甲午', '丁卯', '甲寅', '辛未']);
+  const ids9 = res9.matched.map((x) => x.id);
+  assert.ok(ids9.includes('S-GJ-094'), '木火伤官见官破格为祸百端必须命中 S-GJ-094');
+});
+
+test('格局派《子平真诠》严密排他反向断言（见财破伤官带煞排除 S-GJ-093、冬金见官排除破格 S-GJ-094、阳刃透官煞排除 S-GJ-096、冬木透火照暖排除 S-GJ-118）', () => {
+  // 伤官带煞见财党煞排除 S-GJ-093：己未 丙子 庚子 乙酉 (透乙财党杀)
+  const resDangCai = matchSchoolClaims(['己未', '丙子', '庚子', '乙酉']);
+  assert.ok(!resDangCai.matched.some((x) => x.id === 'S-GJ-093'), '伤官带煞见财转生七煞必须排除成格 S-GJ-093');
+
+  // 冬金金水伤官见官调候为急不作破格排除 S-GJ-094：庚子 戊子 辛亥 丙申 (冬金见官调候)
+  const resDongJin = matchSchoolClaims(['庚子', '戊子', '辛亥', '丙申']);
+  assert.ok(!resDongJin.matched.some((x) => x.id === 'S-GJ-094'), '冬金见官调候为秀气必须排除破格 S-GJ-094');
+
+  // 阳刃透煞无伤官排除无官杀破格 S-GJ-096：辛酉 甲午 丙申 壬辰 (透壬水七煞制刃)
+  const resRenGuan = matchSchoolClaims(['辛酉', '甲午', '丙申', '壬辰']);
+  assert.ok(!resRenGuan.matched.some((x) => x.id === 'S-GJ-096'), '阳刃有煞制伏成格必须排除无官杀 S-GJ-096');
+
+  // 冬木透丙火暖局排除冻水不生木 S-GJ-118：壬子 壬子 甲子 丙寅 (丙火高透照暖)
+  const resNuanMu = matchSchoolClaims(['壬子', '壬子', '甲子', '丙寅']);
+  assert.ok(!resNuanMu.matched.some((x) => x.id === 'S-GJ-118'), '冬木得丙火解冻暖局必须排除冻木 S-GJ-118');
+});
 console.log('\n----------------------------------------------------------------------');
 console.log(`【测试结果看板】通过: ${passedCount} 项，失败: ${failedCount} 项`);
 if (failedCount === 0) {

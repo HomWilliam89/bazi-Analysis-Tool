@@ -9,6 +9,7 @@ import {
   CHANGSHENG_MAP, MUKU_MAP,
 } from './helpers.mjs';
 import { GEJU_CHENGBAI_PREDICATES } from './geju_chengbai.mjs';
+import { GEJU_JIUYING_PREDICATES } from './geju_jiuying.mjs';
 
 export const GEJU_PREDICATES = {
   'S-GJ-001': (f) => f.monthMainStemExposed,
@@ -352,4 +353,5 @@ export const GEJU_PREDICATES = {
     return (isShenZiChen || isHaiZiChou) && noHeavyEarth;
   },
   ...GEJU_CHENGBAI_PREDICATES,
+  ...GEJU_JIUYING_PREDICATES,
 };

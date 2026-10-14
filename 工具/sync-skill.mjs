@@ -54,6 +54,7 @@ export const SYNC_MANIFEST = [
   { src: '核心/matcher/helpers.mjs', dest: '核心/matcher/helpers.mjs' },
   { src: '核心/matcher/geju.mjs', dest: '核心/matcher/geju.mjs' },
   { src: '核心/matcher/geju_chengbai.mjs', dest: '核心/matcher/geju_chengbai.mjs' },
+  { src: '核心/matcher/geju_jiuying.mjs', dest: '核心/matcher/geju_jiuying.mjs' },
   { src: '核心/matcher/tiaohou.mjs', dest: '核心/matcher/tiaohou.mjs' },
   { src: '核心/matcher/wangshuai.mjs', dest: '核心/matcher/wangshuai.mjs' },
   { src: '核心/matcher/mangpai.mjs', dest: '核心/matcher/mangpai.mjs' },
