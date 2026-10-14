@@ -1,5 +1,9 @@
 // 案例跑器（v2 真跑版）：校验 案例\*.jsonl 格式，并驱动排盘底座与体用模块进行真跑回归断言。
-// 用法：node 工具\case-runner.mjs [--strict] [--format-only]
+// 用法：node 工具\case-runner.mjs [--strict] [--format-only] [--blind]
+// 选项：
+//   --strict      严格模式：存在断言分歧时返回退出码 1
+//   --format-only 仅校验 JSONL 格式与六十甲子合法性
+//   --blind       纯自主盲跑模式（BUG-02 治理）：严禁向推演大脑灌入期望用神/忌神，检验纯自主取用定案能力
 // 退出码：0 全绿 / 挂账分歧明确可控；1 格式解析错误或 --strict 模式下存在断言失败。
 import fs from 'node:fs';
 import path from 'node:path';
@@ -18,6 +22,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const 案例目录 = path.join(ROOT, '案例');
 const isStrict = process.argv.includes('--strict');
 const formatOnly = process.argv.includes('--format-only');
+const isBlind = process.argv.includes('--blind');
 const JIAZI = new Set(Array.from({ length: 60 }, (_, i) => STEMS[i % 10] + BRANCHES[i % 12]));
 
 function pillarsOf(gzList) {
@@ -143,8 +148,8 @@ for (const c of casesToRun) {
   let res;
   try {
     res = tiyongRouteOf(chart, {
-      ...(yongArg ? { 用神五行: yongArg } : {}),
-      ...(jiArg ? { 忌神五行: jiArg } : {}),
+      ...(isBlind ? {} : (yongArg ? { 用神五行: yongArg } : {})),
+      ...(isBlind ? {} : (jiArg ? { 忌神五行: jiArg } : {})),
     });
   } catch (err) {
     console.log(`  ✗ [推演异常] 引擎执行出错: ${err.message}\n`);
@@ -236,13 +241,14 @@ for (const c of casesToRun) {
     totalAssertions += 1;
     const act = res.用神五行 ?? res.用神原表值 ?? '—';
     const ok = act === c.期望.用神五行;
+    const tag = isBlind ? '[用神五行·纯自主定案]' : '[用神五行]';
     if (ok) {
       passedAssertions += 1;
-      console.log(`  ✓ [用神五行] 期望: ${c.期望.用神五行} == 实际: ${act}`);
+      console.log(`  ✓ ${tag} 期望: ${c.期望.用神五行} == 实际: ${act}`);
     } else {
       failedAssertions += 1;
-      console.log(`  ✗ [用神五行] 期望: ${c.期望.用神五行} != 实际: ${act}`);
-      failureDetails.push({ id: c.id, item: '用神五行', exp: c.期望.用神五行, act, p: c.判据 });
+      console.log(`  ✗ ${tag} 期望: ${c.期望.用神五行} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: isBlind ? '用神五行(自主定案)' : '用神五行', exp: c.期望.用神五行, act, p: c.判据 });
     }
   }
 
@@ -775,6 +781,7 @@ for (const c of casesToRun) {
 
 console.log('----------------------------------------------------------------------');
 console.log('【回归统计汇总】');
+console.log(`  - 运行模式：${isBlind ? '纯自主盲推定案模式（--blind，严禁入参回灌）' : '通道验证模式（默认，给定用神验证体用物理通路）'}`);
 console.log(`  - 案例总数：${casesToRun.length} 盘`);
 console.log(`  - 断言总项：${totalAssertions} 项`);
 console.log(`  - 吻合项数：${passedAssertions} 项`);
