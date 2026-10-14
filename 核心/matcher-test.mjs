@@ -43,16 +43,16 @@ console.log('===================================================================
 // --------------------------------------------------------------------
 console.log('▶ [测试组 1] 单源条目解析完整性与字段规范测试');
 
-test('单源条目总数必须严格等于 600 条整', () => {
+test('单源条目总数必须严格等于 630 条整', () => {
   const { map, list } = loadAllSchoolEntries(true);
-  assert.equal(list.length, 600, `期望 600 条，实际解析得到 ${list.length} 条`);
-  assert.equal(map.size, 600, `期望 Map 容量 600，实际得到 ${map.size}`);
+  assert.equal(list.length, 630, `期望 630 条，实际解析得到 ${list.length} 条`);
+  assert.equal(map.size, 630, `期望 Map 容量 630，实际得到 ${map.size}`);
 });
 
-test('MATCH_PREDICATES 必须 100% 覆盖全量 600 条标准条目（零死条目门禁）', () => {
+test('MATCH_PREDICATES 必须 100% 覆盖全量 630 条标准条目（零死条目门禁）', () => {
   const { list } = loadAllSchoolEntries();
   const predicateKeys = Object.keys(MATCH_PREDICATES);
-  assert.equal(predicateKeys.length, 600, `谓词字典必须恰好 600 个键，实际得到 ${predicateKeys.length}`);
+  assert.equal(predicateKeys.length, 630, `谓词字典必须恰好 630 个键，实际得到 ${predicateKeys.length}`);
   for (const entry of list) {
     assert.equal(
       typeof MATCH_PREDICATES[entry.id],
@@ -62,7 +62,7 @@ test('MATCH_PREDICATES 必须 100% 覆盖全量 600 条标准条目（零死条�
   }
 });
 
-test('六大主流学派条目数量校验：格局派 120 条、调候派 120 条、神煞派 120 条、旺衰派 120 条、古法三命 60 条、盲派 60 条（四大传世专著全景大圆满达成）', () => {
+test('六大主流学派条目数量校验：格局派 120 条、调候派 120 条、神煞派 120 条、旺衰派 120 条、古法三命 90 条、盲派 60 条（古法三命第一批扩充达成）', () => {
   const { list } = loadAllSchoolEntries();
   const counts = {
     geju: 0,
@@ -80,11 +80,11 @@ test('六大主流学派条目数量校验：格局派 120 条、调候派 120 �
   assert.equal(counts.tiaohou, 120, '调候派条目必须为 120 条（《穷通宝鉴》十干十二月令扫尾达成 120 条）');
   assert.equal(counts.wangshuai, 120, '旺衰扶抑派条目必须为 120 条（《神峰通考》动静盖头生克与病药说全卷大圆满达成 120 条）');
   assert.equal(counts.mangpai, 60, '盲派与象法条目必须为 60 条（批次 E 扩充至 60 条）');
-  assert.equal(counts.sanming, 60, '古法三命条目必须为 60 条（批次 C 扩充至 60 条）');
+  assert.equal(counts.sanming, 90, '古法三命条目必须为 90 条（《兰台妙选》《五行精纪》纳音神机与名格第一批扩充至 90 条）');
   assert.equal(counts.shensha, 120, '神煞派条目必须为 120 条（《玉照定真经》干支刑冲定位铁断扫尾大圆满达成 120 条）');
 });
 
-test('全部 600 条条目元数据字段完整且非空', () => {
+test('全部 630 条条目元数据字段完整且非空', () => {
   const { list } = loadAllSchoolEntries();
   const idPattern = /^S-(GJ|TH|WS|MP|SM|SS)-\d{3}$/;
   for (const item of list) {
@@ -1209,6 +1209,71 @@ test('旺衰扶抑派《神峰通考》大圆满严密排他反向断言（有�
   const resNoDingYou = matchSchoolClaims(['丁巳', '壬子', '丁丑', '辛亥']);
   assert.ok(!resNoDingYou.matched.some((x) => x.id === 'S-WS-112'), '非丁酉日主必须排除丁酉不怕多水 S-WS-112');
 });
+
+// --------------------------------------------------------------------
+// 测试组 20：古法三命《兰台妙选》《五行精纪》纳音神机与名格专测套件 (D-080)
+// --------------------------------------------------------------------
+console.log('\n▶ [测试组 20] 古法三命《兰台妙选》《五行精纪》纳音神机与名格专测套件 (D-080)');
+
+test('古法三命纳音神机与名格大圆满第一批正向特征命中断言（C-237 钱丞相盘、宝剑化青龙、日月分秀、源远流清、凤舞顺风、马骤天廷、风雨作霖等）', () => {
+  // 1. C-237 钱丞相命造：庚辰 戊寅 庚辰 戊寅 (云龙风虎 S-SM-062、棣萼芬芳 S-SM-082、主本持印 S-SM-090、龙虎拱门 S-SM-049)
+  const resQian = matchSchoolClaims(['庚辰', '戊寅', '庚辰', '戊寅']);
+  assert.ok(resQian.matched.some((x) => x.id === 'S-SM-062'), '钱丞相盘必须命中云龙风虎格 S-SM-062');
+  assert.ok(resQian.matched.some((x) => x.id === 'S-SM-082'), '钱丞相盘必须命中棣萼芬芳格 S-SM-082');
+  assert.ok(resQian.matched.some((x) => x.id === 'S-SM-090'), '钱丞相盘必须命中主本持印格 S-SM-090');
+  assert.ok(resQian.matched.some((x) => x.id === 'S-SM-049'), '钱丞相盘必须命中龙虎拱门 S-SM-049');
+
+  // 1.1 虎卧荒丘格 S-SM-076 与 一气为根 S-SM-078：甲寅 丙寅 戊寅 己未 (三寅并见、寅年见未丘)
+  const resHuQiu = matchSchoolClaims(['甲寅', '丙寅', '戊寅', '己未']);
+  assert.ok(resHuQiu.matched.some((x) => x.id === 'S-SM-076'), '寅年日时见未必须命中虎卧荒丘 S-SM-076');
+  assert.ok(resHuQiu.matched.some((x) => x.id === 'S-SM-078'), '地支三寅同气连根必须命中一气为根 S-SM-078');
+
+  // 2. 宝剑化青龙 S-SM-061：壬申 壬辰 癸酉 丙辰 (剑锋金见辰龙水库)
+  const resBaoJian = matchSchoolClaims(['壬申', '壬辰', '癸酉', '丙辰']);
+  assert.ok(resBaoJian.matched.some((x) => x.id === 'S-SM-061'), '剑锋金见辰龙必须命中宝剑化青龙 S-SM-061');
+
+  // 3. 日月分秀 S-SM-063 与 昆山片玉 S-SM-064：戊午 己未 庚申 辛未
+  const resRiYue = matchSchoolClaims(['戊午', '己未', '庚申', '辛未']);
+  assert.ok(resRiYue.matched.some((x) => x.id === 'S-SM-063'), '见戊午己未必须命中日月分秀 S-SM-063');
+  assert.ok(resRiYue.matched.some((x) => x.id === 'S-SM-064'), '石榴木见土丘必须命中昆山片玉 S-SM-064');
+
+  // 4. 源远流清 S-SM-066 与 云凝薄露 S-SM-068：甲申 丙子 甲申 丁卯
+  const resYuanYuan = matchSchoolClaims(['甲申', '丙子', '甲申', '丁卯']);
+  assert.ok(resYuanYuan.matched.some((x) => x.id === 'S-SM-066'), '泉水见金水顺生必须命中源远流清 S-SM-066');
+  assert.ok(resYuanYuan.matched.some((x) => x.id === 'S-SM-068'), '涧下水逢东方卯春必须命中云凝薄露 S-SM-068');
+
+  // 5. 凤舞顺风 S-SM-069 与 风雨作霖 S-SM-071：辛酉 癸巳 壬辰 癸卯 (酉见巳风、水命见辰巳)
+  const resFengWu = matchSchoolClaims(['辛酉', '癸巳', '壬辰', '癸卯']);
+  assert.ok(resFengWu.matched.some((x) => x.id === 'S-SM-069'), '辛酉木逢巳风必须命中凤舞顺风 S-SM-069');
+  assert.ok(resFengWu.matched.some((x) => x.id === 'S-SM-071'), '水命见辰巳必须命中风雨作霖 S-SM-071');
+
+  // 6. 马骤天廷 S-SM-070：戊午 癸亥 壬午 辛亥 (午马逢亥天门)
+  const resMaTian = matchSchoolClaims(['戊午', '癸亥', '壬午', '辛亥']);
+  assert.ok(resMaTian.matched.some((x) => x.id === 'S-SM-070'), '午马日时见亥必须命中马骤天廷 S-SM-070');
+});
+
+test('古法三命纳音神机与名格大圆满严密排他反向断言（无辰排除化青龙、冲寅排除风虎、无戊午排除日月分秀、非秋令排除月白风清、无南离排除魁星指南）', () => {
+  // 1. 无辰支排除宝剑化青龙 S-SM-061：壬申 壬子 癸酉 癸亥 (见剑锋金但无辰支)
+  const resNoChen = matchSchoolClaims(['壬申', '壬子', '癸酉', '癸亥']);
+  assert.ok(!resNoChen.matched.some((x) => x.id === 'S-SM-061'), '无辰支水库化龙必须排除宝剑化青龙 S-SM-061');
+
+  // 2. 申冲寅排除云龙风虎 S-SM-062：庚辰 戊寅 甲申 戊辰 (见申冲寅冲破虎位)
+  const resChongHu = matchSchoolClaims(['庚辰', '戊寅', '甲申', '戊辰']);
+  assert.ok(!resChongHu.matched.some((x) => x.id === 'S-SM-062'), '见申冲寅破局必须排除云龙风虎 S-SM-062');
+
+  // 3. 纯阴无戊午排除日月分秀 S-SM-063：癸亥 己未 癸亥 己未 (有太阴己未但无太阳戊午)
+  const resNoWuWu = matchSchoolClaims(['癸亥', '己未', '癸亥', '己未']);
+  assert.ok(!resNoWuWu.matched.some((x) => x.id === 'S-SM-063'), '无戊午太阳并见必须排除日月分秀 S-SM-063');
+
+  // 4. 非申酉秋令排除月白风清 S-SM-079：丙寅 己未 癸巳 丁巳 (寅月非秋，虽有己未与巳风)
+  const resNotAutumn = matchSchoolClaims(['丙寅', '己未', '癸巳', '丁巳']);
+  assert.ok(!resNotAutumn.matched.some((x) => x.id === 'S-SM-079'), '非申酉秋金之令必须排除月白风清 S-SM-079');
+
+  // 5. 无巳午离明排除魁星指南 S-SM-080：庚辰 戊子 庚戌 壬子 (见魁罡但时支子非南离)
+  const resNoNan = matchSchoolClaims(['庚辰', '戊子', '庚戌', '壬子']);
+  assert.ok(!resNoNan.matched.some((x) => x.id === 'S-SM-080'), '时支非巳午离南必须排除魁星指南 S-SM-080');
+});
+
 console.log('\n----------------------------------------------------------------------');
 console.log(`【测试结果看板】通过: ${passedCount} 项，失败: ${failedCount} 项`);
 if (failedCount === 0) {

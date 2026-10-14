@@ -8,6 +8,7 @@ import {
   ZAISHA_MAP, YUANCHEN_MAP, HONGLUAN_MAP, TIANXI_MAP, JIE_MAP,
   CHANGSHENG_MAP, MUKU_MAP,
 } from './helpers.mjs';
+import { SANMING_LANTAI_PREDICATES } from './sanming_lantai.mjs';
 
 export const SANMING_PREDICATES = {
   'S-SM-001': (f) => {
@@ -381,4 +382,6 @@ export const SANMING_PREDICATES = {
     });
     return xunShous.every((x) => x === xunShous[0]);
   },
+
+  ...SANMING_LANTAI_PREDICATES,
 };
