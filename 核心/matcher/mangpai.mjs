@@ -191,4 +191,161 @@ export const MANGPAI_PREDICATES = {
       return false;
     }) || ['寅', '卯', '巳', '午', '申', '酉', '亥', '子'].some((b) => b === dayBranch && (f.exposedTenGods.includes('正财') || f.exposedTenGods.includes('偏财')));
   },
+  'S-MP-061': (f) => {
+    const noCai = !f.exposedTenGods.includes('正财') && !f.exposedTenGods.includes('偏财');
+    const hasLu = f.hasLu || [f.branches[2], f.branches[3]].includes(LU_MAP[f.dayStem]);
+    return noCai && hasLu;
+  },
+  'S-MP-062': (f) => {
+    const noCai = !f.exposedTenGods.includes('正财') && !f.exposedTenGods.includes('偏财');
+    const hasShiShang = f.exposedTenGods.includes('食神') || f.exposedTenGods.includes('伤官');
+    return noCai && hasShiShang;
+  },
+  'S-MP-063': (f) => {
+    const hasCai = f.exposedTenGods.includes('正财') || f.exposedTenGods.includes('偏财');
+    const hasGuan = f.exposedTenGods.includes('正官') || f.exposedTenGods.includes('七杀');
+    return hasCai && hasGuan;
+  },
+  'S-MP-064': (f) => {
+    return f.exposedTenGods.includes('七杀')
+      && (f.exposedTenGods.includes('食神') || f.exposedTenGods.includes('伤官'))
+      && f.branches.some((b) => ['辰', '戌', '丑', '未'].includes(b));
+  },
+  'S-MP-065': (f) => {
+    const hasJie = f.exposedTenGods.includes('劫财') || f.hasYangRen;
+    const hasCai = f.exposedTenGods.includes('正财') || f.exposedTenGods.includes('偏财')
+      || f.branches.some((b) => KE_ELEM[f.dayElement] === BRANCH_TO_ELEMENT[b]);
+    return hasJie && hasCai;
+  },
+  'S-MP-066': (f) => {
+    const caiElem = KE_ELEM[f.dayElement];
+    const stemCai = f.stems.some((s, idx) => idx !== 2 && STEM_TO_ELEMENT[s] === caiElem);
+    const branchHasCai = f.branches.some((b) => BRANCH_TO_ELEMENT[b] === caiElem);
+    return stemCai && !branchHasCai;
+  },
+  'S-MP-067': (f) => {
+    const guanElem = KE_ELEM[SHENG_ELEM[f.dayElement]];
+    const stemGuan = f.stems.some((s, idx) => idx !== 2 && (safeTenGod(f.dayStem, s) === '正官' || safeTenGod(f.dayStem, s) === '七杀'));
+    const branchHasGuan = f.branches.some((b) => BRANCH_TO_ELEMENT[b] === guanElem);
+    return stemGuan && !branchHasGuan;
+  },
+  'S-MP-068': (f) => {
+    const yinElem = Object.entries(SHENG_ELEM).find(([, v]) => v === f.dayElement)?.[0];
+    const stemYin = f.stems.some((s, idx) => idx !== 2 && (safeTenGod(f.dayStem, s) === '正印' || safeTenGod(f.dayStem, s) === '偏印'));
+    const branchHasYin = f.branches.some((b) => BRANCH_TO_ELEMENT[b] === yinElem);
+    return stemYin && !branchHasYin;
+  },
+  'S-MP-069': (f) => {
+    const shiElem = SHENG_ELEM[f.dayElement];
+    const stemShi = f.stems.some((s, idx) => idx !== 2 && (safeTenGod(f.dayStem, s) === '食神' || safeTenGod(f.dayStem, s) === '伤官'));
+    const branchHasShi = f.branches.some((b) => BRANCH_TO_ELEMENT[b] === shiElem);
+    const hasGong = f.exposedTenGods.includes('正印') || f.exposedTenGods.includes('偏印')
+      || f.exposedTenGods.includes('正财') || f.exposedTenGods.includes('偏财');
+    return stemShi && !branchHasShi && hasGong;
+  },
+  'S-MP-070': (f) => (f.exposedTenGods.includes('七杀') || f.monthMainTenGod === '七杀') && f.hasYangRen,
+  'S-MP-071': (f) => {
+    const zhuRen = [f.branches[2], f.branches[3]].includes(REN_MAP[f.dayStem]);
+    const binSha = [safeTenGod(f.dayStem, f.stems[0]), safeTenGod(f.dayStem, f.stems[1])].includes('七杀')
+      || [safeTenGod(f.dayStem, f.branches[0]), safeTenGod(f.dayStem, f.branches[1])].includes('七杀');
+    return zhuRen && binSha;
+  },
+  'S-MP-072': (f) => {
+    const hasGuan = f.exposedTenGods.includes('正官') || f.exposedTenGods.includes('七杀');
+    const hasYin = f.exposedTenGods.includes('正印') || f.exposedTenGods.includes('偏印');
+    return hasGuan && hasYin;
+  },
+  'S-MP-073': (f) => {
+    const hasCai = f.exposedTenGods.includes('正财') || f.exposedTenGods.includes('偏财');
+    const hasYin = f.exposedTenGods.includes('正印') || f.exposedTenGods.includes('偏印');
+    const noGuan = !f.exposedTenGods.includes('正官') && !f.exposedTenGods.includes('七杀');
+    return hasCai && hasYin && noGuan;
+  },
+  'S-MP-074': (f) => {
+    const hasShang = f.exposedTenGods.includes('伤官');
+    const hasSha = f.exposedTenGods.includes('七杀');
+    const hasStemHe = [[0, 1], [1, 2], [2, 3], [0, 3]].some(([i, j]) => {
+      const t1 = safeTenGod(f.dayStem, f.stems[i]);
+      const t2 = safeTenGod(f.dayStem, f.stems[j]);
+      return (t1 === '伤官' && t2 === '七杀') || (t1 === '七杀' && t2 === '伤官');
+    });
+    return hasShang && hasSha && hasStemHe;
+  },
+  'S-MP-075': (f) => {
+    const yinElem = Object.entries(SHENG_ELEM).find(([, v]) => v === f.dayElement)?.[0];
+    const kuMap = { '水': '辰', '火': '戌', '金': '丑', '木': '未' };
+    const yinKu = kuMap[yinElem];
+    const zhuKu = f.branches[2] === yinKu || f.branches[3] === yinKu;
+    return zhuKu && f.chongPairs.length > 0;
+  },
+  'S-MP-076': (f) => {
+    const gongBad = f.chongPairs.some(([i, j]) => i === 0 || i === 1 || j === 0 || j === 1)
+      || f.chuanPairs.some(([i, j]) => i === 0 || i === 1 || j === 0 || j === 1);
+    const starWeak = (!f.exposedTenGods.includes('正印') && !f.exposedTenGods.includes('偏印'))
+      || (!f.exposedTenGods.includes('正财') && !f.exposedTenGods.includes('偏财'));
+    return gongBad && starWeak;
+  },
+  'S-MP-077': (f) => {
+    const caiElem = KE_ELEM[f.dayElement];
+    const kuMap = { '水': '辰', '火': '戌', '金': '丑', '木': '未' };
+    const caiKu = kuMap[caiElem];
+    return ['辰', '戌', '丑', '未'].includes(f.branches[0]) && f.branches.includes(caiKu);
+  },
+  'S-MP-078': (f) => {
+    const hasCaiYM = [safeTenGod(f.dayStem, f.stems[0]), safeTenGod(f.dayStem, f.stems[1])].some((t) => t === '正财' || t === '偏财');
+    const hasYin = f.exposedTenGods.includes('正印') || f.exposedTenGods.includes('偏印');
+    const noGuan = !f.exposedTenGods.includes('正官') && !f.exposedTenGods.includes('七杀');
+    return hasCaiYM && hasYin && noGuan;
+  },
+  'S-MP-079': (f) => {
+    const caiElem = KE_ELEM[f.dayElement];
+    return f.chuanPairs.some(([, , b1, b2]) => BRANCH_TO_ELEMENT[b1] === caiElem || BRANCH_TO_ELEMENT[b2] === caiElem);
+  },
+  'S-MP-080': (f) => {
+    const guanElem = KE_ELEM[SHENG_ELEM[f.dayElement]];
+    return f.chongPairs.some(([i, j, b1, b2]) => (i === 2 && BRANCH_TO_ELEMENT[b2] === guanElem) || (j === 2 && BRANCH_TO_ELEMENT[b1] === guanElem))
+      || f.chuanPairs.some(([i, j, b1, b2]) => (i === 2 && BRANCH_TO_ELEMENT[b2] === guanElem) || (j === 2 && BRANCH_TO_ELEMENT[b1] === guanElem));
+  },
+  'S-MP-081': (f) => {
+    const dayBranch = f.branches[2];
+    const isKu = ['辰', '戌', '丑', '未'].includes(dayBranch);
+    const noChong = !f.chongPairs.some(([i, j]) => i === 2 || j === 2);
+    return isKu && noChong;
+  },
+  'S-MP-082': (f) => f.chongPairs.some(([i, j]) => (i === 2 && (j === 0 || j === 1)) || (j === 2 && (i === 0 || i === 1))),
+  'S-MP-083': (f) => f.chongPairs.some(([i, j, b1, b2]) => (i === 2 || j === 2) && ((b1 === '辰' && b2 === '戌') || (b1 === '戌' && b2 === '辰'))),
+  'S-MP-084': (f) => STEM_TO_ELEMENT[f.dayStem] === BRANCH_TO_ELEMENT[f.branches[2]],
+  'S-MP-085': (f) => {
+    const lu = LU_MAP[f.dayStem];
+    const luInYM = f.branches[0] === lu || f.branches[1] === lu;
+    const luInDH = f.branches[2] === lu || f.branches[3] === lu;
+    return luInYM && !luInDH;
+  },
+  'S-MP-086': (f) => {
+    const dayBranch = f.branches[2];
+    return dayBranch === LU_MAP[f.dayStem]
+      || dayBranch === REN_MAP[f.dayStem]
+      || SHENG_ELEM[BRANCH_TO_ELEMENT[dayBranch]] === f.dayElement;
+  },
+  'S-MP-087': (f) => {
+    const dayStemHeYear = STEM_HE.some(([a, b]) => (f.dayStem === a && f.stems[0] === b) || (f.dayStem === b && f.stems[0] === a));
+    const dayStemHeMonth = STEM_HE.some(([a, b]) => (f.dayStem === a && f.stems[1] === b) || (f.dayStem === b && f.stems[1] === a));
+    return dayStemHeYear || dayStemHeMonth;
+  },
+  'S-MP-088': (f) => f.branches.includes('未') && f.branches.includes('戌'),
+  'S-MP-089': (f) => {
+    const hasShi = f.exposedTenGods.includes('食神');
+    const hasYin = f.exposedTenGods.includes('正印') || f.exposedTenGods.includes('偏印');
+    const hasHe = [[0, 1], [1, 2], [2, 3], [0, 3]].some(([i, j]) => {
+      const s1 = f.stems[i]; const s2 = f.stems[j];
+      return STEM_HE.some(([a, b]) => (s1 === a && s2 === b) || (s1 === b && s2 === a));
+    });
+    return hasShi && hasYin && hasHe;
+  },
+  'S-MP-090': (f) => {
+    const branchElems = f.branches.map((b) => BRANCH_TO_ELEMENT[b]);
+    const hasZuoShi = f.stems.some((s, idx) => idx !== 2 && branchElems.includes(STEM_TO_ELEMENT[s]));
+    const hasXuTou = f.stems.some((s, idx) => idx !== 2 && !branchElems.includes(STEM_TO_ELEMENT[s]));
+    return hasZuoShi && hasXuTou;
+  },
 };

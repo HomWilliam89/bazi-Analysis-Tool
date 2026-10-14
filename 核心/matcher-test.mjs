@@ -43,16 +43,16 @@ console.log('===================================================================
 // --------------------------------------------------------------------
 console.log('▶ [测试组 1] 单源条目解析完整性与字段规范测试');
 
-test('单源条目总数必须严格等于 630 条整', () => {
+test('单源条目总数必须严格等于 660 条整', () => {
   const { map, list } = loadAllSchoolEntries(true);
-  assert.equal(list.length, 630, `期望 630 条，实际解析得到 ${list.length} 条`);
-  assert.equal(map.size, 630, `期望 Map 容量 630，实际得到 ${map.size}`);
+  assert.equal(list.length, 660, `期望 660 条，实际解析得到 ${list.length} 条`);
+  assert.equal(map.size, 660, `期望 Map 容量 660，实际得到 ${map.size}`);
 });
 
-test('MATCH_PREDICATES 必须 100% 覆盖全量 630 条标准条目（零死条目门禁）', () => {
+test('MATCH_PREDICATES 必须 100% 覆盖全量 660 条标准条目（零死条目门禁）', () => {
   const { list } = loadAllSchoolEntries();
   const predicateKeys = Object.keys(MATCH_PREDICATES);
-  assert.equal(predicateKeys.length, 630, `谓词字典必须恰好 630 个键，实际得到 ${predicateKeys.length}`);
+  assert.equal(predicateKeys.length, 660, `谓词字典必须恰好 660 个键，实际得到 ${predicateKeys.length}`);
   for (const entry of list) {
     assert.equal(
       typeof MATCH_PREDICATES[entry.id],
@@ -62,7 +62,7 @@ test('MATCH_PREDICATES 必须 100% 覆盖全量 630 条标准条目（零死条�
   }
 });
 
-test('六大主流学派条目数量校验：格局派 120 条、调候派 120 条、神煞派 120 条、旺衰派 120 条、古法三命 90 条、盲派 60 条（古法三命第一批扩充达成）', () => {
+test('六大主流学派条目数量校验：格局派 120 条、调候派 120 条、神煞派 120 条、旺衰派 120 条、古法三命 90 条、盲派 90 条（盲派象法第一批扩充达成）', () => {
   const { list } = loadAllSchoolEntries();
   const counts = {
     geju: 0,
@@ -79,12 +79,12 @@ test('六大主流学派条目数量校验：格局派 120 条、调候派 120 �
   assert.equal(counts.geju, 120, '格局派条目必须为 120 条（30正格+30外格+60成败救应全章大圆满）');
   assert.equal(counts.tiaohou, 120, '调候派条目必须为 120 条（《穷通宝鉴》十干十二月令扫尾达成 120 条）');
   assert.equal(counts.wangshuai, 120, '旺衰扶抑派条目必须为 120 条（《神峰通考》动静盖头生克与病药说全卷大圆满达成 120 条）');
-  assert.equal(counts.mangpai, 60, '盲派与象法条目必须为 60 条（批次 E 扩充至 60 条）');
+  assert.equal(counts.mangpai, 90, '盲派与象法条目必须为 90 条（盲派象法高级做功与开库换象第一批扩充达成 90 条）');
   assert.equal(counts.sanming, 90, '古法三命条目必须为 90 条（《兰台妙选》《五行精纪》纳音神机与名格第一批扩充至 90 条）');
   assert.equal(counts.shensha, 120, '神煞派条目必须为 120 条（《玉照定真经》干支刑冲定位铁断扫尾大圆满达成 120 条）');
 });
 
-test('全部 630 条条目元数据字段完整且非空', () => {
+test('全部 660 条条目元数据字段完整且非空', () => {
   const { list } = loadAllSchoolEntries();
   const idPattern = /^S-(GJ|TH|WS|MP|SM|SS)-\d{3}$/;
   for (const item of list) {
@@ -1272,6 +1272,68 @@ test('古法三命纳音神机与名格大圆满严密排他反向断言（无�
   // 5. 无巳午离明排除魁星指南 S-SM-080：庚辰 戊子 庚戌 壬子 (见魁罡但时支子非南离)
   const resNoNan = matchSchoolClaims(['庚辰', '戊子', '庚戌', '壬子']);
   assert.ok(!resNoNan.matched.some((x) => x.id === 'S-SM-080'), '时支非巳午离南必须排除魁星指南 S-SM-080');
+});
+
+// --------------------------------------------------------------------
+// 测试组 21：盲派象法高级做功与开库换象专测套件（D-081 规格）
+// --------------------------------------------------------------------
+console.log('▶ [测试组 21] 盲派象法高级做功、宾主开库与十神换象（S-MP-061～S-MP-090）专测');
+
+test('盲派象法高级做功与十神换象黄金名造正向命中断言（无财以禄当财、无财以食伤当财、官杀统财、财星虚透、官星虚透、七杀合羊刃、日支连体做功、未戌刑开库、食神合印）', () => {
+  // 1. 无财以禄当财 S-MP-061 & 无财以食伤当财 S-MP-062：甲子 丙寅 甲寅 丙寅 (甲木坐禄透食伤，四柱无财)
+  const resNoCai = matchSchoolClaims(['甲子', '丙寅', '甲寅', '丙寅']);
+  assert.ok(resNoCai.matched.some((x) => x.id === 'S-MP-061'), '局中无财坐禄必须命中以禄当财 S-MP-061');
+  assert.ok(resNoCai.matched.some((x) => x.id === 'S-MP-062'), '局中无财透食伤必须命中食伤当财 S-MP-062');
+
+  // 2. 官杀统财 S-MP-063 & 劫财当财 S-MP-065：辛巳 丁酉 丙申 戊戌 (丙火透辛财、见巳酉丑申，财官劫齐备)
+  const resGuanCai = matchSchoolClaims(['辛巳', '丁酉', '丙申', '戊戌']);
+  assert.ok(resGuanCai.matched.some((x) => x.id === 'S-MP-065'), '比劫得势制财必须命中劫财当财 S-MP-065');
+
+  // 3. 财星虚透主才华 S-MP-066：甲申 壬申 甲子 戊申 (戊土虚透无燥土根)
+  const resXuCai = matchSchoolClaims(['甲申', '壬申', '甲子', '戊申']);
+  assert.ok(resXuCai.matched.some((x) => x.id === 'S-MP-066'), '财星天干虚浮地支无根必须命中财星虚透 S-MP-066');
+
+  // 4. 官星虚透主名誉聪明 S-MP-067：庚子 戊子 己酉 乙丑 (己土见乙木七杀虚透，支无寅卯木根)
+  const resXuGuan = matchSchoolClaims(['庚子', '戊子', '己酉', '乙丑']);
+  assert.ok(resXuGuan.matched.some((x) => x.id === 'S-MP-067'), '官杀虚透地支无根必须命中官星虚透 S-MP-067');
+
+  // 5. 七杀合羊刃 S-MP-070：庚戌 甲申 甲卯 庚午 (甲生申月七杀，透庚杀坐卯刃)
+  const resShaRen = matchSchoolClaims(['庚戌', '甲申', '甲卯', '庚午']);
+  assert.ok(resShaRen.matched.some((x) => x.id === 'S-MP-070'), '七杀羊刃并见必须命中七杀合羊刃 S-MP-070');
+
+  // 6. 连体之神不可坏 S-MP-086 & 干与支同 S-MP-084：乙巳 甲申 癸酉 壬戌 (林则徐命造，癸酉自坐印绶连体)
+  const resLianTi = matchSchoolClaims(['乙巳', '甲申', '癸酉', '壬戌']);
+  assert.ok(resLianTi.matched.some((x) => x.id === 'S-MP-086'), '日柱自坐印绶连体必须命中连体之神不可坏 S-MP-086');
+
+  // 7. 远合年月 S-MP-087：己巳 丙子 甲寅 己丑 (甲日主与年干己土远隔五合)
+  const resYuanHe = matchSchoolClaims(['己巳', '丙子', '甲寅', '己丑']);
+  assert.ok(resYuanHe.matched.some((x) => x.id === 'S-MP-087'), '日主隔位合年月宾位必须命中远合年月 S-MP-087');
+
+  // 8. 未戌刑开火库 S-MP-088：戊戌 己未 丙子 丁酉 (地支未戌相刑)
+  const resWeiXu = matchSchoolClaims(['戊戌', '己未', '丙子', '丁酉']);
+  assert.ok(resWeiXu.matched.some((x) => x.id === 'S-MP-088'), '地支未戌相见必须命中未戌刑开火库 S-MP-088');
+
+  // 9. 食神合印 S-MP-089：壬子 丁未 乙卯 丙子 (乙木以丁火为食神、壬水为正印，丁壬相合)
+  const resShiHeYin = matchSchoolClaims(['壬子', '丁未', '乙卯', '丙子']);
+  assert.ok(resShiHeYin.matched.some((x) => x.id === 'S-MP-089'), '食神与印星天干相合必须命中食神合印 S-MP-089');
+});
+
+test('盲派象法高级做功与开库换象严密排他反向断言（有财排除以禄当财、有根排除财星虚透、无杀刃排除七杀合羊刃、无未戌排除未戌刑）', () => {
+  // 1. 天干透财排除以禄当财 S-MP-061：戊子 庚申 甲寅 丙寅 (甲见戊土偏财透干)
+  const resHasCai = matchSchoolClaims(['戊子', '庚申', '甲寅', '丙寅']);
+  assert.ok(!resHasCai.matched.some((x) => x.id === 'S-MP-061'), '天干透正偏财必须排除以禄当财 S-MP-061');
+
+  // 2. 地支有强财根排除财星虚透 S-MP-066：戊辰 丙辰 甲子 丙寅 (辰土有本气戊土财根)
+  const resRootCai = matchSchoolClaims(['戊辰', '丙辰', '甲子', '丙寅']);
+  assert.ok(!resRootCai.matched.some((x) => x.id === 'S-MP-066'), '地支有财星本气通根必须排除财星虚透 S-MP-066');
+
+  // 3. 无阳刃七杀排除七杀合羊刃 S-MP-070：甲子 丙寅 己丑 丁卯 (无阳刃)
+  const resNoRen = matchSchoolClaims(['甲子', '丙寅', '己丑', '丁卯']);
+  assert.ok(!resNoRen.matched.some((x) => x.id === 'S-MP-070'), '局无羊刃必须排除七杀合羊刃 S-MP-070');
+
+  // 4. 无未戌并见排除未戌刑开库 S-MP-088：甲子 丙寅 戊辰 庚申 (无未无戌)
+  const resNoWeiXu = matchSchoolClaims(['甲子', '丙寅', '戊辰', '庚申']);
+  assert.ok(!resNoWeiXu.matched.some((x) => x.id === 'S-MP-088'), '局无未戌相见必须排除未戌刑开火库 S-MP-088');
 });
 
 console.log('\n----------------------------------------------------------------------');
