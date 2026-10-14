@@ -39,20 +39,20 @@ console.log('===================================================================
 
 // --------------------------------------------------------------------
 // --------------------------------------------------------------------
-// 测试组 1：单源 600 条标准条目解析验证（SSOT Parser Verification）
+// 测试组 1：单源 690 条标准条目解析验证（SSOT Parser Verification）
 // --------------------------------------------------------------------
 console.log('▶ [测试组 1] 单源条目解析完整性与字段规范测试');
 
-test('单源条目总数必须严格等于 660 条整', () => {
+test('单源条目总数必须严格等于 690 条整', () => {
   const { map, list } = loadAllSchoolEntries(true);
-  assert.equal(list.length, 660, `期望 660 条，实际解析得到 ${list.length} 条`);
-  assert.equal(map.size, 660, `期望 Map 容量 660，实际得到 ${map.size}`);
+  assert.equal(list.length, 690, `期望 690 条，实际解析得到 ${list.length} 条`);
+  assert.equal(map.size, 690, `期望 Map 容量 690，实际得到 ${map.size}`);
 });
 
-test('MATCH_PREDICATES 必须 100% 覆盖全量 660 条标准条目（零死条目门禁）', () => {
+test('MATCH_PREDICATES 必须 100% 覆盖全量 690 条标准条目（零死条目门禁）', () => {
   const { list } = loadAllSchoolEntries();
   const predicateKeys = Object.keys(MATCH_PREDICATES);
-  assert.equal(predicateKeys.length, 660, `谓词字典必须恰好 660 个键，实际得到 ${predicateKeys.length}`);
+  assert.equal(predicateKeys.length, 690, `谓词字典必须恰好 690 个键，实际得到 ${predicateKeys.length}`);
   for (const entry of list) {
     assert.equal(
       typeof MATCH_PREDICATES[entry.id],
@@ -62,7 +62,7 @@ test('MATCH_PREDICATES 必须 100% 覆盖全量 660 条标准条目（零死条�
   }
 });
 
-test('六大主流学派条目数量校验：格局派 120 条、调候派 120 条、神煞派 120 条、旺衰派 120 条、古法三命 90 条、盲派 90 条（盲派象法第一批扩充达成）', () => {
+test('六大主流学派条目数量校验：格局派 120 条、调候派 120 条、神煞派 120 条、旺衰派 120 条、古法三命 120 条、盲派 90 条（古法三命单派 120 条封顶达成）', () => {
   const { list } = loadAllSchoolEntries();
   const counts = {
     geju: 0,
@@ -80,11 +80,11 @@ test('六大主流学派条目数量校验：格局派 120 条、调候派 120 �
   assert.equal(counts.tiaohou, 120, '调候派条目必须为 120 条（《穷通宝鉴》十干十二月令扫尾达成 120 条）');
   assert.equal(counts.wangshuai, 120, '旺衰扶抑派条目必须为 120 条（《神峰通考》动静盖头生克与病药说全卷大圆满达成 120 条）');
   assert.equal(counts.mangpai, 90, '盲派与象法条目必须为 90 条（盲派象法高级做功与开库换象第一批扩充达成 90 条）');
-  assert.equal(counts.sanming, 90, '古法三命条目必须为 90 条（《兰台妙选》《五行精纪》纳音神机与名格第一批扩充至 90 条）');
+  assert.equal(counts.sanming, 120, '古法三命条目必须为 120 条（《兰台妙选》《五行精纪》纳音神机与名格第二批收官达成 120 条封顶）');
   assert.equal(counts.shensha, 120, '神煞派条目必须为 120 条（《玉照定真经》干支刑冲定位铁断扫尾大圆满达成 120 条）');
 });
 
-test('全部 660 条条目元数据字段完整且非空', () => {
+test('全部 690 条条目元数据字段完整且非空', () => {
   const { list } = loadAllSchoolEntries();
   const idPattern = /^S-(GJ|TH|WS|MP|SM|SS)-\d{3}$/;
   for (const item of list) {
@@ -1336,6 +1336,75 @@ test('盲派象法高级做功与开库换象严密排他反向断言（有财�
   assert.ok(!resNoWeiXu.matched.some((x) => x.id === 'S-MP-088'), '局无未戌相见必须排除未戌刑开火库 S-MP-088');
 });
 
+// --------------------------------------------------------------------
+// 测试组 22：古法三命《兰台妙选》《五行精纪》纳音神机与名格收官（S-SM-091～S-SM-120）专测
+// --------------------------------------------------------------------
+console.log('▶ [测试组 22] 古法三命《兰台妙选》《五行精纪》纳音神机与名格收官（S-SM-091～S-SM-120）专测');
+
+test('古法三命名格收官定式黄金名造正向命中断言（水居湖海、火震雷霆、德合双鸳、官星四干、天关地轴、日精月华、桂林凤隐、海藏龙潜、虎卧凤阙、鱼跃龙池、毕乌登日宫）', () => {
+  // 1. 水居湖海格 S-SM-091：壬戌 壬子 癸亥 癸亥 (壬戌癸亥大海水生于子月北方水旺之地，无土填塞)
+  const resShuiHai = matchSchoolClaims(['壬戌', '壬子', '癸亥', '癸亥']);
+  assert.ok(resShuiHai.matched.some((x) => x.id === 'S-SM-091'), '水命生于子月北方江湖大海必须命中水居湖海 S-SM-091');
+
+  // 2. 火震雷霆格 S-SM-092：戊子 乙卯 丙寅 壬辰 (戊子霹雳火见卯辰雷门)
+  const resHuoLei = matchSchoolClaims(['戊子', '乙卯', '丙寅', '壬辰']);
+  assert.ok(resHuoLei.matched.some((x) => x.id === 'S-SM-092'), '火命见东方雷霆震地必须命中火震雷霆 S-SM-092');
+
+  // 3. 德合双鸳格 S-SM-093：甲子 己丑 乙丑 庚辰 (甲己合、乙庚合)
+  const resDeHe = matchSchoolClaims(['甲子', '己丑', '乙丑', '庚辰']);
+  assert.ok(resDeHe.matched.some((x) => x.id === 'S-SM-093'), '两组天干合必须命中德合双鸳 S-SM-093');
+
+  // 4. 官星四干格 S-SM-094：庚辰 辛巳 甲子 辛未 (透庚杀、两辛官)
+  const resGuanXing = matchSchoolClaims(['庚辰', '辛巳', '甲子', '辛未']);
+  assert.ok(resGuanXing.matched.some((x) => x.id === 'S-SM-094'), '天干官星多透无伤官必须命中官星四干 S-SM-094');
+
+  // 5. 天关地轴格 S-SM-095：甲戌 癸酉 乙未 丁亥 (戌为天关，未为地轴)
+  const resGuanZhou = matchSchoolClaims(['甲戌', '癸酉', '乙未', '丁亥']);
+  assert.ok(resGuanZhou.matched.some((x) => x.id === 'S-SM-095'), '戌亥与未申兼备必须命中天关地轴 S-SM-095');
+
+  // 6. 日精月华格 S-SM-096：戊午 己未 甲子 丙寅 (四柱同见戊午太阳与己未太阴)
+  const resRiYue = matchSchoolClaims(['戊午', '己未', '甲子', '丙寅']);
+  assert.ok(resRiYue.matched.some((x) => x.id === 'S-SM-096'), '见戊午与己未交会必须命中日精月华 S-SM-096');
+
+  // 7. 桂林凤隐格 S-SM-101：辛卯 丁酉 乙丑 壬午 (见辛卯松柏木月桂与酉宫金凤)
+  const resFengYin = matchSchoolClaims(['辛卯', '丁酉', '乙丑', '壬午']);
+  assert.ok(resFengYin.matched.some((x) => x.id === 'S-SM-101'), '见辛卯与酉支相遇必须命中桂林凤隐 S-SM-101');
+
+  // 8. 海藏龙潜格 S-SM-102：庚辰 丁亥 癸亥 丙辰 (辰龙逢癸亥大海水)
+  const resLongQian = matchSchoolClaims(['庚辰', '丁亥', '癸亥', '丙辰']);
+  assert.ok(resLongQian.matched.some((x) => x.id === 'S-SM-102'), '辰龙见大海水必须命中海藏龙潜 S-SM-102');
+
+  // 9. 虎卧凤阙格 S-SM-108：甲寅 癸酉 丙申 丁酉 (寅年猛虎日时见酉宫凤阙)
+  const resHuFeng = matchSchoolClaims(['甲寅', '癸酉', '丙申', '丁酉']);
+  assert.ok(resHuFeng.matched.some((x) => x.id === 'S-SM-108'), '寅年日时见酉必须命中虎卧凤阙 S-SM-108');
+
+  // 10. 鱼跃龙池格 S-SM-109：乙亥 庚辰 辛卯 壬辰 (亥年巨鱼日时见辰水库龙池)
+  const resYuLong = matchSchoolClaims(['乙亥', '庚辰', '辛卯', '壬辰']);
+  assert.ok(resYuLong.matched.some((x) => x.id === 'S-SM-109'), '亥年日时见辰必须命中鱼跃龙池 S-SM-109');
+
+  // 11. 毕乌登日宫 S-SM-120：辛酉 甲午 乙未 壬午 (酉年金乌日时见午位太阳)
+  const resWuDeng = matchSchoolClaims(['辛酉', '甲午', '乙未', '壬午']);
+  assert.ok(resWuDeng.matched.some((x) => x.id === 'S-SM-120'), '酉年生人日时见午必须命中毕乌登日宫 S-SM-120');
+});
+
+test('古法三命名格收官严密排他反向断言（非水命排除水居湖海、无戊午己未排除日精月华、无辛卯排除桂林凤隐、非寅年排除虎卧凤阙）', () => {
+  // 1. 纳音无水排除水居湖海格 S-SM-091：丙寅 戊戌 戊戌 丙辰 (纳音炉中火、平地木)
+  const resNoShui = matchSchoolClaims(['丙寅', '戊戌', '戊戌', '丙辰']);
+  assert.ok(!resNoShui.matched.some((x) => x.id === 'S-SM-091'), '纳音无水必须排除水居湖海 S-SM-091');
+
+  // 2. 无戊午己未排除日精月华格 S-SM-096：甲子 丙寅 戊辰 庚申
+  const resNoRiYue = matchSchoolClaims(['甲子', '丙寅', '戊辰', '庚申']);
+  assert.ok(!resNoRiYue.matched.some((x) => x.id === 'S-SM-096'), '无戊午己未必须排除日精月华 S-SM-096');
+
+  // 3. 无辛卯柱排除桂林凤隐格 S-SM-101：乙卯 丁酉 乙丑 壬午
+  const resNoXinMao = matchSchoolClaims(['乙卯', '丁酉', '乙丑', '壬午']);
+  assert.ok(!resNoXinMao.matched.some((x) => x.id === 'S-SM-101'), '无辛卯月桂必须排除桂林凤隐 S-SM-101');
+
+  // 4. 非寅年生人排除虎卧凤阙格 S-SM-108：甲子 癸酉 丙申 丁酉
+  const resNoYinHu = matchSchoolClaims(['甲子', '癸酉', '丙申', '丁酉']);
+  assert.ok(!resNoYinHu.matched.some((x) => x.id === 'S-SM-108'), '非寅年必须排除虎卧凤阙 S-SM-108');
+});
+
 console.log('\n----------------------------------------------------------------------');
 console.log(`【测试结果看板】通过: ${passedCount} 项，失败: ${failedCount} 项`);
 if (failedCount === 0) {
@@ -1347,4 +1416,5 @@ if (failedCount === 0) {
   console.log('----------------------------------------------------------------------\n');
   process.exit(1);
 }
+
 

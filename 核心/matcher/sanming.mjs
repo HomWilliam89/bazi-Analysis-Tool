@@ -9,6 +9,7 @@ import {
   CHANGSHENG_MAP, MUKU_MAP,
 } from './helpers.mjs';
 import { SANMING_LANTAI_PREDICATES } from './sanming_lantai.mjs';
+import { SANMING_JINGJI_PREDICATES } from './sanming_jingji.mjs';
 
 export const SANMING_PREDICATES = {
   'S-SM-001': (f) => {
@@ -384,4 +385,5 @@ export const SANMING_PREDICATES = {
   },
 
   ...SANMING_LANTAI_PREDICATES,
+  ...SANMING_JINGJI_PREDICATES,
 };
