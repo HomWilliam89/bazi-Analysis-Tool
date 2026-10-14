@@ -39,20 +39,20 @@ console.log('===================================================================
 
 // --------------------------------------------------------------------
 // --------------------------------------------------------------------
-// 测试组 1：单源 510 条标准条目解析验证（SSOT Parser Verification）
+// 测试组 1：单源 540 条标准条目解析验证（SSOT Parser Verification）
 // --------------------------------------------------------------------
 console.log('▶ [测试组 1] 单源条目解析完整性与字段规范测试');
 
-test('单源条目总数必须严格等于 510 条整', () => {
+test('单源条目总数必须严格等于 540 条整', () => {
   const { map, list } = loadAllSchoolEntries(true);
-  assert.equal(list.length, 510, `期望 510 条，实际解析得到 ${list.length} 条`);
-  assert.equal(map.size, 510, `期望 Map 容量 510，实际得到 ${map.size}`);
+  assert.equal(list.length, 540, `期望 540 条，实际解析得到 ${list.length} 条`);
+  assert.equal(map.size, 540, `期望 Map 容量 540，实际得到 ${map.size}`);
 });
 
-test('MATCH_PREDICATES 必须 100% 覆盖全量 510 条标准条目（零死条目门禁）', () => {
+test('MATCH_PREDICATES 必须 100% 覆盖全量 540 条标准条目（零死条目门禁）', () => {
   const { list } = loadAllSchoolEntries();
   const predicateKeys = Object.keys(MATCH_PREDICATES);
-  assert.equal(predicateKeys.length, 510, `谓词字典必须恰好 510 个键，实际得到 ${predicateKeys.length}`);
+  assert.equal(predicateKeys.length, 540, `谓词字典必须恰好 540 个键，实际得到 ${predicateKeys.length}`);
   for (const entry of list) {
     assert.equal(
       typeof MATCH_PREDICATES[entry.id],
@@ -62,7 +62,7 @@ test('MATCH_PREDICATES 必须 100% 覆盖全量 510 条标准条目（零死条�
   }
 });
 
-test('六大主流学派条目数量校验：格局派 120 条、调候派 120 条、古法三命 60 条、神煞派 90 条、盲派 60 条、旺衰派 60 条（四大专著深度扫尾第五批达成）', () => {
+test('六大主流学派条目数量校验：格局派 120 条、调候派 120 条、神煞派 120 条、古法三命 60 条、盲派 60 条、旺衰派 60 条（四大专著深度扫尾第六批达成）', () => {
   const { list } = loadAllSchoolEntries();
   const counts = {
     geju: 0,
@@ -81,10 +81,10 @@ test('六大主流学派条目数量校验：格局派 120 条、调候派 120 �
   assert.equal(counts.wangshuai, 60, '旺衰扶抑派条目必须为 60 条（批次 F 扩充至 60 条）');
   assert.equal(counts.mangpai, 60, '盲派与象法条目必须为 60 条（批次 E 扩充至 60 条）');
   assert.equal(counts.sanming, 60, '古法三命条目必须为 60 条（批次 C 扩充至 60 条）');
-  assert.equal(counts.shensha, 90, '神煞派条目必须为 90 条（《玉照定真经》扫尾第一批 30 条达成 90 条）');
+  assert.equal(counts.shensha, 120, '神煞派条目必须为 120 条（《玉照定真经》干支刑冲定位铁断扫尾大圆满达成 120 条）');
 });
 
-test('全部 510 条条目元数据字段完整且非空', () => {
+test('全部 540 条条目元数据字段完整且非空', () => {
   const { list } = loadAllSchoolEntries();
   const idPattern = /^S-(GJ|TH|WS|MP|SM|SS)-\d{3}$/;
   for (const item of list) {
@@ -1009,6 +1009,86 @@ test('格局派《子平真诠》严密排他反向断言（见财破伤官带�
   // 冬木透丙火暖局排除冻水不生木 S-GJ-118：壬子 壬子 甲子 丙寅 (丙火高透照暖)
   const resNuanMu = matchSchoolClaims(['壬子', '壬子', '甲子', '丙寅']);
   assert.ok(!resNuanMu.matched.some((x) => x.id === 'S-GJ-118'), '冬木得丙火解冻暖局必须排除冻木 S-GJ-118');
+});
+
+// --------------------------------------------------------------------
+// 测试组 17：神煞派《玉照定真经》干支刑冲定位铁断大圆满专测套件（D-077）
+// --------------------------------------------------------------------
+console.log('\n▶ [测试组 17] 神煞派《玉照定真经》干支刑冲定位铁断大圆满专测套件');
+
+test('神煞派《玉照定真经》干支刑冲定位大圆满典型定式命中（S-SS-091, 092, 094, 097, 101, 104, 105, 106, 111, 114, 116）', () => {
+  // 1. 庚申辛酉同方人必亡于兵刃：庚申 辛酉 庚申 辛酉
+  const res1 = matchSchoolClaims(['庚申', '辛酉', '庚申', '辛酉']);
+  const ids1 = res1.matched.map((x) => x.id);
+  assert.ok(ids1.includes('S-SS-091'), '庚申辛酉金刚无制必须命中 S-SS-091');
+
+  // 2. 甲乙同来寅卯定出长发师姑：甲寅 乙卯 甲寅 乙卯
+  const res2 = matchSchoolClaims(['甲寅', '乙卯', '甲寅', '乙卯']);
+  const ids2 = res2.matched.map((x) => x.id);
+  assert.ok(ids2.includes('S-SS-092'), '甲乙同来寅卯纯木清冷必须命中 S-SS-092');
+
+  // 3. 乙犯天罡阴人媒氏：乙卯 庚辰 乙丑 丁亥
+  const res3 = matchSchoolClaims(['乙卯', '庚辰', '乙丑', '丁亥']);
+  const ids3 = res3.matched.map((x) => x.id);
+  assert.ok(ids3.includes('S-SS-094'), '乙木加临天罡辰位必须命中 S-SS-094');
+
+  // 4. 丑中立癸甲见而释教之人：甲子 癸丑 丙子 甲午
+  const res4 = matchSchoolClaims(['甲子', '癸丑', '丙子', '甲午']);
+  const ids4 = res4.matched.map((x) => x.id);
+  assert.ok(ids4.includes('S-SS-097'), '丑中立癸甲湿土涵木入佛门必须命中 S-SS-097');
+
+  // 5. 子临井宿须生脾胃之殃：丙子 乙未 戊子 己未
+  const res5 = matchSchoolClaims(['丙子', '乙未', '戊子', '己未']);
+  const ids5 = res5.matched.map((x) => x.id);
+  assert.ok(ids5.includes('S-SS-101'), '子未穿害水土交战腹疾必须命中 S-SS-101');
+
+  // 6. 酉朝罡上金土两和：乙酉 庚辰 辛卯 丁酉
+  const res6 = matchSchoolClaims(['乙酉', '庚辰', '辛卯', '丁酉']);
+  const ids6 = res6.matched.map((x) => x.id);
+  assert.ok(ids6.includes('S-SS-104'), '辰酉相合金土两和必须命中 S-SS-104');
+
+  // 7. 巳刑传送与申到巳中行人反复：庚申 辛巳 丁酉 辛丑 (C-234 盘)
+  const res7 = matchSchoolClaims(['庚申', '辛巳', '丁酉', '辛丑']);
+  const ids7 = res7.matched.map((x) => x.id);
+  assert.ok(ids7.includes('S-SS-105'), '巳申相刑带马必须命中 S-SS-105');
+  assert.ok(ids7.includes('S-SS-106'), '申到巳中刑合交加必须命中 S-SS-106');
+
+  // 8. 从魁与亥未辛丁遇太常酒家利路：丁酉 辛亥 乙未 丁亥
+  const res8 = matchSchoolClaims(['丁酉', '辛亥', '乙未', '丁亥']);
+  const ids8 = res8.matched.map((x) => x.id);
+  assert.ok(ids8.includes('S-SS-111'), '酉金见亥未辛丁太常酒家必须命中 S-SS-111');
+
+  // 9. 庚辛向无火之乡出不义军人孤女：庚子 戊子 辛亥 庚子
+  const res9 = matchSchoolClaims(['庚子', '戊子', '辛亥', '庚子']);
+  const ids9 = res9.matched.map((x) => x.id);
+  assert.ok(ids9.includes('S-SS-114'), '冬金无火肃杀寒冽必须命中 S-SS-114');
+
+  // 10. 壬癸旺中必须流落：壬子 壬子 癸亥 癸亥
+  const res10 = matchSchoolClaims(['壬子', '壬子', '癸亥', '癸亥']);
+  const ids10 = res10.matched.map((x) => x.id);
+  assert.ok(ids10.includes('S-SS-116'), '壬癸泛滥无土堤防必须命中 S-SS-116');
+});
+
+test('神煞派《玉照定真经》严密排他反向断言（金盛有水通关排除 S-SS-091、木盛透火排除 S-SS-092、无辰土排除 S-SS-094、子午冲无未害排除 S-SS-101、巳申逢冲排除 S-SS-106）', () => {
+  // 1. 金盛有水引通流转排除亡于兵刃 S-SS-091：庚申 辛酉 癸亥 壬子
+  const resWaterMetal = matchSchoolClaims(['庚申', '辛酉', '癸亥', '壬子']);
+  assert.ok(!resWaterMetal.matched.some((x) => x.id === 'S-SS-091'), '金盛有旺水引通化泄必须排除兵刃之险 S-SS-091');
+
+  // 2. 木盛透丙丁火泄秀排除长发师姑 S-SS-092：甲寅 乙卯 丙午 丁巳
+  const resWoodFire = matchSchoolClaims(['甲寅', '乙卯', '丙午', '丁巳']);
+  assert.ok(!resWoodFire.matched.some((x) => x.id === 'S-SS-092'), '木盛透火通明必须排除出家师姑 S-SS-092');
+
+  // 3. 乙木无辰土天罡排除媒氏 S-SS-094：乙卯 丁亥 乙未 丙子
+  const resNoChen = matchSchoolClaims(['乙卯', '丁亥', '乙未', '丙子']);
+  assert.ok(!resNoChen.matched.some((x) => x.id === 'S-SS-094'), '乙木地支无辰土天罡必须排除媒氏 S-SS-094');
+
+  // 4. 子水见午冲无未穿排除脾胃之殃 S-SS-101：庚午 戊子 丙午 戊子
+  const resZiWu = matchSchoolClaims(['庚午', '戊子', '丙午', '戊子']);
+  assert.ok(!resZiWu.matched.some((x) => x.id === 'S-SS-101'), '单纯子午正冲无子未穿害必须排除脾胃之殃 S-SS-101');
+
+  // 5. 巳申逢地支冲战排除合中刑反复 S-SS-106：庚申 辛巳 丙寅 壬辰 (寅申巳三刑并冲)
+  const resChongSiShen = matchSchoolClaims(['庚申', '辛巳', '丙寅', '壬辰']);
+  assert.ok(!resChongSiShen.matched.some((x) => x.id === 'S-SS-106'), '逢寅申冲破合局必须排除平静反复 S-SS-106');
 });
 console.log('\n----------------------------------------------------------------------');
 console.log(`【测试结果看板】通过: ${passedCount} 项，失败: ${failedCount} 项`);
