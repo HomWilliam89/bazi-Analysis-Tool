@@ -41,6 +41,13 @@ export const SYNC_MANIFEST = [
 
   // 核心执行与推演大脑及静态数据
   { src: '核心/engine.mjs', dest: '核心/engine.mjs' },
+  { src: '核心/engine/constants.mjs', dest: '核心/engine/constants.mjs' },
+  { src: '核心/engine/shensha.mjs', dest: '核心/engine/shensha.mjs' },
+  { src: '核心/engine/relations.mjs', dest: '核心/engine/relations.mjs' },
+  { src: '核心/engine/strength.mjs', dest: '核心/engine/strength.mjs' },
+  { src: '核心/engine/calendar.mjs', dest: '核心/engine/calendar.mjs' },
+  { src: '核心/engine/tiaohou.mjs', dest: '核心/engine/tiaohou.mjs' },
+  { src: '核心/engine/controversies.mjs', dest: '核心/engine/controversies.mjs' },
   { src: '核心/data/tiyao.json', dest: '核心/data/tiyao.json' },
   { src: '核心/astronomy.mjs', dest: '核心/astronomy.mjs' },
   { src: '核心/tiyong.mjs', dest: '核心/tiyong.mjs' },
