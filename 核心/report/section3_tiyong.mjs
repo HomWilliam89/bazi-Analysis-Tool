@@ -893,7 +893,11 @@ export function renderTiyongSection(chart, options = {}) {
     : ELEM_REL[secondElem[0]]?.生 === dmElem ? '微弱生身难抵凶势'
     : '并肩争战激化矛盾';
 
-  lines.push(`* **日主担力研判**：日主【${dayStem}${dmElem}】经三维衰旺研判，同党占比为 ${tongPct.toFixed(1)}%，处于${danliState}状态。此时原局最旺之【${maxElem[0]}】（占 ${maxElem[1].toFixed(1)}%）${maxRel}！次要矛盾【${secondElem[0]}】（占 ${secondElem[1].toFixed(1)}%）${secondRel}，全局克泄并见。`);
+  const balanceSuffix = tongPct >= 65 ? '身旺印比重叠，气势壅滞待泄。'
+    : tongPct >= 50 ? '身主有托，气势相对持重。'
+    : '全局克泄交并，日主承载压力显现。';
+
+  lines.push(`* **日主担力研判**：日主【${dayStem}${dmElem}】经三维衰旺研判，同党占比为 ${tongPct.toFixed(1)}%，处于${danliState}状态。此时原局最旺之【${maxElem[0]}】（占 ${maxElem[1].toFixed(1)}%）${maxRel}！次要矛盾【${secondElem[0]}】（占 ${secondElem[1].toFixed(1)}%）${secondRel}，${balanceSuffix}`);
   lines.push('* **体用路线法取用定案决策**：');
   lines.push('  依《体用路线法》根本宪法：「忌神和用神看他做了什么，妨碍解决主要矛盾者为忌神，帮助解决主要矛盾者为用神。“生我”不自动等于喜——若克灭做功工具，纵能生身亦为大忌；克用神者必为第一大忌神！」严格落实全格局全五行公理化推演：');
 
@@ -1015,14 +1019,14 @@ export function renderTiyongSection(chart, options = {}) {
   if (luckPillars.length > 0) {
     lines.push('```text');
     lines.push('大运排列表（每十年一交接）：');
-    const luckStr = luckPillars.slice(0, 6).map((lp) => `${lp.startAge || 5}岁:${lp.gz}`).join(' | ');
+    const luckStr = luckPillars.slice(0, 6).map((lp) => `${lp.startAge ?? 5}岁:${lp.gz}`).join(' | ');
     lines.push(luckStr);
     lines.push('```\n');
 
     luckPillars.slice(0, 6).forEach((lp, idx) => {
       const stance = determineLuckPillarStance(lp, chart, yongInfo, yongElem, dmElem);
 
-      lines.push(`#### 3.4.${idx + 1} 【${lp.gz}大运】（约 ${lp.startAge || 5} ~ ${(lp.startAge || 5) + 9} 岁 / ${lp.startYear || 2020 + idx * 10} ~ ${(lp.startYear || 2020 + idx * 10) + 9} 年）`);
+      lines.push(`#### 3.4.${idx + 1} 【${lp.gz}大运】（约 ${lp.startAge ?? 5} ~ ${(lp.startAge ?? 5) + 9} 岁 / ${lp.startYear || 2020 + idx * 10} ~ ${(lp.startYear || 2020 + idx * 10) + 9} 年）`);
       lines.push(`* **干支配置**：天干【${lp.gz[0]}】${lp.tenGod || '星'}，地支【${lp.gz[1]}】。`);
       lines.push(`* **行运气象定性**：**【${stance}】**`);
       lines.push(`* **阶段修行指引**：${luckStageAdvice(lp, stance, dmElem, yongElem)}\n`);

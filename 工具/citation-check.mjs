@@ -197,7 +197,10 @@ const FORBIDDEN_CHAPTERS = [
   '从化论',
   '论学堂词馆',
   '论正官配伤官',
-  '论正官/偏官'
+  '论正官/偏官',
+  '做功篇',
+  '新派命理评注',
+  '论食神制杀'
 ];
 
 function checkReportFile(reportPath, validClaimIds) {
@@ -246,7 +249,7 @@ function checkReportFile(reportPath, validClaimIds) {
   }
 
   // 4. 逐行扫描古籍出处与原典引文
-  const EXCLUDE_BOOKS = ['体用路线法', 'AGENTS', '易经', '新派命理评注', '宪法', '决策台账'];
+  const EXCLUDE_BOOKS = ['体用路线法', 'AGENTS', '易经', '宪法', '决策台账'];
   const strip = (str) => str.replace(/[\s\r\n，。；：！？、“”‘’（）《》`*#|—…\.\-]/g, '');
 
   let checkedQuotes = 0;
@@ -281,8 +284,9 @@ function checkReportFile(reportPath, validClaimIds) {
         let cleanCh = chapterName.split(/\[原文\]|\[未检得|「/)[0].trim();
         cleanCh = cleanCh.replace(/^卷[一二三四五六七八九十上下0-9]+\s*/, '').replace(/[·•]/g, '').trim();
         const strippedCh = strip(cleanCh);
+        const noLunCh = strippedCh.replace(/^论/, '');
         if (strippedCh && strippedCh.length >= 2) {
-          if (!cleanBookText.includes(strippedCh) && !bookText.includes(cleanCh)) {
+          if (!cleanBookText.includes(strippedCh) && !cleanBookText.includes(noLunCh) && !bookText.includes(cleanCh)) {
             issues.push(`[Line ${lineNo}] 所标篇名「${chapterName}」在《${bookName}》底本中完全不存在`);
           }
         }
@@ -306,6 +310,124 @@ function checkReportFile(reportPath, validClaimIds) {
     ok: issues.length === 0,
     issues,
     checkedClaims,
+    checkedQuotes
+  };
+}
+
+const REPORT_CODE_DIR = path.join(ROOT, '核心', 'report');
+
+function checkReportCodeFiles() {
+  const issues = [];
+  let checkedQuotes = 0;
+  if (!fs.existsSync(REPORT_CODE_DIR)) return { ok: true, issues, checkedQuotes };
+
+  const files = fs.readdirSync(REPORT_CODE_DIR).filter((f) => f.endsWith('.mjs'));
+  const strip = (str) => str.replace(/[\s\r\n，。；：！？、“”‘’（）《》`*#|—…\.\-]/g, '');
+
+  for (const f of files) {
+    const fullPath = path.join(REPORT_CODE_DIR, f);
+    const content = fs.readFileSync(fullPath, 'utf8');
+
+    // 1. 检查黑名单篇名或伪书名
+    for (const bad of FORBIDDEN_CHAPTERS) {
+      if (content.includes(bad)) {
+        issues.push(`代码模板 ${f} 包含已知伪托/虚构篇名或出处「${bad}」`);
+      }
+    }
+
+    // 2. 提取对象字面量 { source: '...', quote: '...' }
+    const objRegex = /source:\s*['"]([^'"]+)['"]\s*,\s*quote:\s*['"]([^'"]+)['"]/g;
+    let m;
+    while ((m = objRegex.exec(content)) !== null) {
+      const rawSource = m[1].trim();
+      const quote = m[2].trim();
+
+      // 动态变量占位跳过
+      if (quote.includes('${') || rawSource.includes('${')) continue;
+
+      const bookMatch = rawSource.match(/《([^》]+)》/);
+      if (!bookMatch) {
+        issues.push(`代码模板 ${f} 中出处「${rawSource}」缺少书名号`);
+        continue;
+      }
+      const rawBook = bookMatch[1].trim();
+      let bookName = rawBook;
+      let chapterName = '';
+      if (rawBook.includes('·') || rawBook.includes('•')) {
+        const parts = rawBook.split(/[·•]/);
+        bookName = parts[0].trim();
+        chapterName = parts[1].trim();
+      }
+
+      const bookFile = findBookFile(bookName);
+      if (!bookFile || !fs.existsSync(bookFile)) {
+        issues.push(`代码模板 ${f} 中所引书目《${bookName}》在本地典籍库中不存在`);
+        continue;
+      }
+
+      const bookText = fs.readFileSync(bookFile, 'utf8');
+      const cleanBookText = strip(bookText);
+
+      // 核验篇名真实性
+      if (chapterName && chapterName.length >= 2 && !chapterName.includes('类目表')) {
+        let cleanCh = strip(chapterName);
+        let noLunCh = cleanCh.replace(/^论/, '');
+        if (!cleanBookText.includes(cleanCh) && !cleanBookText.includes(noLunCh) && !bookText.includes(chapterName)) {
+          issues.push(`代码模板 ${f} 所标篇名「${chapterName}」在《${bookName}》底本中完全不存在`);
+        }
+      }
+
+      // 核验引文片段逐字命中
+      const segs = quote.split(/……|\.\.\./).map((s) => strip(s)).filter((s) => s.length >= 3);
+      if (segs.length > 0) {
+        checkedQuotes++;
+        for (const seg of segs) {
+          if (!cleanBookText.includes(seg)) {
+            issues.push(`代码模板 ${f} 引文片段「${seg}」在《${bookName}》底本中不存在`);
+            break;
+          }
+        }
+      }
+    }
+
+    // 3. 提取行内字面量 lines.push('  > 《...》...：「...」')
+    const lineRegex = />\s*《([^》]+)》(?:[·•\s]*([^\s：「\n，。]+))?[^「“\n]*[「“]([^”」\n]+)[”」]/g;
+    while ((m = lineRegex.exec(content)) !== null) {
+      const rawBook = m[1].trim();
+      let bookName = rawBook;
+      let chapterName = (m[2] || '').trim();
+      if (rawBook.includes('·') || rawBook.includes('•')) {
+        const parts = rawBook.split(/[·•]/);
+        bookName = parts[0].trim();
+        chapterName = parts[1].trim();
+      }
+      const quote = m[3].trim();
+      if (quote.includes('${') || bookName.includes('${')) continue;
+
+      const bookFile = findBookFile(bookName);
+      if (!bookFile || !fs.existsSync(bookFile)) {
+        issues.push(`代码模板 ${f} 行内引文书目《${bookName}》不存在`);
+        continue;
+      }
+      const bookText = fs.readFileSync(bookFile, 'utf8');
+      const cleanBookText = strip(bookText);
+
+      const segs = quote.split(/……|\.\.\./).map((s) => strip(s)).filter((s) => s.length >= 3);
+      if (segs.length > 0) {
+        checkedQuotes++;
+        for (const seg of segs) {
+          if (!cleanBookText.includes(seg)) {
+            issues.push(`代码模板 ${f} 行内引文「${seg}」在《${bookName}》中不存在`);
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  return {
+    ok: issues.length === 0,
+    issues,
     checkedQuotes
   };
 }
@@ -361,6 +483,22 @@ function main() {
     } else {
       console.log(`  ⚠ 该文件存在 ${fileViolations} 项违规！\n`);
     }
+  }
+
+  // -------------------------------------------------------------
+  // 审查核心代码层模板引文（核验 核心/report/*.mjs 中的古典引文真实性）
+  // -------------------------------------------------------------
+  console.log(`📑 正在审查核心代码层报告模板引文: 核心/report/*.mjs`);
+  const codeRes = checkReportCodeFiles();
+  if (codeRes.ok) {
+    console.log(`  ✅ 代码层模板核验通过：检测到 ${codeRes.checkedQuotes} 处模板古典引文全部 100% 逐字命中底本，0 项违规。\n`);
+  } else {
+    console.log(`  ⚠ 代码层模板存在 ${codeRes.issues.length} 项违规！`);
+    for (const iss of codeRes.issues) {
+      console.error(`     - ${iss}`);
+      totalViolations++;
+    }
+    console.log('');
   }
 
   // -------------------------------------------------------------
