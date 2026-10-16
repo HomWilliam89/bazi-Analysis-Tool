@@ -29,8 +29,196 @@ import {
   occupantsOf,
   生我者,
   克我者,
+  powerOf,
 } from './physics.mjs';
 
+/**
+ * **专旺格顺势流通取用研判**（D-089 / 判据 P-022）。
+ *
+ * 典籍法理（《滴天髓阐微·顺逆》《千里命稿》）：
+ *   ① 日主得令秉权，局中同党（比劫+印星）占绝对统治地位（>= 70%），且无有力官杀破局；
+ *   ② 五行细分：木为曲直仁寿、火为炎上、土为稼穑、金为从革、水为润下；
+ *   ③ 取用阶梯：
+ *      - 首选食伤顺泄过盛秀气（【专旺顺泄吐秀】）；
+ *      - 次选印比顺其旺势，纯粹专一（【专旺顺势成格】）；
+ *      - 强官杀克犯旺神定为第一大凶忌神（犯旺大凶）。
+ */
+export function zhuanWangAnalysisOf(chart, opts = {}) {
+  const pillars = chart.pillars;
+  const D = dayMasterOf(chart).element;
+  const monthBranch = branchAt(pillars[1]);
+  const s = elementStrength(pillars, monthBranch, kingOf(chart));
+  const percent = s.percent;
+
+  const 印五行 = 生我者(D);
+  const 食伤五行 = SHENG_MAP[D];
+  const 官杀五行 = 克我者(D);
+  const 同党比印占比 = (percent[D] || 0) + (percent[印五行] || 0);
+
+  // 四柱纯同一干支属于神煞外格「天元一气格」，非子平正规五行专旺格，由 coverageOf 熔断认怂
+  const 四柱纯同一干支 = pillars.every((p) => (p.gz === pillars[0].gz));
+  if (四柱纯同一干支) {
+    return { 属于专旺: false, 纯同一干支: true };
+  }
+
+  const 官杀p = powerOf(chart, 官杀五行);
+  const 官有力 = ((官杀p.透干 ?? []).length > 0 || (官杀p.本气根数 ?? 0) > 0) && !官杀p.真正虚浮;
+
+  const mElem = ELEMENTS[BRANCH_ELEMENT[BRANCHES.indexOf(monthBranch)]];
+  const 当令 = mElem === D || mElem === 印五行;
+
+  const allB = pillars.map(branchAt).join('');
+  const hasSanHeHui = (D === '木' && ((allB.includes('寅') && (allB.includes('卯') || allB.includes('辰'))) || (allB.includes('亥') && allB.includes('卯'))))
+    || (D === '火' && ((allB.includes('巳') && (allB.includes('午') || allB.includes('未'))) || (allB.includes('寅') && allB.includes('午'))))
+    || (D === '土' && (allB.includes('辰') && (allB.includes('戌') || allB.includes('丑') || allB.includes('未'))))
+    || (D === '金' && ((allB.includes('申') && (allB.includes('酉') || allB.includes('戌'))) || (allB.includes('巳') && allB.includes('酉'))))
+    || (D === '水' && ((allB.includes('亥') && (allB.includes('子') || allB.includes('丑'))) || (allB.includes('申') && allB.includes('子'))));
+
+  const 专旺成立 = (同党比印占比 >= 70 || (同党比印占比 >= 65 && hasSanHeHui)) && (当令 || hasSanHeHui) && !官有力;
+
+  if (!专旺成立) {
+    return { 属于专旺: false };
+  }
+
+  const 格局 = D === '木' ? '曲直格' : (D === '火' ? '炎上格' : (D === '土' ? '稼穑格' : (D === '金' ? '从革格' : '润下格')));
+
+  const 食伤p = powerOf(chart, 食伤五行);
+  const 食伤有力 = (食伤p.透干 ?? []).length > 0 || ((食伤p.本气根数 ?? 0) > 0 && !食伤p.真正虚浮);
+
+  let 状态 = '专旺顺势成格';
+  let 取用 = (occupantsOf(chart, 印五行) || []).length > 0 ? 印五行 : D;
+  let 说明 = '专旺纯粹专一，局无食伤泄秀，以印比顺资旺势为用';
+
+  if (食伤有力) {
+    状态 = '专旺顺泄吐秀';
+    取用 = 食伤五行;
+    说明 = '专旺得令，食伤透干或通根有力，顺泄过盛秀气为上（专旺吐秀）';
+  }
+
+  return {
+    属于专旺: true,
+    格局,
+    状态,
+    取用,
+    说明,
+    同党占比: 同党比印占比,
+    依据: '《规矩/判据.md》P-022；《滴天髓阐微·通神论·顺逆》',
+  };
+}
+
+/**
+ * **两气成象与两神相战平衡仲裁研判**（D-089 / 判据 P-023）。
+ *
+ * 典籍法理（《滴天髓阐微·形象》《滴天髓阐微·战局》）：
+ *   ① 局中两大五行各占半壁（合占 >= 70% 且各占 >= 30%）；
+ *   ② 相生两气成象：以生者为源、被生者为归宿，顺势相生，两神皆喜；
+ *   ③ 相克两气对峙：
+ *      - 有通关：以通关为第一用神（联动 P-013）；
+ *      - 无通关：测算双方力量强弱，取维持/扶持战局平衡之五行（扶弱持衡，抑强扶弱）；
+ *      - 若天地俱战死结且无可救药者（如 C-213），保留 P-018 认怂出口。
+ */
+export function twoElementsBattleAnalysisOf(chart, opts = {}) {
+  const pillars = chart.pillars;
+  const monthBranch = branchAt(pillars[1]);
+  const s = elementStrength(pillars, monthBranch, kingOf(chart));
+  const percent = s.percent;
+
+  const 旺序 = [...ELEMENTS].sort((a, b) => (percent[b] || 0) - (percent[a] || 0));
+  const e1 = 旺序[0], e2 = 旺序[1];
+  const p1 = percent[e1] || 0, p2 = percent[e2] || 0;
+  const 两神合占 = p1 + p2;
+
+  if (!(p1 >= 30 && p2 >= 25 && 两神合占 >= 70)) {
+    return { 属于两气: false };
+  }
+
+  const isSheng = SHENG_MAP[e1] === e2 || SHENG_MAP[e2] === e1;
+  const isKe = KE_MAP[e1] === e2 || KE_MAP[e2] === e1;
+
+  if (isSheng) {
+    const 生者 = SHENG_MAP[e1] === e2 ? e1 : e2;
+    const 被生 = SHENG_MAP[e1] === e2 ? e2 : e1;
+    return {
+      属于两气: true,
+      类型: '相生',
+      战局: `${生者}${被生}相生`,
+      状态: '两气相生成格',
+      取用: 被生,
+      说明: '两神顺生相济，以生者为源、被生者为流通归宿，两神皆喜',
+    };
+  }
+
+  if (isKe) {
+    const 克者 = KE_MAP[e1] === e2 ? e1 : e2;
+    const 被克 = KE_MAP[e1] === e2 ? e2 : e1;
+    const 战局 = `${克者}${被克}相战`;
+    const bridgeElem = 生我者(被克);
+    const bridgeOccupants = bridgeElem ? occupantsOf(chart, bridgeElem) : [];
+    const hasBridge = bridgeOccupants.length > 0;
+
+    if (hasBridge) {
+      return {
+        属于两气: true,
+        类型: '相克有通关',
+        战局,
+        状态: '相战通关成格',
+        取用: bridgeElem,
+        说明: `两神相战，局得${bridgeElem}通关引化和解成格`,
+      };
+    }
+
+    // 局中完全无通关之神
+    // 检查天地俱战死结（天干相克 且 地支六冲）
+    const stems = pillars.map(stemAt);
+    const stemElems = stems.map((st) => ELEMENTS[STEM_ELEMENT[STEMS.indexOf(st)]]);
+    const hasStemClash = stemElems.some((s1, i) => stemElems.some((s2, j) => i < j && (KE_MAP[s1] === s2 || KE_MAP[s2] === s1)));
+    const branches = pillars.map(branchAt);
+    const branchElems = branches.map((br) => ELEMENTS[BRANCH_ELEMENT[BRANCHES.indexOf(br)]]);
+    const hasBranchClash = branchElems.some((b1, i) => branchElems.some((b2, j) => i < j && (KE_MAP[b1] === b2 || KE_MAP[b2] === b1)));
+    const isTianDiJuZhan = hasStemClash && hasBranchClash;
+
+    if (isTianDiJuZhan) {
+      return {
+        属于两气: true,
+        类型: '相克死结',
+        战局,
+        状态: '战局溃败未覆盖',
+        死结: true,
+        说明: '四柱天地交战无通关，死结不可解，触发认怂出口',
+      };
+    }
+
+    // 无通关且非天地俱战死结：依使用者定调，取维持/扶持战局平衡之五行
+    if (Math.abs(p1 - p2) >= 8) {
+      const 强神 = p1 >= p2 ? e1 : e2;
+      const 弱神 = p1 >= p2 ? e2 : e1;
+      const 弱神力 = Math.min(p1, p2);
+      const 强神力 = Math.max(p1, p2);
+      return {
+        属于两气: true,
+        类型: '相克无通关扶弱',
+        战局,
+        状态: '相战扶弱成格',
+        取用: 弱神,
+        强神,
+        弱神,
+        说明: `局中两神对垒无通关，${强神}（${强神力.toFixed(1)}%）偏强，${弱神}（${弱神力.toFixed(1)}%）偏弱，取${弱神}扶持弱神维持战局平衡`,
+      };
+    } else {
+      const D = dayMasterOf(chart).element;
+      return {
+        属于两气: true,
+        类型: '相克无通关均停',
+        战局,
+        状态: '相战均停持衡',
+        取用: D,
+        说明: `局中两神力量均停对峙，取日主本五行巩固立足，维持对峙平衡`,
+      };
+    }
+  }
+
+  return { 属于两气: false };
+}
 
 export function coverageOf(chart, opts = {}) {
   // 1. 显式声明未覆盖
@@ -44,7 +232,40 @@ export function coverageOf(chart, opts = {}) {
     };
   }
 
-  // 2. 极端死结相战（P-018 两神极战均停且无通关之神）
+  // 2. 专旺格局检查（P-022 立宪覆盖）
+  const zw = zhuanWangAnalysisOf(chart);
+  if (zw.属于专旺) {
+    return {
+      covered: true,
+      判定: '本体系已覆盖',
+      结论: `命局属于【${zw.格局} · ${zw.状态}】，依据 P-022 细则判据已立宪覆盖`,
+      原因: `专旺格局顺势流通推演（${zw.说明}）`,
+      依据: '《规矩/判据.md》P-022；《规矩/体用路线法.md》',
+    };
+  }
+
+  // 3. 两神成象与相战检查（P-023 与 P-018 认怂闸门）
+  const teb = twoElementsBattleAnalysisOf(chart);
+  if (teb.属于两气) {
+    if (teb.死结 === true || teb.状态 === '战局溃败未覆盖') {
+      return {
+        covered: false,
+        判定: '本体系未覆盖，暂不判断',
+        结论: '本体系未覆盖，暂不判断',
+        原因: `局中两神极战且天地俱战无通关（${teb.战局}），两神交战死结，超出现行判据覆盖范畴`,
+        依据: '《AGENTS.md》§0「乙体系未覆盖的局面 ⇒ 只并陈，明写『本体系未覆盖，暂不判断』，不硬答」；《规矩/判据.md》P-018',
+      };
+    }
+    return {
+      covered: true,
+      判定: '本体系已覆盖',
+      结论: `命局属于【${teb.战局} · ${teb.状态}】，依据 P-023 细则判据已立宪覆盖`,
+      原因: teb.说明,
+      依据: '《规矩/判据.md》P-023；《规矩/体用路线法.md》',
+    };
+  }
+
+  // 4. 极端死结相战兜底（P-018）
   const D = dayMasterOf(chart).element;
   const percent = elementStrength(chart.pillars, branchAt(chart.pillars[1]), kingOf(chart)).percent;
   const 旺序 = [...ELEMENTS].sort((a, b) => percent[b] - percent[a]);
@@ -55,7 +276,7 @@ export function coverageOf(chart, opts = {}) {
 
   if (percent[e1] >= 30 && percent[e2] >= 30 && (percent[e1] + percent[e2] >= 70) && isDirectClash && bridgeOccupants.length === 0) {
     const 特殊 = specialGejuOf(chart).成立者 ?? [];
-    if (!特殊.some((x) => /从|专旺|化气/.test(String(x)))) {
+    if (!特殊.some((x) => /从|化气/.test(String(x)))) {
       return {
         covered: false,
         判定: '本体系未覆盖，暂不判断',
@@ -66,24 +287,12 @@ export function coverageOf(chart, opts = {}) {
     }
   }
 
-  // 3. 一气专旺格局（未立宪外格主动熔断）
-  // 乙体系《体用路线法》现行判据（P-001～P-021）仅覆盖正格与从儿格（P-016），
-  // 未对一气专旺格局（曲直/炎上/稼穑/从革/润下/纯四柱同干支）立宪。
-  // 当局中同党占绝对统治地位（>= 80%）且天干无任何异党（食伤/财星/官杀）透出流通引导，
-  // 或四柱天元一气纯同党干支时，正格体用路线无法确立用神，必须主动熔断认怂，坚决不硬答。
-  const 印五行 = 生我者(D);
-  const 同党比印占比 = (percent[D] || 0) + (percent[印五行] || 0);
-  const 天干异党透出 = chart.pillars.some((p) => {
-    const s = p.stem || STEMS[p.stemIndex];
-    const elem = ELEMENTS[STEM_ELEMENT[STEMS.indexOf(s)]];
-    return elem !== D && elem !== 印五行;
-  });
-  const 四柱纯同一同党干支 = chart.pillars.every((p) => (p.gz === chart.pillars[0].gz));
-
-  const isZhuanWang = 同党比印占比 >= 80 && !天干异党透出;
-  const isPureGz = 四柱纯同一同党干支 && !天干异党透出;
-
-  if (isZhuanWang || isPureGz) {
+  // 5. 纯同一干支极端特例熔断（D-052 / D-054 钉住）
+  const 四柱纯同一干支 = chart.pillars.every((p) => (p.gz === chart.pillars[0].gz));
+  if (四柱纯同一干支) {
+    const 印五行 = 生我者(D);
+    const 同党比印占比 = (percent[D] || 0) + (percent[印五行] || 0);
+    const isZhuanWang = 同党比印占比 >= 80;
     const patternDetail = isZhuanWang
       ? `一气专旺格局（同党比印占 ${同党比印占比.toFixed(1)}% 且天干无食伤财官流通引导）`
       : `四柱天元一气纯同干支格局（${chart.pillars[0].gz} 纯一，同党比印占 ${同党比印占比.toFixed(1)}%）`;
@@ -91,8 +300,26 @@ export function coverageOf(chart, opts = {}) {
       covered: false,
       判定: '本体系未覆盖，暂不判断',
       结论: '本体系未覆盖，暂不判断',
-      原因: `命局属于${patternDetail}，乙体系《体用路线法》现行判据（P-001～P-021）仅覆盖正格与从儿格，未对专旺与天元一气纯同干支等特殊格局立宪，依据宪法铁律「未覆盖不硬答」，本体系暂不作价值推演`,
-      依据: '《AGENTS.md》§0「乙体系未覆盖的局面 ⇒ 只并陈，明写『本体系未覆盖，暂不判断』，不硬答」；《规矩/宪法.md》',
+      原因: `命局属于${patternDetail}，乙体系《体用路线法》现行判据（P-001～P-023）仅覆盖正格与正常专旺格（P-022），未对四柱天元一气纯同干支等极端外格立宪，依据宪法铁律「未覆盖不硬答」，本体系暂不作价值推演`,
+      依据: '《AGENTS.md》§0「乙体系未覆盖的局面 ⇒ 只并陈，明写『本体系未覆盖，暂不判断』，不硬答」；《规矩/宪法.md》；《规矩/判据.md》P-018',
+    };
+  }
+
+  // 6. 非立宪正规专旺之极端偏枯/外格虚冲变格熔断（P-018，如 C-223 飞天禄马格）
+  const 印五行 = 生我者(D);
+  const 同党比印占比 = (percent[D] || 0) + (percent[印五行] || 0);
+  const 天干异党透出 = chart.pillars.some((p) => {
+    const s = p.stem || STEMS[p.stemIndex];
+    const elem = ELEMENTS[STEM_ELEMENT[STEMS.indexOf(s)]];
+    return elem !== D && elem !== 印五行;
+  });
+  if (!zw.属于专旺 && (同党比印占比 >= 80 && !天干异党透出)) {
+    return {
+      covered: false,
+      判定: '本体系未覆盖，暂不判断',
+      结论: '本体系未覆盖，暂不判断',
+      原因: `命局同党比印占 ${同党比印占比.toFixed(1)}% 且天干无食伤财官流通引导，非本体系已立宪之正规专旺格，属于子平外格（如飞天禄马、倒冲等虚冲变格），乙体系宪法未覆盖，依据宪法铁律「未覆盖不硬答」，本体系暂不作价值推演`,
+      依据: '《AGENTS.md》§0「乙体系未覆盖的局面 ⇒ 只并陈，明写『本体系未覆盖，暂不判断』，不硬答」；《规矩/宪法.md》；《规矩/判据.md》P-018',
     };
   }
 
@@ -101,7 +328,7 @@ export function coverageOf(chart, opts = {}) {
     判定: '本体系已覆盖',
     结论: '命局在体用路线法宪法判据体系覆盖之内，正常输出推演研判',
     原因: '命局主要矛盾与五行流通路线明确，有法可依',
-    依据: '《规矩/判据.md》P-001～P-015；《规矩/体用路线法.md》',
+    依据: '《规矩/判据.md》P-001～P-023；《规矩/体用路线法.md》',
   };
 }
 

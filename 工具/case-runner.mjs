@@ -13,6 +13,7 @@ import {
   tiyongRouteOf, canControlOf, canTransformOf, canBindOf,
   protectionChainOf, youJiuOf, fanwangOf, xiangzhanOf, siXiangOf,
   selfHiddenCombineOf, chengzaiReassess, gejuChengPoOf,
+  zhuanWangAnalysisOf, twoElementsBattleAnalysisOf,
 } from '../核心/tiyong.mjs';
 import {
   resolveYongAndXiElements, describeActionMechanism
@@ -772,6 +773,102 @@ for (const c of casesToRun) {
         failedAssertions += 1;
         console.log(`  ✗ [作用机理轨道] 期望: ${expObj.作用机理轨道} != 实际: ${act}`);
         failureDetails.push({ id: c.id, item: '作用机理轨道', exp: expObj.作用机理轨道, act, p: c.判据 });
+      }
+    }
+  }
+
+  // 28. 专旺格顺势流通判定（D-089 / P-022）
+  if (typeof c.期望.专旺判定 !== 'undefined') {
+    const expObj = c.期望.专旺判定;
+    const actObj = res.专旺判定 ?? zhuanWangAnalysisOf(chart);
+
+    if (typeof expObj.格局 !== 'undefined') {
+      totalAssertions += 1;
+      const act = actObj?.格局 ?? '—';
+      const ok = act === expObj.格局;
+      if (ok) {
+        passedAssertions += 1;
+        console.log(`  ✓ [专旺格局] 期望: ${expObj.格局} == 实际: ${act}`);
+      } else {
+        failedAssertions += 1;
+        console.log(`  ✗ [专旺格局] 期望: ${expObj.格局} != 实际: ${act}`);
+        failureDetails.push({ id: c.id, item: '专旺格局', exp: expObj.格局, act, p: c.判据 });
+      }
+    }
+
+    if (typeof expObj.状态 !== 'undefined') {
+      totalAssertions += 1;
+      const act = actObj?.状态 ?? '—';
+      const ok = act === expObj.状态;
+      if (ok) {
+        passedAssertions += 1;
+        console.log(`  ✓ [专旺状态] 期望: ${expObj.状态} == 实际: ${act}`);
+      } else {
+        failedAssertions += 1;
+        console.log(`  ✗ [专旺状态] 期望: ${expObj.状态} != 实际: ${act}`);
+        failureDetails.push({ id: c.id, item: '专旺状态', exp: expObj.状态, act, p: c.判据 });
+      }
+    }
+
+    if (typeof expObj.取用 !== 'undefined') {
+      totalAssertions += 1;
+      const act = actObj?.取用 ?? '—';
+      const ok = act === expObj.取用;
+      if (ok) {
+        passedAssertions += 1;
+        console.log(`  ✓ [专旺取用] 期望: ${expObj.取用} == 实际: ${act}`);
+      } else {
+        failedAssertions += 1;
+        console.log(`  ✗ [专旺取用] 期望: ${expObj.取用} != 实际: ${act}`);
+        failureDetails.push({ id: c.id, item: '专旺取用', exp: expObj.取用, act, p: c.判据 });
+      }
+    }
+  }
+
+  // 29. 两神相战扶弱平衡判定（D-089 / P-023）
+  if (typeof c.期望.两神相战 !== 'undefined') {
+    const expObj = c.期望.两神相战;
+    const actObj = res.两神相战 ?? twoElementsBattleAnalysisOf(chart);
+
+    if (typeof expObj.战局 !== 'undefined') {
+      totalAssertions += 1;
+      const act = actObj?.战局 ?? '—';
+      const ok = act === expObj.战局;
+      if (ok) {
+        passedAssertions += 1;
+        console.log(`  ✓ [两神战局] 期望: ${expObj.战局} == 实际: ${act}`);
+      } else {
+        failedAssertions += 1;
+        console.log(`  ✗ [两神战局] 期望: ${expObj.战局} != 实际: ${act}`);
+        failureDetails.push({ id: c.id, item: '两神战局', exp: expObj.战局, act, p: c.判据 });
+      }
+    }
+
+    if (typeof expObj.状态 !== 'undefined') {
+      totalAssertions += 1;
+      const act = actObj?.状态 ?? '—';
+      const ok = act === expObj.状态;
+      if (ok) {
+        passedAssertions += 1;
+        console.log(`  ✓ [两神战局状态] 期望: ${expObj.状态} == 实际: ${act}`);
+      } else {
+        failedAssertions += 1;
+        console.log(`  ✗ [两神战局状态] 期望: ${expObj.状态} != 实际: ${act}`);
+        failureDetails.push({ id: c.id, item: '两神战局状态', exp: expObj.状态, act, p: c.判据 });
+      }
+    }
+
+    if (typeof expObj.取用 !== 'undefined') {
+      totalAssertions += 1;
+      const act = actObj?.取用 ?? '—';
+      const ok = act === expObj.取用;
+      if (ok) {
+        passedAssertions += 1;
+        console.log(`  ✓ [两神战局取用] 期望: ${expObj.取用} == 实际: ${act}`);
+      } else {
+        failedAssertions += 1;
+        console.log(`  ✗ [两神战局取用] 期望: ${expObj.取用} != 实际: ${act}`);
+        failureDetails.push({ id: c.id, item: '两神战局取用', exp: expObj.取用, act, p: c.判据 });
       }
     }
   }
