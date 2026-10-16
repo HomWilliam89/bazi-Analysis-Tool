@@ -12,14 +12,21 @@ import {
   BRANCH_ELEMENT,
   SHENG_MAP,
   KE_MAP,
-  kingOf,
-  elementStrength,
-  gzRelations,
-  tiaohouAssessment,
-  relationsOf,
   五行字,
   LUSHEN,
-} from '../engine.mjs';
+} from '../engine/constants.mjs';
+import {
+  gzRelations,
+  relationsOf,
+} from '../engine/relations.mjs';
+import {
+  kingOf,
+  elementStrength,
+} from '../engine/strength.mjs';
+import {
+  tiaohouAssessment,
+} from '../engine/tiaohou.mjs';
+
 
 import {
   branchAt,

@@ -138,7 +138,7 @@ const SCHOOL_FILES = [
 let cachedEntries = null;
 
 /**
- * 从 6 个 Markdown 单源文件中动态解析全部 180 条标准条目
+ * 从 6 个 Markdown 单源文件中动态解析全部 720 条标准条目（每派 120 条）
  */
 export function loadAllSchoolEntries(forceReload = false) {
   if (cachedEntries && !forceReload) return cachedEntries;

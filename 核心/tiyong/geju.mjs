@@ -14,12 +14,19 @@ import {
   tenGod,
   SHENG_MAP,
   KE_MAP,
+} from '../engine/constants.mjs';
+import {
+  gzRelations,
+} from '../engine/relations.mjs';
+import {
   kingOf,
   elementStrength,
-  gzRelations,
   tenGodStrength,
+} from '../engine/strength.mjs';
+import {
   specialGejuOf,
-} from '../engine.mjs';
+} from '../engine/controversies.mjs';
+
 
 import {
   stemAt,

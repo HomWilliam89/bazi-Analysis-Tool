@@ -13,19 +13,24 @@ import {
   STEM_ELEMENT,
   BRANCH_ELEMENT,
   HIDDEN_STEMS_SPEC,
-  BRANCH_CLASH,
   SHENG_MAP,
   KE_MAP,
+} from '../engine/constants.mjs';
+import {
+  BRANCH_CLASH,
+  gzRelations,
+  relationsOf,
+} from '../engine/relations.mjs';
+import {
   kingOf,
   elementStrength,
-  gzRelations,
-  castChart,
   dayMasterSupport,
-  relationsOf,
   tenGodStrength,
+} from '../engine/strength.mjs';
+import {
   tongguanOf,
-  specialGejuOf,
-} from '../engine.mjs';
+} from '../engine/controversies.mjs';
+
 
 import {
   branchAt,

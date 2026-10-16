@@ -13,18 +13,23 @@ import {
   BRANCH_ELEMENT,
   HIDDEN_STEMS_SPEC,
   twelveStage,
+  SHENG_MAP,
+  KE_MAP,
+  elementBranchStage,
+} from '../engine/constants.mjs';
+import {
   STEM_COMBINE,
   BRANCH_COMBINE,
   BRANCH_DESTROY,
-  SHENG_MAP,
-  KE_MAP,
+  relationsOf,
+} from '../engine/relations.mjs';
+import {
   seasonState,
   kingOf,
   elementStrength,
-  elementBranchStage,
-  relationsOf,
   tenGodStrength,
-} from '../engine.mjs';
+} from '../engine/strength.mjs';
+
 
 export const 生我者 = (el) => Object.keys(SHENG_MAP).find((k) => SHENG_MAP[k] === el);
 export const 克我者 = (el) => Object.keys(KE_MAP).find((k) => KE_MAP[k] === el);

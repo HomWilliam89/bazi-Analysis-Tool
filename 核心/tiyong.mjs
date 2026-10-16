@@ -15,18 +15,24 @@ import {
   tenGod,
   SHENG_MAP,
   KE_MAP,
+  五行字,
+} from './engine/constants.mjs';
+import {
+  gzRelations,
+} from './engine/relations.mjs';
+import {
   kingOf,
   elementStrength,
-  gzRelations,
-  castChart,
-  tiaohouAssessment,
   tenGodStrength,
+} from './engine/strength.mjs';
+import {
+  tiaohouAssessment,
+} from './engine/tiaohou.mjs';
+import {
   tongguanOf,
   specialGejuOf,
-  五行字,
-  parseBirth,
-  parseArgs,
-} from './engine.mjs';
+} from './engine/controversies.mjs';
+
 
 import {
   branchAt,
@@ -1115,7 +1121,8 @@ export function tiyongRouteOf(chart, opts = {}) {
 
 
 
-function main() {
+async function main() {
+  const { castChart, parseBirth, parseArgs } = await import('./engine.mjs');
   const argv = process.argv.slice(2);
   const args = parseArgs(argv);
   if (args.help || (!args.birth && !args.solarterms)) {
@@ -1155,6 +1162,7 @@ const isMain = (() => {
   catch { return false; }
 })();
 if (isMain) main();
+
 
 
 
