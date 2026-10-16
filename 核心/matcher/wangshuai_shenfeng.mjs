@@ -3,7 +3,7 @@
 import {
   STEMS, BRANCHES, STEM_ELEMENT, BRANCH_ELEMENT, ELEMENTS, GANZHI,
   STEM_TO_ELEMENT, BRANCH_TO_ELEMENT, SHENG_ELEM, KE_ELEM,
-  safeTenGod, getKongWang, safeNayin,
+  safeTenGod, branchTenGods, getKongWang, safeNayin,
   TIANYI_MAP, LU_MAP, REN_MAP, CHUAN_DEFS, CHONG_DEFS, STEM_HE, BRANCH_HE,
   ZAISHA_MAP, YUANCHEN_MAP, HONGLUAN_MAP, TIANXI_MAP, JIE_MAP,
   CHANGSHENG_MAP, MUKU_MAP,
@@ -173,8 +173,8 @@ export const WANGSHUAI_SHENFENG_PREDICATES = {
     const hasCai = f.exposedTenGods.includes('正财') || f.exposedTenGods.includes('偏财');
     if (hasGuan && hasCai) return false;
     const hiddenCaiOrGuan = f.branches.some((b) => {
-      const g = safeTenGod(f.dayStem, b);
-      return g.includes('财') || g.includes('官') || g.includes('杀');
+      const gods = branchTenGods(f.dayStem, b);
+      return gods.some((g) => g.includes('财') || g.includes('官') || g.includes('杀'));
     });
     return Boolean(!hasGuan && hiddenCaiOrGuan);
   },

@@ -12,12 +12,12 @@ import {
 export const MANGPAI_ER_PREDICATES = {
   // S-MP-091: 活木用丙火为开花泄秀定式
   'S-MP-091': (f) => ['甲', '乙'].includes(f.dayStem) && f.stems.includes('丙')
-    && (f.branches.some((b) => ['寅', '卯', '辰', '亥', '未'].includes(b)) || (f.elemStrength?.percentages?.['木'] || 0) >= 25),
+    && (f.branches.some((b) => ['寅', '卯', '辰', '亥', '未'].includes(b)) || (f.elemStrength?.percent?.['木'] || 0) >= 25),
 
   // S-MP-092: 死木怕焚火旺易早死定式
   'S-MP-092': (f) => ['甲', '乙'].includes(f.dayStem)
     && !f.branches.some((b) => ['寅', '卯', '亥'].includes(b))
-    && ((f.elemStrength?.percentages?.['火'] || 0) >= 35 || f.branches.filter((b) => ['巳', '午'].includes(b)).length >= 2),
+    && ((f.elemStrength?.percent?.['火'] || 0) >= 35 || f.branches.filter((b) => ['巳', '午'].includes(b)).length >= 2),
 
   // S-MP-093: 丁火是一种光故不怕其旺定式
   'S-MP-093': (f) => f.dayStem === '丁'
@@ -25,7 +25,7 @@ export const MANGPAI_ER_PREDICATES = {
 
   // S-MP-094: 丙火过旺怕焚灭定式
   'S-MP-094': (f) => f.dayStem === '丙'
-    && (f.elemStrength?.percentages?.['火'] || 0) >= 40
+    && (f.elemStrength?.percent?.['火'] || 0) >= 40
     && !f.stems.includes('壬') && !f.stems.includes('癸'),
 
   // S-MP-095: 戊土燥重丙戊一家定式
@@ -38,7 +38,7 @@ export const MANGPAI_ER_PREDICATES = {
 
   // S-MP-097: 庚金制化得宜即可成材但不喜旺定式
   'S-MP-097': (f) => f.dayStem === '庚'
-    && (f.elemStrength?.percentages?.['金'] || 0) >= 40
+    && (f.elemStrength?.percent?.['金'] || 0) >= 40
     && f.branches.filter((b) => ['申', '酉'].includes(b)).length >= 2,
 
   // S-MP-098: 辛金夏遭克最喜旺水冬遇寒最宜丁火定式
@@ -47,7 +47,7 @@ export const MANGPAI_ER_PREDICATES = {
       || (['亥', '子', '丑'].includes(f.monthBranch) && (f.stems.includes('丁') || f.branches.includes('午')))),
 
   // S-MP-099: 水流有方向从年上往时上流定式
-  'S-MP-099': (f) => (f.elemStrength?.percentages?.['水'] || 0) >= 20
+  'S-MP-099': (f) => (f.elemStrength?.percent?.['水'] || 0) >= 20
     && (f.yearBranch === '辰' || f.hourBranch === '辰'),
 
   // S-MP-100: 辰子叫半拱局不叫入墓定式
@@ -65,9 +65,9 @@ export const MANGPAI_ER_PREDICATES = {
 
   // S-MP-104: 刑事犯罪多数会在八字中出现劫杀亡神象
   'S-MP-104': (f) => {
-    const ss = f.chart?.shenSha || [];
-    const hasJie = ss.some((s) => s.name?.includes('劫煞'));
-    const hasWang = ss.some((s) => s.name?.includes('亡神'));
+    const ss = f.shenshaList || [];
+    const hasJie = ss.some((s) => s.includes('劫煞'));
+    const hasWang = ss.some((s) => s.includes('亡神'));
     return hasJie || hasWang;
   },
 
@@ -77,19 +77,19 @@ export const MANGPAI_ER_PREDICATES = {
 
   // S-MP-106: 金性的官杀为忌代表因金导致的祸象
   'S-MP-106': (f) => ['甲', '乙'].includes(f.dayStem)
-    && ((f.elemStrength?.percentages?.['金'] || 0) >= 30 || f.branches.filter((b) => ['申', '酉'].includes(b)).length >= 2),
+    && ((f.elemStrength?.percent?.['金'] || 0) >= 30 || f.branches.filter((b) => ['申', '酉'].includes(b)).length >= 2),
 
   // S-MP-107: 流年印坐驿马食伤坐驿马离家远学象
   'S-MP-107': (f) => {
-    const ss = f.chart?.shenSha || [];
-    const hasYima = ss.some((s) => s.name?.includes('驿马'));
+    const ss = f.shenshaList || [];
+    const hasYima = ss.some((s) => s.includes('驿马'));
     return hasYima && f.exposedTenGods.some((g) => ['正印', '偏印', '食神', '伤官'].includes(g));
   },
 
   // S-MP-108: 官杀坐驿马工作外出远调运输象
   'S-MP-108': (f) => {
-    const ss = f.chart?.shenSha || [];
-    const hasYima = ss.some((s) => s.name?.includes('驿马'));
+    const ss = f.shenshaList || [];
+    const hasYima = ss.some((s) => s.includes('驿马'));
     return hasYima && f.exposedTenGods.some((g) => ['正官', '七杀'].includes(g));
   },
 
@@ -103,8 +103,8 @@ export const MANGPAI_ER_PREDICATES = {
   },
 
   // S-MP-110: 一合财就要看身强身弱原则定式
-  'S-MP-110': (f) => f.stems.some((s, idx) => idx !== 2 && safeTenGod(f.dayStem, s) === '正财' && STEM_HE[f.dayStem] === s)
-    || (GANZHI[f.dayGz] && ['戊子', '壬午', '丁亥', '辛巳'].includes(f.dayGz)),
+  'S-MP-110': (f) => f.stems.some((s, idx) => idx !== 2 && safeTenGod(f.dayStem, s) === '正财' && STEM_HE.some(([g1, g2]) => (g1 === f.dayStem && g2 === s) || (g2 === f.dayStem && g1 === s)))
+    || ['戊子', '壬午', '丁亥', '辛巳'].includes(f.dayGz),
 
   // S-MP-111: 伤官正财求名求利贪心无厌象
   'S-MP-111': (f) => f.exposedTenGods.includes('伤官') && f.exposedTenGods.includes('正财'),

@@ -3,7 +3,7 @@
 import {
   STEMS, BRANCHES, STEM_ELEMENT, BRANCH_ELEMENT, ELEMENTS, GANZHI,
   STEM_TO_ELEMENT, BRANCH_TO_ELEMENT, SHENG_ELEM, KE_ELEM,
-  safeTenGod, getKongWang, safeNayin,
+  safeTenGod, branchTenGods, getKongWang, safeNayin,
   TIANYI_MAP, LU_MAP, REN_MAP, CHUAN_DEFS, CHONG_DEFS, STEM_HE, BRANCH_HE,
   ZAISHA_MAP, YUANCHEN_MAP, HONGLUAN_MAP, TIANXI_MAP, JIE_MAP,
   CHANGSHENG_MAP, MUKU_MAP,
@@ -248,7 +248,7 @@ export const MANGPAI_PREDICATES = {
   'S-MP-071': (f) => {
     const zhuRen = [f.branches[2], f.branches[3]].includes(REN_MAP[f.dayStem]);
     const binSha = [safeTenGod(f.dayStem, f.stems[0]), safeTenGod(f.dayStem, f.stems[1])].includes('七杀')
-      || [safeTenGod(f.dayStem, f.branches[0]), safeTenGod(f.dayStem, f.branches[1])].includes('七杀');
+      || [f.branches[0], f.branches[1]].some((b) => branchTenGods(f.dayStem, b).includes('七杀'));
     return zhuRen && binSha;
   },
   'S-MP-072': (f) => {

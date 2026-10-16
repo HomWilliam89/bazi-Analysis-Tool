@@ -89,7 +89,7 @@ export function castChart(input) {
   if (![year, month, day, hour].every((v) => Number.isFinite(v))) throw new Error('castChart: year/month/day/hour 必须为数字');
   if (!isValidYear(year)) throw new Error(`castChart: 非法年份「${year}」，仅支持公元 1000 至 2500 年之间整数年份`);
   if (!isValidGregorianDate(year, month, day)) throw new Error(`castChart: 非法公历日期「${year}-${month}-${day}」，超出历法该月有效天数或月份非法`);
-  if (hour < 0 || hour > 24) throw new Error(`castChart: 非法小时「${hour}」，必须在 0 至 24 之间`);
+  if (hour < 0 || hour > 23) throw new Error(`castChart: 非法小时「${hour}」，必须在 0 至 23 之间`);
   if (minute < 0 || minute >= 60) throw new Error(`castChart: 非法分钟「${minute}」，必须在 0 至 59 之间`);
   const moment = { year, month, day, hour, minute };
   // 人元司令：当令之神随"本月的第几天"而变，故必须先算出来，再喂给五行力量统计。

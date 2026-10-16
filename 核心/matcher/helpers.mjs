@@ -28,6 +28,16 @@ export function safeTenGod(a, b) {
 }
 
 /**
+ * 地支藏干十神推导：返回地支全部藏干对应的十神数组
+ */
+export function branchTenGods(dayStem, b) {
+  const bIdx = typeof b === 'number' ? b : BRANCHES.indexOf(b);
+  if (bIdx < 0 || bIdx >= 12) return [];
+  const stems = HIDDEN_STEMS_SPEC[bIdx] || [];
+  return stems.map(([s]) => safeTenGod(dayStem, s)).filter(Boolean);
+}
+
+/**
  * 干支旬空推导：返回该干支所在旬轮空之两个地支
  */
 export function getKongWang(gz) {
@@ -106,7 +116,12 @@ export const JIE_MAP = {
   乙: ['午', '未'], 庚: ['午', '未'],
   丙: ['辰', '巳'], 辛: ['辰', '巳'],
   丁: ['寅', '卯'], 壬: ['寅', '卯'],
-  戊: ['戌', '亥', '子'], 癸: ['戌', '亥', '丑'],
+  戊: ['子', '丑'], 癸: ['子', '丑'],
+};
+
+export const GUOYIN_MAP = {
+  甲: '戌', 乙: '亥', 丙: '丑', 丁: '寅', 戊: '丑',
+  己: '寅', 庚: '辰', 辛: '巳', 壬: '未', 癸: '申',
 };
 
 // 长生与墓库映射

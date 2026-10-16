@@ -5,7 +5,7 @@ import {
   STEM_TO_ELEMENT, BRANCH_TO_ELEMENT, SHENG_ELEM, KE_ELEM,
   safeTenGod, getKongWang, safeNayin,
   TIANYI_MAP, LU_MAP, REN_MAP, CHUAN_DEFS, CHONG_DEFS, STEM_HE, BRANCH_HE,
-  ZAISHA_MAP, YUANCHEN_MAP, HONGLUAN_MAP, TIANXI_MAP, JIE_MAP,
+  ZAISHA_MAP, YUANCHEN_MAP, HONGLUAN_MAP, TIANXI_MAP, JIE_MAP, GUOYIN_MAP,
   CHANGSHENG_MAP, MUKU_MAP,
 } from './helpers.mjs';
 import { SHENSHA_YUZHAO_PREDICATES } from './shensha_yuzhao.mjs';
@@ -27,9 +27,13 @@ export const SHENSHA_PREDICATES = {
   'S-SS-011': (f) => ['甲', '己'].includes(f.dayStem) && ['乙丑', '己巳', '癸酉'].includes(f.hourGz),
   'S-SS-012': (f) => f.shenshaList.includes('天德') || f.shenshaList.includes('月德'),
   'S-SS-013': (f) => f.shenshaList.includes('孤辰') || f.shenshaList.includes('寡宿'),
-  'S-SS-014': (f) => ['甲子', '甲午', '己卯', '己酉'].includes(f.dayGz),
+  'S-SS-014': (f) => ['甲子', '甲午', '己卯', '己酉'].includes(f.dayGz)
+    || ['甲子', '甲午', '己卯', '己酉'].includes(f.hourGz),
   'S-SS-015': (f) => f.hasYangRen && f.yangRenChong,
-  'S-SS-016': (f) => ['甲戌', '乙亥', '丙丑', '丁寅', '戊丑', '己寅', '庚辰', '辛巳', '壬未', '癸申'].includes(f.dayGz),
+  'S-SS-016': (f) => {
+    const target = GUOYIN_MAP[f.dayStem];
+    return Boolean(target && f.branches.includes(target));
+  },
   'S-SS-017': (f) => (['甲', '乙'].includes(f.dayStem) && f.branches.some((b) => ['子', '午'].includes(b)))
     || (['丙', '丁'].includes(f.dayStem) && f.branches.some((b) => ['卯', '酉'].includes(b))),
   'S-SS-018': (f) => {
@@ -43,7 +47,13 @@ export const SHENSHA_PREDICATES = {
   'S-SS-019': (f) => ['丙午', '丁未', '戊子', '戊午', '己丑', '己未'].includes(f.dayGz),
   'S-SS-020': (f) => ['甲辰', '乙亥', '丙辰', '丁酉', '戊午', '庚戌', '庚寅', '辛亥', '壬寅', '癸未'].includes(f.dayGz),
   'S-SS-021': (f) => {
-    const target = YUANCHEN_MAP[f.branches[0]];
+    const yIdx = BRANCHES.indexOf(f.branches[0]);
+    if (yIdx < 0) return false;
+    const isYangY = ['甲', '丙', '戊', '庚', '壬'].includes(f.stems[0]);
+    const gender = f.chart?.gender || (f.chart?.isMale === false ? '女' : '男');
+    const isMale = gender === '男' || gender === 'male' || gender === '乾造' || f.chart?.isMale !== false;
+    const isYangOrder = (isYangY && isMale) || (!isYangY && !isMale);
+    const target = BRANCHES[isYangOrder ? (yIdx + 7) % 12 : (yIdx + 5) % 12];
     return Boolean(target && f.branches.slice(1).includes(target));
   },
   'S-SS-022': (f) => ['丙子', '丁丑', '戊寅', '辛卯', '壬辰', '癸巳', '丙午', '丁未', '戊申', '辛酉', '壬戌', '癸亥'].includes(f.dayGz),
@@ -51,9 +61,13 @@ export const SHENSHA_PREDICATES = {
   'S-SS-024': (f) => {
     const yIdx = BRANCHES.indexOf(f.branches[0]);
     if (yIdx < 0) return false;
-    const target1 = BRANCHES[(yIdx + 3) % 12];
-    const target2 = BRANCHES[(yIdx + 9) % 12];
-    return f.branches.slice(1).some((b) => b === target1 || b === target2);
+    const isYangY = ['甲', '丙', '戊', '庚', '壬'].includes(f.stems[0]);
+    const gender = f.chart?.gender || (f.chart?.isMale === false ? '女' : '男');
+    const isMale = gender === '男' || gender === 'male' || gender === '乾造' || f.chart?.isMale !== false;
+    const isYangOrder = (isYangY && isMale) || (!isYangY && !isMale);
+    const gou = isYangOrder ? BRANCHES[(yIdx + 3) % 12] : BRANCHES[(yIdx + 9) % 12];
+    const jiao = isYangOrder ? BRANCHES[(yIdx + 9) % 12] : BRANCHES[(yIdx + 3) % 12];
+    return f.branches.slice(1).some((b) => b === gou || b === jiao);
   },
   'S-SS-025': (f) => {
     const target = ZAISHA_MAP[f.branches[0]];

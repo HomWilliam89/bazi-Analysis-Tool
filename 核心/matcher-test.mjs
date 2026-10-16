@@ -17,6 +17,8 @@ import {
   analyzeGongJia,
   MATCH_PREDICATES,
 } from './school-matcher.mjs';
+import { gejuChengPoOf } from './tiyong/geju.mjs';
+import { castChart } from './engine.mjs';
 
 let passedCount = 0;
 let failedCount = 0;
@@ -1468,6 +1470,76 @@ test('盲派象法收官严密排他反向断言（非木日主排除活木见�
   // 4. 仅透正官无七杀排除官杀并透 S-MP-120：乙丑 癸未 丙子 己丑
   const resNoGuanSha = matchSchoolClaims(['乙丑', '癸未', '丙子', '己丑']);
   assert.ok(!resNoGuanSha.matched.some((x) => x.id === 'S-MP-120'), '仅透正官无七杀必须排除一言九鼎 S-MP-120');
+});
+
+// --------------------------------------------------------------------
+// 测试组 24：D-090 核心代码层 9 大逻辑缺陷修复与看门狗强化专测
+// --------------------------------------------------------------------
+console.log('▶ [测试组 24] D-090 核心代码层 9 大逻辑缺陷修复与看门狗强化专测');
+
+test('D-090 看门狗：hasWoodBureau 排除火局，水日主正官格逢火局不误判破格', () => {
+  // 外部审计复现盘：壬寅 己丑 壬午 壬辰 (壬水生丑月透己土正官，支含寅午火局生官，绝非木局破官)
+  const chartHuo = {
+    pillars: [
+      { stem: '壬', branch: '寅' },
+      { stem: '己', branch: '丑' },
+      { stem: '壬', branch: '午' },
+      { stem: '壬', branch: '辰' },
+    ],
+    dayMaster: { stem: '壬', element: '水', bornMonthBranch: '丑' },
+    relations: {},
+  };
+  const resHuo = gejuChengPoOf(chartHuo);
+  assert.notEqual(resHuo.破格因, '官逢伤官克破', '水日主正官格逢寅午火局绝不可误判为官逢伤官克破');
+  assert.equal(resHuo.状态, '成格', '水日主逢财生官应判定为成格');
+
+  // 真正寅卯辰木局对照盘：壬寅 己丑 壬卯 癸辰 (寅卯辰三会木局克官)
+  const chartMu = {
+    pillars: [
+      { stem: '壬', branch: '寅' },
+      { stem: '己', branch: '丑' },
+      { stem: '壬', branch: '卯' },
+      { stem: '癸', branch: '辰' },
+    ],
+    dayMaster: { stem: '壬', element: '水', bornMonthBranch: '丑' },
+    relations: {},
+  };
+  const resMu = gejuChengPoOf(chartMu);
+  assert.equal(resMu.破格因, '官逢伤官克破', '寅卯辰真木局会方方可判定伤官克官破格');
+});
+
+test('D-090 看门狗：流派谓词死代码修复（S-MP-110, S-MP-071, S-WS-075, S-SS-016, S-SS-014, S-SS-021, S-SS-028）', () => {
+  // 1. S-MP-110: 甲日年干己土合正财，必须命中
+  const m110 = matchSchoolClaims(['己巳', '丁卯', '甲子', '丙寅']);
+  assert.ok(m110.matched.some((x) => x.id === 'S-MP-110'), '天干五合合财必须命中 S-MP-110');
+
+  // 2. S-MP-071: 庚日坐酉刃，年支巳藏丙火七杀，必须命中
+  const m071 = matchSchoolClaims(['乙巳', '己卯', '庚酉', '丁丑']);
+  assert.ok(m071.matched.some((x) => x.id === 'S-MP-071'), '主位刃宾位藏七杀必须命中 S-MP-071');
+
+  // 3. S-WS-075: 岁运有财官则发，地支藏干财官必须命中
+  const m075 = matchSchoolClaims(['甲子', '甲子', '甲子', '乙丑']);
+  assert.ok(m075.matched.some((x) => x.id === 'S-WS-075'), '地支藏财官必须命中 S-WS-075');
+
+  // 4. S-SS-016: 国印贵人日干查四支，甲见戌必须命中
+  const m016 = matchSchoolClaims(['甲子', '甲戌', '甲午', '甲子']);
+  assert.ok(m016.matched.some((x) => x.id === 'S-SS-016'), '甲见戌支必须命中 S-SS-016 国印贵人');
+
+  // 5. S-SS-014: 进神查日柱与时柱，时柱见甲子必须命中
+  const m014 = matchSchoolClaims(['庚午', '辛巳', '乙酉', '甲子']);
+  assert.ok(m014.matched.some((x) => x.id === 'S-SS-014'), '时柱逢进神必须命中 S-SS-014');
+
+  // 6. S-SS-028: 截路空亡戊癸见子丑，戊日丑时必须命中
+  const m028 = matchSchoolClaims(['甲子', '丙寅', '戊午', '癸丑']);
+  assert.ok(m028.matched.some((x) => x.id === 'S-SS-028'), '戊日丑时必须命中 S-SS-028 截路空亡');
+});
+
+test('D-090 看门狗：castChart 底层 API 对 hour=24 严格阻断', () => {
+  assert.throws(
+    () => castChart({ year: 2024, month: 5, day: 20, hour: 24 }),
+    /非法小时「24」，必须在 0 至 23 之间/,
+    'hour=24 必须抛出超出 23 边界之异常'
+  );
 });
 
 console.log('\n----------------------------------------------------------------------');

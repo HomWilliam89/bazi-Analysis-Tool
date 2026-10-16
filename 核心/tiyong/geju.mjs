@@ -370,7 +370,6 @@ export function congErAnalysisOf(chart, opts = {}) {
   const 月令食伤 = 月令五行 === 食伤五行;
 
   const R = ['极', '强', '中', '弱'];
-  const 食伤力 = Math.min(R.indexOf(byGod['食神']?.级别 ?? '弱'), R.indexOf(byGod['伤官']?.级别 ?? '弱'));
   const 印星力 = Math.min(R.indexOf(byGod['正印']?.级别 ?? '弱'), R.indexOf(byGod['偏印']?.级别 ?? '弱'));
 
   const 标记从儿 = 特殊成立.includes('从儿');
@@ -618,7 +617,7 @@ export function gejuChengPoOf(chart, opts = {}) {
 
   const allBranchStr = branches.join('');
   const hasWoodBureau = (allBranchStr.includes('卯') && (allBranchStr.includes('未') || allBranchStr.includes('亥')))
-    || (allBranchStr.includes('寅') && (allBranchStr.includes('午') || allBranchStr.includes('戌')));
+    || (allBranchStr.includes('寅') && allBranchStr.includes('卯') && allBranchStr.includes('辰'));
 
   const isJinShuiShangGuan = (dElem === '金' && (ge.格局 === '伤官格' || branches[1] === '子' || branches[1] === '亥'));
 
