@@ -873,6 +873,21 @@ for (const c of casesToRun) {
     }
   }
 
+  // 31. 岁运期盼之神判定（D-092）
+  if (typeof c.期望.岁运期盼之神 !== 'undefined') {
+    totalAssertions += 1;
+    const act = res.岁运期盼之神?.五行 ?? '无';
+    const ok = act === c.期望.岁运期盼之神;
+    if (ok) {
+      passedAssertions += 1;
+      console.log(`  ✓ [岁运期盼之神] 期望: ${c.期望.岁运期盼之神} == 实际: ${act}`);
+    } else {
+      failedAssertions += 1;
+      console.log(`  ✗ [岁运期盼之神] 期望: ${c.期望.岁运期盼之神} != 实际: ${act}`);
+      failureDetails.push({ id: c.id, item: '岁运期盼之神', exp: c.期望.岁运期盼之神, act, p: c.判据 });
+    }
+  }
+
   console.log('');
 }
 

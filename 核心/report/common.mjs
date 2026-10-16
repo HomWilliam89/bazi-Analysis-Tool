@@ -9,6 +9,7 @@ import {
   BRANCH_CLASH, BRANCH_COMBINE, tenGod,
   trueSolarTime
 } from '../engine.mjs';
+import { occupantsOf } from '../tiyong/physics.mjs';
 
 export const MONTH_BRANCH_SEASON = {
   寅: '木', 卯: '木', 辰: '土',
@@ -538,25 +539,49 @@ export function resolveYongAndXiElements(chart, ti) {
   const dmElem = chart.dayMaster?.element || (chart.pillars?.[2]?.stem ? STEM_ELEMENT[STEMS.indexOf(chart.pillars[2].stem)] : '木');
   const dingan = ti.主要矛盾?.['四之二_取用定案'] || {};
   const candidates = ti.主要矛盾?.['四_候选用神'] || [];
-  const danli = dingan.官杀担力 || ti.主要矛盾?.官杀吉凶?.日主担力 || '';
+  const danli = ti.主要矛盾?.官杀吉凶?.日主担力 || dingan.官杀担力 || '';
+  const danliDesc = ti.主要矛盾?.官杀吉凶?.担力据 || '';
+
+  const isCongGe = !!(ti.从格改判 && (ti.从格改判.适用性?.includes('从格成立') || ti.从格改判.适用性?.includes('须改按此口径')));
+  const congGeYong = isCongGe ? ti.从格改判.改判用神 : null;
+  const congGeJi = isCongGe ? ti.从格改判.改判忌神 : null;
 
   const extractElem = (val) => String(val || '').match(/[木火土金水]/)?.[0] || null;
-  const tonggui = candidates.find((c) => c.来源类 === '同归' && c.可行);
-  const primaryYong = (tonggui ? extractElem(tonggui.字或五行) : null)
+  const inChart = (elem) => elem ? (occupantsOf(chart, elem) || []).length > 0 : false;
+
+  // 1. 首选用神确定（从格优先 > 两路同归 > 定案采用 > 护卫链用神 > 在局可行候选 > ti.用神五行 > dmElem）
+  let rawPrimary = congGeYong
+    || (candidates.find((c) => c.来源类 === '同归' && c.可行) ? extractElem(candidates.find((c) => c.来源类 === '同归' && c.可行).字或五行) : null)
     || ti.定案采用?.五行
     || ti['第三之链_护卫链']?.全景通路?.用神
     || ti['第三之链_护卫链']?.用神
-    || (candidates.find((c) => c.可行)?.字或五行 ? extractElem(candidates.find((c) => c.可行).字或五行) : null)
+    || (candidates.find((c) => c.可行 && inChart(extractElem(c.字或五行)))?.字或五行 ? extractElem(candidates.find((c) => c.可行 && inChart(extractElem(c.字或五行))).字或五行) : null)
     || ti.用神五行
     || dmElem;
 
-  // 1. 破用克神（灭工具第一大忌神：克第一用神者）
-  const mieToolElem = ELEM_REL[primaryYong]?.被克 || ti['第三之链_护卫链']?.全景通路?.克神 || ELEM_REL[primaryYong]?.被克;
+  // 幻影用神在局闸门过滤：若 rawPrimary 不在局且不是从格，强制回退至局中在局实神
+  let primaryYong = rawPrimary;
+  if (!isCongGe && !inChart(primaryYong)) {
+    const validInChartCand = candidates.find((c) => c.可行 && inChart(extractElem(c.字或五行)));
+    if (validInChartCand) {
+      primaryYong = extractElem(validInChartCand.字或五行);
+    } else {
+      const allInChart = ELEMENTS.filter((e) => inChart(e));
+      if (allInChart.length > 0) {
+        primaryYong = allInChart.includes(ELEM_REL[dmElem]?.被生) ? ELEM_REL[dmElem]?.被生 : allInChart[0];
+      }
+    }
+  }
 
-  // 2. 病灶凶神（根据官杀攻身与衰旺格局精准定病，彻底根除日主变病神）
-  const bingElem = resolveDiseaseElement(chart, ti, primaryYong);
+  // 2. 破用克神（灭工具第一大忌神）与从格忌神
+  const mieToolElem = (isCongGe && congGeJi)
+    ? congGeJi
+    : (ELEM_REL[primaryYong]?.被克 || ti['第三之链_护卫链']?.全景通路?.克神 || ELEM_REL[primaryYong]?.被克);
 
-  // 3. 护神（制克神者）与生用神（生第一用神者）——排病排忌全局互斥仲裁（D-047 铁律）
+  // 3. 病灶凶神（根据官杀攻身与衰旺格局精准定病，彻底根除日主变病神）
+  const bingElem = isCongGe ? (congGeJi || resolveDiseaseElement(chart, ti, primaryYong)) : resolveDiseaseElement(chart, ti, primaryYong);
+
+  // 4. 护神（制克神者）与生用神（生第一用神者）——排病排忌全局互斥仲裁（D-047 铁律）
   const rawHuShen = ELEM_REL[mieToolElem]?.被克; // 如土克水护火
   const rawShengYong = ELEM_REL[primaryYong]?.被生; // 如木生火
 
@@ -590,6 +615,9 @@ export function resolveYongAndXiElements(chart, ti) {
 
   return {
     isDual,
+    isCongGe,
+    congGeYong,
+    congGeJi,
     primaryYong,
     mainYong: primaryYong,
     mieToolElem,
@@ -600,6 +628,7 @@ export function resolveYongAndXiElements(chart, ti) {
     xiElem,
     workElem: primaryYong,
     danli,
+    danliDesc,
     huaCandidate,
     zhiCandidate,
     huaElem,

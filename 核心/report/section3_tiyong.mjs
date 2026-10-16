@@ -841,10 +841,19 @@ export function renderTiyongSection(chart, options = {}) {
   // 3.1 格局深度研判与去留救应全解
   lines.push('### 3.1 格局深度研判与去留救应全解\n');
   lines.push('#### 3.1.1 定格与格神');
-  lines.push(`* **本命格局**：**${geju.格局 || '正格'}**`);
-  lines.push(`* **格神**：${geju.格神字 || chart.pillars[1].branch}（${geju.格神十神 || '司令司权'}）`);
-  lines.push(`* **用神透出**：天干透出 ${chart.pillars.map((p) => p.stem).join('、')}`);
-  lines.push(`* **格局研判结论**：**【${geju.状态 || '成格'} · ${geju.破格因 ? `破格因：${geju.破格因}` : '清纯可取'}${geju.救应因 ? ` · 救应因：${geju.救应因}` : ''}】**\n`);
+  const isCongGe = !!(ti.从格改判 && (ti.从格改判.适用性?.includes('从格成立') || ti.从格改判.适用性?.includes('须改按此口径')));
+  if (isCongGe) {
+    lines.push(`* **本命格局**：**【从格】${ti.从格改判.流通格局}**（顺从五行【${ti.从格改判.所从之势}】）`);
+    lines.push(`* **格神**：${ti.从格改判.所从之势}（所从大势司权）`);
+    lines.push(`* **用神透出**：天干透出 ${chart.pillars.map((p) => p.stem).join('、')}`);
+    lines.push(`* **格局研判结论**：**【${ti.从格改判.适用性}】**`);
+    lines.push(`* **流通与统率路线**：${ti.从格改判.流通路线}；${ti.从格改判.通关枢纽 ? `以【${ti.从格改判.通关枢纽}】为引化通关枢纽` : '气专力纯'}\n`);
+  } else {
+    lines.push(`* **本命格局**：**${geju.格局 || '正格'}**`);
+    lines.push(`* **格神**：${geju.格神字 || chart.pillars[1].branch}（${geju.格神十神 || '司令司权'}）`);
+    lines.push(`* **用神透出**：天干透出 ${chart.pillars.map((p) => p.stem).join('、')}`);
+    lines.push(`* **格局研判结论**：**【${geju.状态 || '成格'} · ${geju.破格因 ? `破格因：${geju.破格因}` : '清纯可取'}${geju.救应因 ? ` · 救应因：${geju.救应因}` : ''}】**\n`);
+  }
 
   const quote = gejuOriginQuote(geju, chart);
   lines.push('#### 3.1.2 经典原典与现代深度解译');
@@ -856,7 +865,15 @@ export function renderTiyongSection(chart, options = {}) {
   lines.push(`    * **本命深度映射**：${quote.本命解}\n`);
 
   lines.push('#### 3.1.3 去留方案与岁运清格路线图');
-  lines.push(gejuRescueRoutes(geju, chart, yongElem) + '\n');
+  if (isCongGe) {
+    lines.push('* **【从格顺从气势去留路线】**：');
+    lines.push(`  * **立性格局**：${ti.从格改判.流通格局}，气势纯顺聚于【${ti.从格改判.所从之势}】。`);
+    lines.push(`  * **顺势所喜**：顺从大势五行【${ti.从格改判.改判用神}】及其生化之源；`);
+    lines.push(`  * **逆势所忌**：坚决忌见克伐所从之神【${ti.从格改判.改判忌神}】（逆势破格）。`);
+    lines.push(`  * **流通枢纽**：${ti.从格改判.通关枢纽 ? `以【${ti.从格改判.通关枢纽}】为引化通关枢纽，流通顺畅。` : '气专力纯，不可犯旺。'}\n`);
+  } else {
+    lines.push(gejuRescueRoutes(geju, chart, yongElem) + '\n');
+  }
   lines.push('---\n');
 
   // 3.2 主要矛盾剖析与全景护卫双通路
@@ -879,7 +896,11 @@ export function renderTiyongSection(chart, options = {}) {
   const mainConflict = ti.主要矛盾?.['二_主要矛盾'] || ti.主要矛盾?.矛盾 || '身弱克泄交加，急需生化通关';
   lines.push('#### 3.2.1 第一核心矛盾与体用取用定案');
   lines.push(`* **命局首要矛盾**：${mainConflict}。`);
-  const danliState = tongPct < 25 ? '【极弱不可任】' : tongPct < 40 ? '【身弱难以任煞】' : tongPct < 55 ? '【中和偏弱】' : '【身旺有托】';
+  const danliFromTi = ti.主要矛盾?.官杀吉凶?.日主担力 || yongInfo.danli;
+  const danliDescFromTi = ti.主要矛盾?.官杀吉凶?.担力据 || yongInfo.danliDesc || '';
+  const danliState = (danliFromTi === '可任') ? '【身有托·可任】'
+    : (danliFromTi === '不可任') ? '【极弱不可任】'
+    : (tongPct >= 50 ? '【中和偏旺】' : '【中和偏弱】');
 
   const maxRel = ELEM_REL[maxElem[0]]?.克 === dmElem ? '直面为凶煞重压、不可硬抗'
     : ELEM_REL[dmElem]?.生 === maxElem[0] ? '剧烈盗泄身心、秀气过甚成患'
@@ -897,7 +918,7 @@ export function renderTiyongSection(chart, options = {}) {
     : tongPct >= 50 ? '身主有托，气势相对持重。'
     : '全局克泄交并，日主承载压力显现。';
 
-  lines.push(`* **日主担力研判**：日主【${dayStem}${dmElem}】经三维衰旺研判，同党占比为 ${tongPct.toFixed(1)}%，处于${danliState}状态。此时原局最旺之【${maxElem[0]}】（占 ${maxElem[1].toFixed(1)}%）${maxRel}！次要矛盾【${secondElem[0]}】（占 ${secondElem[1].toFixed(1)}%）${secondRel}，${balanceSuffix}`);
+  lines.push(`* **日主担力研判**：日主【${dayStem}${dmElem}】经推演层单源研判，同党占比为 ${tongPct.toFixed(1)}%${danliDescFromTi ? `（${danliDescFromTi}）` : ''}，处于${danliState}状态。此时原局最旺之【${maxElem[0]}】（占 ${maxElem[1].toFixed(1)}%）${maxRel}！次要矛盾【${secondElem[0]}】（占 ${secondElem[1].toFixed(1)}%）${secondRel}，${balanceSuffix}`);
   lines.push('* **体用路线法取用定案决策**：');
   lines.push('  依《体用路线法》根本宪法：「忌神和用神看他做了什么，妨碍解决主要矛盾者为忌神，帮助解决主要矛盾者为用神。“生我”不自动等于喜——若克灭做功工具，纵能生身亦为大忌；克用神者必为第一大忌神！」严格落实全格局全五行公理化推演：');
 
@@ -945,7 +966,11 @@ export function renderTiyongSection(chart, options = {}) {
     ? `【${yongInfo.huShenElem}】（${huTenGod}，护卫用神）`
     : `【${yongInfo.huShenElem}】（${huTenGod}，制克神护卫）与【${yongInfo.shengYongElem}】（${shengTenGod}，生助用神）`;
   lines.push(`     * **护卫用神相助喜神**：${xiListText}；`);
-  lines.push(`     * **原局太旺病灶凶神**：【${yongInfo.bingElem}】（${bingTenGod}，太旺压迫日主之主要矛盾源头）。\n`);
+  lines.push(`     * **原局太旺病灶凶神**：【${yongInfo.bingElem}】（${bingTenGod}，太旺压迫日主之主要矛盾源头）；`);
+  if (ti.岁运期盼之神) {
+    lines.push(`     * **岁运虚邀期盼之神**：【${ti.岁运期盼之神.五行}】（${elemTenGodCategory(dmElem, ti.岁运期盼之神.五行)}，原局在局占比 0%，非原局实神立命，待岁运补足解冻）；`);
+  }
+  lines.push('');
 
   lines.push('#### 3.2.2 全景双通路护卫模型');
   const gehu = prot.隔途 || {};
