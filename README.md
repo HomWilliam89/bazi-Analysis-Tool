@@ -33,15 +33,16 @@
 
 ## 💻 安装与使用指南
 
-本项目既支持作为 **DeepSeek Harness (dsh) 桌面版** 的智能 Agent 技能（Skill）一句话唤起调用，也支持作为**纯原生独立命令行 CLI** 直接运行。
+本项目具备高度的灵活性与通用性，既支持作为各类 **AI Agent / 智能体平台（如 Google Antigravity、DeepSeek Harness 等）** 的 Skill 插件通过自然语言一句话唤起调用，也支持作为**纯原生独立命令行 CLI** 直接运行。
 
-### 方式一：搭配 DeepSeek Harness (dsh) 桌面版使用（推荐）
+### 方式一：搭配 AI Agent / 智能体使用（Google Antigravity、DeepSeek Harness 等主流平台）
 
-> **DeepSeek Harness (dsh) 现已推出桌面版客户端**，内置原生 Agent 智能体运行时，支持桌面对话与技能无缝调度。
+本项目遵循通用 Agent Skill 规范，可无缝接入各类支持技能扩展或命令行工具调用的 AI 智能体开发与对话环境：
 
-#### 1. 下载并安装 dsh 桌面版
-- **官方下载地址**：[DeepSeek Harness Desktop (Win-x64)](https://download.deepseek.com/dsh-desk/feeds/win-x64/)
-- **DeepSeek 官网**：[https://www.deepseek.com](https://www.deepseek.com)
+#### 1. 运行平台支持
+- **Google Antigravity (AGY)**：开箱即用。将本仓库克隆至工作区，智能体（Agent）即可原生读取 `SKILL.md` 并调度执行 CLI 工具进行命盘推演与报告生成；
+- **DeepSeek Harness (dsh) 桌面版**：内置原生 Agent Skill 运行时，支持桌面对话与技能无缝调度（官方下载：[DeepSeek Harness Desktop](https://download.deepseek.com/dsh-desk/feeds/win-x64/)）；
+- **其他支持 Agent Skills / CLI 调用的智能体系统**（如 Claude Code、Cursor 等）。
 
 #### 2. 克隆本仓库到本地
 ```bash
@@ -49,16 +50,20 @@ git clone https://github.com/HomWilliam89/bazi-Analysis-Tool.git
 cd bazi-Analysis-Tool
 ```
 
-#### 3. 一键分发安装技能到 dsh 技能库
-本项目内置了自动化镜像分发脚本，执行以下命令，即可将本项目的 56 项核心资产单向同步安装到 `~/.dsh/skills/bazi-myskill`：
-```bash
-# 执行真实分发复制并自动核验 SHA256 完整性
-node 工具/sync-skill.mjs --apply
-```
-*(注：执行 `node 工具/sync-skill.mjs --check` 可只读校验正本与技能库文件是否一致；若因环境或沙箱限制遇到 EPERM/EACCES 错误，请使用管理员终端执行，或通过 `--skill <path>` 自定义指定可写目录。)*
+#### 3. 技能分发与安装（如需独立安装到技能库）
+本项目内置了自动化镜像分发脚本，支持将本项目的 56 项核心资产同步安装到指定技能库：
+- **安装至 DeepSeek Harness 默认技能库**：
+  ```bash
+  node 工具/sync-skill.mjs --apply
+  ```
+- **安装至 Google Antigravity 或其他 Agent 平台的自定义技能目录**：
+  ```bash
+  node 工具/sync-skill.mjs --apply --skill <目标技能目录路径>
+  ```
+*(注：若直接在 Google Antigravity 工作区内运行，Agent 可直接基于工作区正本代码与 `SKILL.md` 规范交互，无需额外分发；执行 `node 工具/sync-skill.mjs --check` 可只读校验正本与技能库文件是否一致。)*
 
-#### 4. 在 dsh 桌面端直接对话调用
-启动 **DeepSeek Harness 桌面版**，在对话输入框中直接向 AI 发送自然语言指令：
+#### 4. 在智能体对话框中直接自然语言唤起
+在支持 Agent 的对话框（如 Antigravity 交互界面、dsh 桌面端等）中直接向 AI 发送自然语言指令：
 - *“帮我分析八字：1990-05-20 14:30 男”*
 - *“四柱排盘：庚午 辛巳 乙酉 癸未，请给出完整三段式深度命理分析”*
 

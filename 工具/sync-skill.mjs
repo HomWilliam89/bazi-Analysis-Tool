@@ -4,13 +4,13 @@
  *
  * 遵循《文档/03 技术.md》§9「正本＝本仓，镜像由同步脚本分发」纪律：
  *   - 正本：本工作区（EightWordsWorkSpace）
- *   - 镜像：<DSH_HOME>\skills\bazi-myskill 或由 --skill 指定
+ *   - 镜像：<DSH_HOME>\skills\bazi-myskill 或由 --skill 指定（支持 Antigravity 等各类 Agent 平台）
  *
  * 用法：
  *   node 工具/sync-skill.mjs                 无参数 ＝ --check（只校验差异，不写磁盘）
  *   node 工具/sync-skill.mjs --check         只校验差异
  *   node 工具/sync-skill.mjs --apply         真分发：计算差异 → 逐文件复制 → SHA256 复核
- *   node 工具/sync-skill.mjs --skill <path>  指定镜像安装路径（测试/旁路分发用）
+ *   node 工具/sync-skill.mjs --skill <path>  指定镜像安装路径（Antigravity/测试/旁路分发用）
  *   node 工具/sync-skill.mjs --help          显示帮助
  *
  * 退出码：

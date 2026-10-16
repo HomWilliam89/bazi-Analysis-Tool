@@ -45,17 +45,25 @@ description: 八字全景命理分析与决策咨询工具。给定公历生辰�
 4. **第四段：免责声明与科学认知导引**
    - 科学唯物认知导引、法律商业决策边界、自强不息人本哲学。
 
-## 🚀 技能安装与集成（支持 DeepSeek Harness 桌面版）
+## 🚀 技能安装与集成（支持 Antigravity、DeepSeek Harness 等智能体平台）
 
-本技能支持在 **DeepSeek Harness (dsh) 桌面版** 环境中作为 Agent Skill 插件原生运行：
+本技能支持在 **Google Antigravity (AGY)**、**DeepSeek Harness (dsh)** 等各类主流 AI Agent / 智能体环境中作为 Skill 插件原生运行：
 
-1. **下载 dsh 桌面版**：[DeepSeek Harness Desktop (Win-x64)](https://download.deepseek.com/dsh-desk/feeds/win-x64/)（官网：[https://www.deepseek.com](https://www.deepseek.com)）；
-2. **一键分发安装**：在仓库根目录执行镜像分发脚本，自动将技能安装至 `~/.dsh/skills/bazi-myskill`：
-   ```bash
-   node 工具/sync-skill.mjs --apply
-   ```
-   > 提示：若因系统权限或沙箱限制报 EPERM 错误，可使用管理员终端执行，或传入 `--skill <path>` 指定可写目录。
-3. **对话自然语言唤起**：在 DeepSeek Harness 桌面端直接输入：
+1. **运行平台与环境支持**：
+   - **Google Antigravity**：工作区直接打开本仓库，智能体即可原生识别本 `SKILL.md` 并直接调度 CLI 执行命盘分析；
+   - **DeepSeek Harness (dsh) 桌面版**：支持一键分发至 dsh 技能库并在桌面端自然语言唤起（[客户端下载](https://download.deepseek.com/dsh-desk/feeds/win-x64/) / [DeepSeek 官网](https://www.deepseek.com)）；
+   - **其他 Agent 平台**：兼容任意支持标准 Skill 协议或 CLI 工具调用的 AI 智能体环境。
+2. **一键分发安装（如需独立分发至技能库）**：
+   - 分发至 dsh 默认技能库（`~/.dsh/skills/bazi-myskill`）：
+     ```bash
+     node 工具/sync-skill.mjs --apply
+     ```
+   - 分发至 Antigravity 或其他智能体的自定义技能目录：
+     ```bash
+     node 工具/sync-skill.mjs --apply --skill <目标目录路径>
+     ```
+   > 提示：若因系统权限或沙箱限制报 EPERM 错误，可使用管理员终端执行，或通过 `--skill <path>` 指定可写目录。
+3. **对话自然语言唤起**：在智能体交互界面（Antigravity、dsh 桌面端等）直接输入：
    - *“帮我分析八字：1990-05-20 14:30 男”*
    - *“四柱排盘：庚午 辛巳 乙酉 癸未，请给出完整三段式深度命理分析”*
 
