@@ -15,7 +15,7 @@ import { generateFullReport, formatConsoleSummary, ensureFullChart } from '../�
 function printHelp() {
   console.log(`
 ======================================================================
-八字分析工具 · 三段式全景命理解读命令行工具 (bazi CLI v1.0)
+八字分析工具 · 三段式全景命理解读命令行工具 (bazi CLI v2.0)
 ======================================================================
 
 【基本用法】
